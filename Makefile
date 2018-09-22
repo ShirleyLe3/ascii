@@ -20,7 +20,7 @@ release: all
 	git add -A
 	standard-version -a
 
-node_modules:
+node_modules: package.json
 	yarn
 
 .PHONY: all lint test clean build release
