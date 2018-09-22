@@ -1,0 +1,13 @@
+export declare class ASCIICoreSettings {
+    optimized: boolean;
+    fontFace: string;
+    fontWidth: number;
+    fontHeight: number;
+    fontBlur: number;
+    lutWidth: number;
+    lutHeight: number;
+    lutPadding: number;
+    brightness: number;
+    gamma: number;
+    noise: number;
+}
