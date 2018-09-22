@@ -1,0 +1,29 @@
+{
+  "name": "ascii",
+  "version": "0.0.0",
+  "license": "MIT",
+  "main": "dist/umd/ascii.js",
+  "browser": "dist/umd/ascii.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.js",
+  "dependencies": {
+    "wheels": "reinventing-wheels/wheels#v0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^10.9.3",
+    "deepmerge": "^2.1.1",
+    "glsl-man": "^1.1.14",
+    "rollup": "^0.66.2",
+    "rollup-plugin-commonjs": "^9.1.6",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-terser": "^3.0.0",
+    "rollup-plugin-typescript2": "^0.17.0",
+    "tslint": "^5.11.0",
+    "tslint-preset": "reinventing-wheels/tslint-preset#v0.1.0",
+    "ttypescript": "^1.5.5",
+    "typescript": "^3.0.1"
+  },
+  "resolutions": {
+    "terser": "fabiosantoscode/terser#835a510"
+  }
+}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<style>
+  body { background: black; color: white; }
+  pre { text-align: center; font: 9pt/1em 'Consolas', monospace; }
+</style>
+<script src='//unpkg.com/regl@1/dist/regl.min.js'></script>
+<script src='../dist/umd/ascii.js'></script>
+<script>
+  const ascii = new ASCII(createREGL, {
+    fontFace: `'Consolas', monospace`,
+    brightness: 0.6
+  })
+
+  const image = new Image
+  image.src = 'test.jpg'
+  image.onload = () => {
+    const pre = document.createElement('pre')
+    pre.textContent = ascii.render(image, 120, 66)
+    document.body.appendChild(pre)
+  }
+</script>
