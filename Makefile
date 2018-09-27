@@ -6,14 +6,14 @@ lint: node_modules
 	tslint -p .
 
 test: node_modules
-	#jest
+	# jest
 
 clean:
 	rm -rf dist
 
 build: node_modules
-	tsc -d -m esnext --outDir dist/esm
-	tsc -d -m commonjs --outDir dist/cjs
+	ttsc -d -m esnext --outDir dist/esm
+	ttsc -d -m commonjs --outDir dist/cjs
 	rollup -c
 
 release: all
