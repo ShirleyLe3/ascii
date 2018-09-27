@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.1.1"></a>
+## [0.1.1](https://github.com/reinventing-wheels/ascii/compare/v0.1.0...v0.1.1) (2018-09-27)
+
+
+### Bug Fixes
+
+* forgot to use `ttsc` instead of `tsc` ([6b41035](https://github.com/reinventing-wheels/ascii/commit/6b41035))
+
+
+
 <a name="0.1.0"></a>
 # 0.1.0 (2018-09-22)
 
