@@ -21,6 +21,6 @@ release: all
 	standard-version -a
 
 node_modules: package.json
-	yarn
+	yarn && touch $@
 
 .PHONY: all lint test clean build release
