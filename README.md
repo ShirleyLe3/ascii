@@ -1,10 +1,10 @@
 Makes ASCII-art from any renderable input
-([demo](//reinventing-wheels.github.io/ascii/demo/)).
+([demo](//reinventing-wheels.github.io/ascii/demo/))
 
 ## Installation
 
 ```sh
-npm i -S reinventing-wheels/ascii regl
+yarn add reinventing-wheels/ascii regl
 ```
 
 ## Usage
