@@ -17,7 +17,7 @@ build: node_modules
 	rollup -c
 
 release: all
-	git add -A
+	git add dist
 	standard-version -a
 
 node_modules: package.json
