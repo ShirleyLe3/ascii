@@ -1,13 +1,11 @@
 #define TEX(s,size,uv,xy) texture2D(s,uv+(xy+.5)/size)
 #define MOD(x,y) (x-(x/y*y))
 
-#define false 0
-#define true 1
-#define O #{0.settings.optimized}
-#define U #{0.settings.lutWidth}
-#define V #{0.settings.lutHeight}
-#define X #{0.luts.0.length}
-#define Y #{0.luts.length}
+#define O ${settings.optimized ? 1 : 0}
+#define U ${settings.lutWidth}
+#define V ${settings.lutHeight}
+#define X ${luts[0].length}
+#define Y ${luts.length}
 
 precision mediump float;
 uniform sampler2D uSrc;

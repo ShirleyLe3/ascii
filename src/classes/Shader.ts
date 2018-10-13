@@ -1,4 +1,4 @@
-import { hashBrackets as format } from 'wheels/esm/text/format'
+import { render } from 'wheels/esm/text/template'
 
 export class Shader {
   command: any
@@ -8,13 +8,13 @@ export class Shader {
     private readonly binds: any
   ) {}
 
-  compile(...args: any[]) {
+  compile(arg: any) {
     const { regl, binds } = this
     const { vert, frag } = binds
     this.command = regl({
       ...binds,
-      ...vert && { vert: format(vert)(...args) },
-      ...frag && { frag: format(frag)(...args) }
+      ...vert && { vert: render(vert, arg) },
+      ...frag && { frag: render(frag, arg) }
     })
   }
 }

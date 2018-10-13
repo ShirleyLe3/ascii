@@ -7,7 +7,7 @@
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.js",
   "dependencies": {
-    "wheels": "reinventing-wheels/wheels#v0.1.0"
+    "wheels": "reinventing-wheels/wheels#v0.2.0"
   },
   "devDependencies": {
     "deepmerge": "^2.1.1",
