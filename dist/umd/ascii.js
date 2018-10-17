@@ -15,28 +15,26 @@
 
     const extend = Object.assign;
     const overwrite = extend;
-    const copy = (object) => overwrite({}, object);
-    const get = (object, path, sep = '.') => path.split(sep).reduce((o, next) => o && o[next], object);
 
     const element = name => options => overwrite(document.createElement(name), options);
     const context2d = (options) => element('canvas')(options).getContext('2d');
 
-    const format = (re) => (tmpl) => (...args) => tmpl.replace(re, (_, path) => get(args, path));
-    const hashBrackets = format(/#{(.*?)}/g);
+    const renderer = (tmpl, arg = '$') => new Function(arg, 'return `' + tmpl + '`');
+    const render = (tmpl, obj) => renderer(tmpl, '{' + Object.keys(obj) + '}')(obj);
 
     class Shader {
         constructor(regl, binds) {
             this.regl = regl;
             this.binds = binds;
         }
-        compile(...args) {
-            const binds = copy(this.binds);
+        compile(arg) {
+            const { regl, binds } = this;
             const { vert, frag } = binds;
-            if (vert)
-                binds.vert = hashBrackets(vert)(...args);
-            if (frag)
-                binds.frag = hashBrackets(frag)(...args);
-            this.command = this.regl(binds);
+            this.command = regl({
+                ...binds,
+                ...vert && { vert: render(vert, arg) },
+                ...frag && { frag: render(frag, arg) }
+            });
         }
     }
 
@@ -74,7 +72,7 @@
         }
     }
 
-    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,uv+(xy+.5)/size)\n#define MOD(x,y) (x-(x/y*y))\n#define false 0\n#define true 1\n#define O #{0.settings.optimized}\n#define U #{0.settings.lutWidth}\n#define V #{0.settings.lutHeight}\n#define X #{0.luts.0.length}\n#define Y #{0.luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;void main(){float bestDelta=3.402823e+38;int bestChar=0;\n#if O\nfloat deltas[Y];for(int x=0;x<X;x++){int u=MOD(x,U),v=x/U;float a=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;for(int y=0;y<Y;y++){float b=TEX(uLut,uLutSize,0.,vec2(x,y)).r;deltas[y]+=abs(a-b);}}for(int y=0;y<Y;y++){float delta=deltas[y];if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++){for(int u=0;u<U;u++){float a=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;float b=TEX(uLut,uLutSize,0.,vec2(x++,y)).r;delta+=abs(a-b);}}if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0)/255.;}";
+    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,uv+(xy+.5)/size)\n#define MOD(x,y) (x-(x/y*y))\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;void main(){float bestDelta=3.402823e+38;int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++){for(int u=0;u<U;u++){src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;}}for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++){float a=src[x];float b=TEX(uLut,uLutSize,0.,vec2(x,y)).r;delta+=abs(a-b);}if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++){for(int u=0;u<U;u++){float a=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;float b=TEX(uLut,uLutSize,0.,vec2(x++,y)).r;delta+=abs(a-b);}}if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0)/255.;}";
     class Pass2 extends Shader {
         constructor(regl) {
             super(regl, {

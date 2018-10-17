@@ -1,17 +1,16 @@
-import { hashBrackets as format } from 'wheels/esm/text/format';
-import { copy } from 'wheels/esm/object';
+import { render } from 'wheels/esm/text/template';
 export class Shader {
     constructor(regl, binds) {
         this.regl = regl;
         this.binds = binds;
     }
-    compile(...args) {
-        const binds = copy(this.binds);
+    compile(arg) {
+        const { regl, binds } = this;
         const { vert, frag } = binds;
-        if (vert)
-            binds.vert = format(vert)(...args);
-        if (frag)
-            binds.frag = format(frag)(...args);
-        this.command = this.regl(binds);
+        this.command = regl({
+            ...binds,
+            ...vert && { vert: render(vert, arg) },
+            ...frag && { frag: render(frag, arg) }
+        });
     }
 }
