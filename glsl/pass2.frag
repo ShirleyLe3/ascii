@@ -20,19 +20,23 @@ void main() {
 
 #if O
 
-  float deltas[Y]; // trading memory for speed
+  float src[X]; // trading memory for speed
 
-  for (int x = 0; x < X; x++) {
-    int u = MOD(x, U), v = x/U;
-    float a = TEX(uSrc, uSrcSize, vPosition, vec2(u, v)).r;
-    for (int y = 0; y < Y; y++) {
-      float b = TEX(uLut, uLutSize, 0., vec2(x, y)).r;
-      deltas[y] += abs(a - b);
+  for (int v = 0; v < V; v++) {
+    for (int u = 0; u < U; u++) {
+      src[u + v*U] = TEX(uSrc, uSrcSize, vPosition, vec2(u, v)).r;
     }
   }
 
   for (int y = 0; y < Y; y++) {
-    float delta = deltas[y];
+    float delta = 0.;
+
+    for (int x = 0; x < X; x++) {
+      float a = src[x];
+      float b = TEX(uLut, uLutSize, 0., vec2(x, y)).r;
+      delta += abs(a - b);
+    }
+
     if (delta < bestDelta) {
       bestDelta = delta;
       bestChar  = y;
