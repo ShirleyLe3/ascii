@@ -1,3 +1,5 @@
+import { overwrite } from 'wheels/esm/object'
+import { context2d } from 'wheels/esm/dom'
 import { Setup } from './shaders/Setup'
 import { Pass1 } from './shaders/Pass1'
 import { Pass2 } from './shaders/Pass2'
@@ -20,6 +22,8 @@ export class Renderer {
   private readonly pass1: Pass1
   private readonly pass2: Pass2
 
+  private readonly context = context2d()
+  private readonly canvas = this.context.canvas
   private bytes = new Uint8Array(1)
 
   constructor(private readonly ascii: ASCII) {
@@ -34,6 +38,22 @@ export class Renderer {
     this.setup = new Setup(regl)
     this.pass1 = new Pass1(regl)
     this.pass2 = new Pass2(regl)
+  }
+
+  private resize(renderable: Renderable, width: number, height: number) {
+    const { context, canvas, ascii: { settings: { quality } } } = this
+
+    if (quality === 'low')
+      return renderable
+
+    if (canvas.width !== width || canvas.height !== height) {
+      overwrite(canvas, { width, height })
+      context.imageSmoothingQuality = quality
+    }
+
+    context.drawImage(renderable, 0, 0, width, height)
+
+    return canvas
   }
 
   update() {
@@ -51,8 +71,7 @@ export class Renderer {
   }
 
   render(renderable: Renderable, width: number, height: number) {
-    const { ascii, src, lut, fbo1, fbo2 } = this
-    const { regl, settings } = ascii
+    const { src, lut, fbo1, fbo2, ascii: { regl, settings } } = this
     const { brightness, gamma, noise } = settings
 
     const w = settings.lutWidth  * width
@@ -62,7 +81,7 @@ export class Renderer {
     if (this.bytes.length !== length)
       this.bytes = new Uint8Array(length)
 
-    src(renderable)
+    src(this.resize(renderable, w, h))
 
     fbo1.resize(w, h)
     fbo2.resize(width, height)

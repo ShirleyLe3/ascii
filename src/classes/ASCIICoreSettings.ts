@@ -1,5 +1,6 @@
 export class ASCIICoreSettings {
   optimized  = true
+  quality    = 'high' as ImageSmoothingQuality
   fontFace   = 'monospace'
   fontWidth  = 40
   fontHeight = 70
