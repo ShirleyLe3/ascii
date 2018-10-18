@@ -1,4 +1,4 @@
-#define TEX(s,size,uv,xy) texture2D(s,uv+(xy+.5)/size)
+#define TEX(s,size,uv,xy) texture2D(s,(uv)+(xy)/(size))
 
 #define O ${settings.optimized ? 1 : 0}
 #define U ${settings.lutWidth}
@@ -15,6 +15,9 @@ uniform vec2 uLutSize;
 varying vec2 vPosition;
 
 void main() {
+  const vec2 srcOffset = 0.5*(0.5 - vec2(U, V));
+  const vec2 lutOffset = vec2(0.5);
+
   float bestDelta = float(X);
   int   bestChar  = 0;
 
@@ -24,7 +27,7 @@ void main() {
 
   for (int v = 0; v < V; v++)
     for (int u = 0; u < U; u++)
-      src[u + v*U] = TEX(uSrc, uSrcSize, vPosition, vec2(u, v)).r;
+      src[u + v*U] = TEX(uSrc, uSrcSize, vPosition, srcOffset + vec2(u, v)).r;
 
   for (int y = 0; y < Y; y++) {
     float delta = 0.;
@@ -32,7 +35,7 @@ void main() {
     for (int x = 0; x < X; x++)
       delta += abs(
         src[x] -
-        TEX(uLut, uLutSize, 0., vec2(x, y)).r
+        TEX(uLut, uLutSize, 0., lutOffset + vec2(x, y)).r
       );
 
     if (delta < bestDelta) {
@@ -50,8 +53,8 @@ void main() {
     for (int v = 0; v < V; v++)
       for (int u = 0; u < U; u++)
         delta += abs(
-          TEX(uSrc, uSrcSize, vPosition, vec2(u, v)).r -
-          TEX(uLut, uLutSize, 0., vec2(x++, y)).r
+          TEX(uSrc, uSrcSize, vPosition, srcOffset + vec2(u, v)).r -
+          TEX(uLut, uLutSize, 0., lutOffset + vec2(x++, y)).r
         );
 
     if (delta < bestDelta) {
