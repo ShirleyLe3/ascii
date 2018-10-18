@@ -14,10 +14,10 @@ uniform vec2 uSrcSize;
 uniform vec2 uLutSize;
 varying vec2 vPosition;
 
-void main() {
-  const vec2 srcOffset = 0.5*(0.5 - vec2(U, V));
-  const vec2 lutOffset = vec2(0.5);
+const vec2 srcOffset = 0.5*(0.5 - vec2(U, V));
+const vec2 lutOffset = vec2(0.5);
 
+void main() {
   float bestDelta = float(X);
   int   bestChar  = 0;
 
