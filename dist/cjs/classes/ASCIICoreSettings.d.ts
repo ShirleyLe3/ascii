@@ -1,5 +1,6 @@
 export declare class ASCIICoreSettings {
     optimized: boolean;
+    quality: ImageSmoothingQuality;
     fontFace: string;
     fontWidth: number;
     fontHeight: number;

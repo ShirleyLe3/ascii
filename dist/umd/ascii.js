@@ -72,7 +72,7 @@
         }
     }
 
-    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,uv+(xy+.5)/size)\n#define MOD(x,y) (x-(x/y*y))\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;void main(){float bestDelta=3.402823e+38;int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++){for(int u=0;u<U;u++){src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;}}for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++){float a=src[x];float b=TEX(uLut,uLutSize,0.,vec2(x,y)).r;delta+=abs(a-b);}if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++){for(int u=0;u<U;u++){float a=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;float b=TEX(uLut,uLutSize,0.,vec2(x++,y)).r;delta+=abs(a-b);}}if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0)/255.;}";
+    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,uv+(xy+.5)/size)\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;void main(){float bestDelta=float(X);int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++)delta+=abs(src[x]-TEX(uLut,uLutSize,0.,vec2(x,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++)for(int u=0;u<U;u++)delta+=abs(TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r-TEX(uLut,uLutSize,0.,vec2(x++,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0)/255.;}";
     class Pass2 extends Shader {
         constructor(regl) {
             super(regl, {
@@ -95,6 +95,8 @@
     class Renderer {
         constructor(ascii) {
             this.ascii = ascii;
+            this.context = context2d();
+            this.canvas = this.context.canvas;
             this.bytes = new Uint8Array(1);
             const { regl } = ascii;
             this.src = regl.texture();
@@ -104,6 +106,17 @@
             this.setup = new Setup(regl);
             this.pass1 = new Pass1(regl);
             this.pass2 = new Pass2(regl);
+        }
+        resize(renderable, width, height) {
+            const { context, canvas, ascii: { settings: { quality } } } = this;
+            if (quality === 'low')
+                return renderable;
+            if (canvas.width !== width || canvas.height !== height) {
+                overwrite(canvas, { width, height });
+                context.imageSmoothingQuality = quality;
+            }
+            context.drawImage(renderable, 0, 0, width, height);
+            return canvas;
         }
         update() {
             const { ascii } = this;
@@ -117,15 +130,14 @@
             this.pass2.compile(ascii);
         }
         render(renderable, width, height) {
-            const { ascii, src, lut, fbo1, fbo2 } = this;
-            const { regl, settings } = ascii;
+            const { src, lut, fbo1, fbo2, ascii: { regl, settings } } = this;
             const { brightness, gamma, noise } = settings;
             const w = settings.lutWidth * width;
             const h = settings.lutHeight * height;
             const length = width * height << 2;
             if (this.bytes.length !== length)
                 this.bytes = new Uint8Array(length);
-            src(renderable);
+            src(this.resize(renderable, w, h));
             fbo1.resize(w, h);
             fbo2.resize(width, height);
             regl.poll();
@@ -143,6 +155,7 @@
     class ASCIICoreSettings {
         constructor() {
             this.optimized = true;
+            this.quality = 'high';
             this.fontFace = 'monospace';
             this.fontWidth = 40;
             this.fontHeight = 70;

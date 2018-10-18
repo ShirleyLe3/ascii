@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const object_1 = require("wheels/esm/object");
+const dom_1 = require("wheels/esm/dom");
 const Setup_1 = require("./shaders/Setup");
 const Pass1_1 = require("./shaders/Pass1");
 const Pass2_1 = require("./shaders/Pass2");
 class Renderer {
     constructor(ascii) {
         this.ascii = ascii;
+        this.context = dom_1.context2d();
+        this.canvas = this.context.canvas;
         this.bytes = new Uint8Array(1);
         const { regl } = ascii;
         this.src = regl.texture();
@@ -15,6 +19,17 @@ class Renderer {
         this.setup = new Setup_1.Setup(regl);
         this.pass1 = new Pass1_1.Pass1(regl);
         this.pass2 = new Pass2_1.Pass2(regl);
+    }
+    resize(renderable, width, height) {
+        const { context, canvas, ascii: { settings: { quality } } } = this;
+        if (quality === 'low')
+            return renderable;
+        if (canvas.width !== width || canvas.height !== height) {
+            object_1.overwrite(canvas, { width, height });
+            context.imageSmoothingQuality = quality;
+        }
+        context.drawImage(renderable, 0, 0, width, height);
+        return canvas;
     }
     update() {
         const { ascii } = this;
@@ -28,15 +43,14 @@ class Renderer {
         this.pass2.compile(ascii);
     }
     render(renderable, width, height) {
-        const { ascii, src, lut, fbo1, fbo2 } = this;
-        const { regl, settings } = ascii;
+        const { src, lut, fbo1, fbo2, ascii: { regl, settings } } = this;
         const { brightness, gamma, noise } = settings;
         const w = settings.lutWidth * width;
         const h = settings.lutHeight * height;
         const length = width * height << 2;
         if (this.bytes.length !== length)
             this.bytes = new Uint8Array(length);
-        src(renderable);
+        src(this.resize(renderable, w, h));
         fbo1.resize(w, h);
         fbo2.resize(width, height);
         regl.poll();

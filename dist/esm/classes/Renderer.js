@@ -1,9 +1,13 @@
+import { overwrite } from 'wheels/esm/object';
+import { context2d } from 'wheels/esm/dom';
 import { Setup } from './shaders/Setup';
 import { Pass1 } from './shaders/Pass1';
 import { Pass2 } from './shaders/Pass2';
 export class Renderer {
     constructor(ascii) {
         this.ascii = ascii;
+        this.context = context2d();
+        this.canvas = this.context.canvas;
         this.bytes = new Uint8Array(1);
         const { regl } = ascii;
         this.src = regl.texture();
@@ -13,6 +17,17 @@ export class Renderer {
         this.setup = new Setup(regl);
         this.pass1 = new Pass1(regl);
         this.pass2 = new Pass2(regl);
+    }
+    resize(renderable, width, height) {
+        const { context, canvas, ascii: { settings: { quality } } } = this;
+        if (quality === 'low')
+            return renderable;
+        if (canvas.width !== width || canvas.height !== height) {
+            overwrite(canvas, { width, height });
+            context.imageSmoothingQuality = quality;
+        }
+        context.drawImage(renderable, 0, 0, width, height);
+        return canvas;
     }
     update() {
         const { ascii } = this;
@@ -26,15 +41,14 @@ export class Renderer {
         this.pass2.compile(ascii);
     }
     render(renderable, width, height) {
-        const { ascii, src, lut, fbo1, fbo2 } = this;
-        const { regl, settings } = ascii;
+        const { src, lut, fbo1, fbo2, ascii: { regl, settings } } = this;
         const { brightness, gamma, noise } = settings;
         const w = settings.lutWidth * width;
         const h = settings.lutHeight * height;
         const length = width * height << 2;
         if (this.bytes.length !== length)
             this.bytes = new Uint8Array(length);
-        src(renderable);
+        src(this.resize(renderable, w, h));
         fbo1.resize(w, h);
         fbo2.resize(width, height);
         regl.poll();

@@ -9,8 +9,11 @@ export declare class Renderer {
     private readonly setup;
     private readonly pass1;
     private readonly pass2;
+    private readonly context;
+    private readonly canvas;
     private bytes;
     constructor(ascii: ASCII);
+    private resize;
     update(): void;
     render(renderable: Renderable, width: number, height: number): Uint8Array;
 }

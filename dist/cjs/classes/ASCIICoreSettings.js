@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 class ASCIICoreSettings {
     constructor() {
         this.optimized = true;
+        this.quality = 'high';
         this.fontFace = 'monospace';
         this.fontWidth = 40;
         this.fontHeight = 70;
