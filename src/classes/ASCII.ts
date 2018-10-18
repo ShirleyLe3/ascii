@@ -63,8 +63,12 @@ export class ASCII {
 
   private makeLuts() {
     const luts = Array.from(this.charMap, cc => this.makeLut(cc))
-    const brightest = luts.reduce((m, lut) => max(m, max(...lut)), 0)
-    luts.forEach(lut => lut.forEach((x, i) => lut[i] = rgb(x / brightest)))
+    const brightest = luts.reduce((m, lut) => max(m, ...lut), 0)
+
+    for (const lut of luts)
+      for (let i = 0; i < lut.length; i++)
+        lut[i] = rgb(lut[i] / brightest)
+
     return luts
   }
 
