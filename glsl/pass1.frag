@@ -3,6 +3,7 @@
 #define LUM(x) dot(x,vec3(.212655,.715158,.072187))
 
 precision mediump float;
+
 uniform sampler2D uSrc;
 uniform float uBrightness;
 uniform float uGamma;
