@@ -49,8 +49,10 @@ class ASCII {
     }
     makeLuts() {
         const luts = Array.from(this.charMap, cc => this.makeLut(cc));
-        const brightest = luts.reduce((m, lut) => math_1.max(m, math_1.max(...lut)), 0);
-        luts.forEach(lut => lut.forEach((x, i) => lut[i] = srgb_1.rgb(x / brightest)));
+        const brightest = luts.reduce((m, lut) => math_1.max(m, ...lut), 0);
+        for (const lut of luts)
+            for (let i = 0; i < lut.length; i++)
+                lut[i] = srgb_1.rgb(lut[i] / brightest);
         return luts;
     }
     update(settings) {
@@ -60,10 +62,12 @@ class ASCII {
     }
     render(renderable, width, height) {
         const { renderer, charMap } = this;
-        const bytes = renderer.render(renderable, width, height);
+        const widthʹ = math_1.floor(width);
+        const heightʹ = math_1.floor(height);
+        const bytes = renderer.render(renderable, widthʹ, heightʹ);
         let i = 0, j = 0;
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++)
+        for (let y = 0; y < heightʹ; y++) {
+            for (let x = 0; x < widthʹ; x++)
                 bytes[i++] = charMap[bytes[j++ << 2]];
             bytes[i++] = 0xa;
         }

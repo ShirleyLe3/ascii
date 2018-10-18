@@ -72,7 +72,7 @@
         }
     }
 
-    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,uv+(xy+.5)/size)\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;void main(){float bestDelta=float(X);int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r;for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++)delta+=abs(src[x]-TEX(uLut,uLutSize,0.,vec2(x,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++)for(int u=0;u<U;u++)delta+=abs(TEX(uSrc,uSrcSize,vPosition,vec2(u,v)).r-TEX(uLut,uLutSize,0.,vec2(x++,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0)/255.;}";
+    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,(uv)+(xy)/(size))\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;void main(){const vec2 srcOffset=0.5*(0.5-vec2(U,V));const vec2 lutOffset=vec2(0.5);float bestDelta=float(X);int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r;for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++)delta+=abs(src[x]-TEX(uLut,uLutSize,0.,lutOffset+vec2(x,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++)for(int u=0;u<U;u++)delta+=abs(TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r-TEX(uLut,uLutSize,0.,lutOffset+vec2(x++,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0)/255.;}";
     class Pass2 extends Shader {
         constructor(regl) {
             super(regl, {
@@ -241,8 +241,10 @@
         }
         makeLuts() {
             const luts = Array.from(this.charMap, cc => this.makeLut(cc));
-            const brightest = luts.reduce((m, lut) => max(m, max(...lut)), 0);
-            luts.forEach(lut => lut.forEach((x, i) => lut[i] = rgb(x / brightest)));
+            const brightest = luts.reduce((m, lut) => max(m, ...lut), 0);
+            for (const lut of luts)
+                for (let i = 0; i < lut.length; i++)
+                    lut[i] = rgb(lut[i] / brightest);
             return luts;
         }
         update(settings) {
@@ -252,10 +254,12 @@
         }
         render(renderable, width, height) {
             const { renderer, charMap } = this;
-            const bytes = renderer.render(renderable, width, height);
+            const widthʹ = floor(width);
+            const heightʹ = floor(height);
+            const bytes = renderer.render(renderable, widthʹ, heightʹ);
             let i = 0, j = 0;
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++)
+            for (let y = 0; y < heightʹ; y++) {
+                for (let x = 0; x < widthʹ; x++)
                     bytes[i++] = charMap[bytes[j++ << 2]];
                 bytes[i++] = 0xa;
             }
