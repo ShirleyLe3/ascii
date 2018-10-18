@@ -1,5 +1,5 @@
 import { rgb } from 'wheels/esm/color/srgb'
-import { max } from 'wheels/esm/math'
+import { max, floor } from 'wheels/esm/math'
 import { range } from 'wheels/esm/fp'
 import { overwrite } from 'wheels/esm/object'
 import { element, context2d } from 'wheels/esm/dom'
@@ -76,11 +76,14 @@ export class ASCII {
 
   render(renderable: Renderable, width: number, height: number) {
     const { renderer, charMap } = this
-    const bytes = renderer.render(renderable, width, height)
+
+    const widthʹ = floor(width)
+    const heightʹ = floor(height)
+    const bytes = renderer.render(renderable, widthʹ, heightʹ)
 
     let i = 0, j = 0
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++)
+    for (let y = 0; y < heightʹ; y++) {
+      for (let x = 0; x < widthʹ; x++)
         bytes[i++] = charMap[bytes[j++ << 2]]
       bytes[i++] = 0xa
     }
