@@ -8,10 +8,15 @@ const dom_1 = require("wheels/esm/dom");
 const Renderer_1 = require("./Renderer");
 const ASCIISettings_1 = require("./ASCIISettings");
 const downscale_1 = require("../downscale");
+const charCodes = function* () {
+    yield* fp_1.range(0x20, 0x7f);
+    yield* fp_1.range(0xa1, 0xc0);
+    yield* fp_1.range(0x2018, 0x2020);
+};
 class ASCII {
     constructor(REGL, settings) {
         this.settings = new ASCIISettings_1.ASCIISettings;
-        this.charMap = Uint8Array.from(fp_1.range(0x20, 0x7f));
+        this.charMap = new Uint16Array(charCodes());
         const canvas = dom_1.element('canvas')();
         const extensions = ['OES_texture_float'];
         this.regl = REGL({ canvas, extensions });
@@ -55,24 +60,23 @@ class ASCII {
                 lut[i] = srgb_1.rgb(lut[i] / brightest);
         return luts;
     }
+    *map(bytes, width, height) {
+        const { charMap } = this;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++)
+                yield charMap[bytes[x + y * width << 2]];
+            yield 0xa;
+        }
+    }
     update(settings) {
         object_1.overwrite(this.settings, settings);
         this.luts = this.makeLuts();
         this.renderer.update();
     }
     render(renderable, width, height) {
-        const { renderer, charMap } = this;
-        const widthʹ = math_1.floor(width);
-        const heightʹ = math_1.floor(height);
-        const bytes = renderer.render(renderable, widthʹ, heightʹ);
-        let i = 0, j = 0;
-        for (let y = 0; y < heightʹ; y++) {
-            for (let x = 0; x < widthʹ; x++)
-                bytes[i++] = charMap[bytes[j++ << 2]];
-            bytes[i++] = 0xa;
-        }
-        const codes = bytes.subarray(0, i);
-        const chars = String.fromCharCode(...codes);
+        const widthʹ = math_1.floor(width), heightʹ = math_1.floor(height);
+        const bytes = this.renderer.render(renderable, widthʹ, heightʹ);
+        const chars = String.fromCharCode(...this.map(bytes, widthʹ, heightʹ));
         return chars;
     }
 }

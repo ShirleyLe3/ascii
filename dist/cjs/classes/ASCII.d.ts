@@ -6,11 +6,12 @@ export declare class ASCII {
     luts: Float32Array[];
     renderer: Renderer;
     settings: ASCIISettings;
-    charMap: Uint8Array;
+    charMap: Uint16Array;
     constructor(REGL: any, settings?: Partial<ASCIICoreSettings>);
     private makeGlyph;
     private makeLut;
     private makeLuts;
+    private map;
     update(settings?: Partial<ASCIICoreSettings>): void;
     render(renderable: Renderable, width: number, height: number): string;
 }

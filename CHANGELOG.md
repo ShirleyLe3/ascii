@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/reinventing-wheels/ascii/compare/v0.4.0...v0.5.0) (2018-10-19)
+
+
+### Features
+
+* more chars ([2048838](https://github.com/reinventing-wheels/ascii/commit/2048838))
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/reinventing-wheels/ascii/compare/v0.3.0...v0.4.0) (2018-10-18)
 

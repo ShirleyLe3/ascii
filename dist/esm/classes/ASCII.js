@@ -6,10 +6,15 @@ import { element, context2d } from 'wheels/esm/dom';
 import { Renderer } from './Renderer';
 import { ASCIISettings } from './ASCIISettings';
 import { downscale } from '../downscale';
+const charCodes = function* () {
+    yield* range(0x20, 0x7f);
+    yield* range(0xa1, 0xc0);
+    yield* range(0x2018, 0x2020);
+};
 export class ASCII {
     constructor(REGL, settings) {
         this.settings = new ASCIISettings;
-        this.charMap = Uint8Array.from(range(0x20, 0x7f));
+        this.charMap = new Uint16Array(charCodes());
         const canvas = element('canvas')();
         const extensions = ['OES_texture_float'];
         this.regl = REGL({ canvas, extensions });
@@ -53,24 +58,23 @@ export class ASCII {
                 lut[i] = rgb(lut[i] / brightest);
         return luts;
     }
+    *map(bytes, width, height) {
+        const { charMap } = this;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++)
+                yield charMap[bytes[x + y * width << 2]];
+            yield 0xa;
+        }
+    }
     update(settings) {
         overwrite(this.settings, settings);
         this.luts = this.makeLuts();
         this.renderer.update();
     }
     render(renderable, width, height) {
-        const { renderer, charMap } = this;
-        const widthʹ = floor(width);
-        const heightʹ = floor(height);
-        const bytes = renderer.render(renderable, widthʹ, heightʹ);
-        let i = 0, j = 0;
-        for (let y = 0; y < heightʹ; y++) {
-            for (let x = 0; x < widthʹ; x++)
-                bytes[i++] = charMap[bytes[j++ << 2]];
-            bytes[i++] = 0xa;
-        }
-        const codes = bytes.subarray(0, i);
-        const chars = String.fromCharCode(...codes);
+        const widthʹ = floor(width), heightʹ = floor(height);
+        const bytes = this.renderer.render(renderable, widthʹ, heightʹ);
+        const chars = String.fromCharCode(...this.map(bytes, widthʹ, heightʹ));
         return chars;
     }
 }
