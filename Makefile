@@ -13,7 +13,6 @@ clean:
 
 build: node_modules
 	ttsc -d -m esnext --outDir dist/esm
-	ttsc -d -m commonjs --outDir dist/cjs
 	rollup -c
 
 release: all
