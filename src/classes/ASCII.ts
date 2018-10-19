@@ -72,6 +72,16 @@ export class ASCII {
     return luts
   }
 
+  private *map(bytes: Uint8Array, width: number, height: number) {
+    const { charMap } = this
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++)
+        yield charMap[bytes[x + y*width << 2]]
+      yield 0xa
+    }
+  }
+
   update(settings?: Partial<ASCIICoreSettings>) {
     overwrite(this.settings, settings!)
     this.luts = this.makeLuts()
@@ -79,21 +89,9 @@ export class ASCII {
   }
 
   render(renderable: Renderable, width: number, height: number) {
-    const { renderer, charMap } = this
-
-    const widthʹ = floor(width)
-    const heightʹ = floor(height)
-    const bytes = renderer.render(renderable, widthʹ, heightʹ)
-
-    let i = 0, j = 0
-    for (let y = 0; y < heightʹ; y++) {
-      for (let x = 0; x < widthʹ; x++)
-        bytes[i++] = charMap[bytes[j++ << 2]]
-      bytes[i++] = 0xa
-    }
-
-    const codes = bytes.subarray(0, i)
-    const chars = String.fromCharCode(...codes)
+    const widthʹ = floor(width), heightʹ = floor(height)
+    const bytes = this.renderer.render(renderable, widthʹ, heightʹ)
+    const chars = String.fromCharCode(...this.map(bytes, widthʹ, heightʹ))
     return chars
   }
 }
