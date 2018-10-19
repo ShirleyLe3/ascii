@@ -19,7 +19,7 @@ export class ASCII {
   luts!: Float32Array[]
   renderer: Renderer
   settings = new ASCIISettings
-  charMap = new Uint16Array(charCodes())
+  charMap = new Uint16Array(this.filter(charCodes()))
 
   constructor(REGL: any, settings?: Partial<ASCIICoreSettings>) {
     const canvas = element('canvas')()
@@ -76,6 +76,16 @@ export class ASCII {
         lut[i] = rgb(lut[i] / brightest)
 
     return luts
+  }
+
+  private *filter(charCodes: Iterable<number>) {
+    const api = context2d()
+    api.font = `1em ${this.settings.fontFace}`
+    const ref = api.measureText(' ')
+
+    for (const cc of charCodes)
+      if (api.measureText(String.fromCharCode(cc)).width === ref.width)
+        yield cc
   }
 
   private *map(bytes: Uint8Array, width: number, height: number) {
