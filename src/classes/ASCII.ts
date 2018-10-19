@@ -88,12 +88,12 @@ export class ASCII {
         yield cc
   }
 
-  private *map(bytes: Uint8Array, width: number, height: number) {
+  private *map(rgba: ArrayLike<number>, width: number, height: number) {
     const { charMap } = this
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++)
-        yield charMap[bytes[x + y*width << 2]]
+        yield charMap[rgba[x + y*width << 2]]
       yield 0xa
     }
   }
@@ -106,8 +106,8 @@ export class ASCII {
 
   render(renderable: Renderable, width: number, height: number) {
     const widthʹ = floor(width), heightʹ = floor(height)
-    const bytes = this.renderer.render(renderable, widthʹ, heightʹ)
-    const chars = String.fromCharCode(...this.map(bytes, widthʹ, heightʹ))
+    const rgba = this.renderer.render(renderable, widthʹ, heightʹ)
+    const chars = String.fromCharCode(...this.map(rgba, widthʹ, heightʹ))
     return chars
   }
 }

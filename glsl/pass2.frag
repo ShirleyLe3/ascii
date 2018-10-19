@@ -65,5 +65,5 @@ void main() {
 
 #endif
 
-  gl_FragColor = vec4(bestChar, 0, 0, 0) / 255.;
+  gl_FragColor = vec4(bestChar, 0, 0, 0);
 }

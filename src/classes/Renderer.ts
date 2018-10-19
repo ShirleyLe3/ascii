@@ -24,7 +24,7 @@ export class Renderer {
 
   private readonly context = context2d()
   private readonly canvas = this.context.canvas
-  private bytes = new Uint8Array(1)
+  private rgba = new Float32Array(1)
 
   constructor(private readonly ascii: ASCII) {
     const { regl } = ascii
@@ -33,7 +33,7 @@ export class Renderer {
     this.lut = regl.texture()
 
     this.fbo1 = regl.framebuffer({ depthStencil: false, colorType: 'float' })
-    this.fbo2 = regl.framebuffer({ depthStencil: false })
+    this.fbo2 = regl.framebuffer({ depthStencil: false, colorType: 'float' })
 
     this.setup = new Setup(regl)
     this.pass1 = new Pass1(regl)
@@ -78,8 +78,8 @@ export class Renderer {
     const h = settings.lutHeight * height
 
     const length = width * height << 2
-    if (this.bytes.length !== length)
-      this.bytes = new Uint8Array(length)
+    if (this.rgba.length !== length)
+      this.rgba = new Float32Array(length)
 
     src(this.resize(renderable, w, h))
 
@@ -91,10 +91,10 @@ export class Renderer {
       this.pass1.command({ dst: fbo1, src, brightness, gamma, noise })
       this.pass2.command({ dst: fbo2, src: fbo1, lut }, () => {
         regl.draw()
-        regl.read(this.bytes)
+        regl.read(this.rgba)
       })
     })
 
-    return this.bytes
+    return this.rgba
   }
 }
