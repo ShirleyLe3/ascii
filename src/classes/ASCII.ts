@@ -9,9 +9,19 @@ import { ASCIISettings } from './ASCIISettings'
 import { downscale } from '../downscale'
 
 const charCodes = function* () {
-  yield* range(0x20, 0x7f)
-  yield* range(0xa1, 0xc0)
-  yield* range(0x2018, 0x2020)
+  yield* range(0x20, 0x5f)
+  yield* range(0x60, 0x7f)
+  yield* range(0xa1, 0xa8)
+  yield* range(0xa9, 0xad)
+  yield* range(0xae, 0xb6)
+  yield* range(0xb7, 0xc0)
+  yield* [0xd7, 0xf7]
+
+  yield* range(0x2018, 0x2023)
+  yield* range(0x2039, 0x203b)
+  yield* range(0x2070, 0x20a0)
+  yield* range(0x2219, 0x221b)
+  yield* [0x2043, 0x221e]
 }
 
 export class ASCII {
