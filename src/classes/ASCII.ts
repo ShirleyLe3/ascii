@@ -8,12 +8,18 @@ import { ASCIICoreSettings } from './ASCIICoreSettings'
 import { ASCIISettings } from './ASCIISettings'
 import { downscale } from '../downscale'
 
+const charCodes = function* () {
+  yield* range(0x20, 0x7f)
+  yield* range(0xa1, 0xc0)
+  yield* range(0x2018, 0x2020)
+}
+
 export class ASCII {
   regl: any
   luts!: Float32Array[]
   renderer: Renderer
   settings = new ASCIISettings
-  charMap = Uint8Array.from(range(0x20, 0x7f)) // from " " to "~"
+  charMap = new Uint16Array(charCodes())
 
   constructor(REGL: any, settings?: Partial<ASCIICoreSettings>) {
     const canvas = element('canvas')()
