@@ -1,21 +1,26 @@
 <!DOCTYPE html>
 <style>
-  body { background: black; color: white; }
-  pre { text-align: center; font: 9pt/1em 'Consolas', monospace; }
+  body { background: black; color: white; text-align: center; }
+  pre { display: inline-block; font: 9pt/1em 'Consolas', monospace; }
+  pre:hover { background: url('test.jpg') center/100% 100%; color: transparent; }
 </style>
-<script src='//unpkg.com/regl@1/dist/regl.min.js'></script>
-<script src='../dist/umd/ascii.js'></script>
-<script>
+<script defer src='//unpkg.com/regl@1/dist/regl.min.js'></script>
+<script defer src='../dist/umd/ascii.js'></script>
+<script type='module'>
   const ascii = new ASCII(createREGL, {
-    fontFace: `'Consolas', monospace`,
-    brightness: 0.6
+    fontFace: `'Consolas', monospace`
   })
 
   const image = new Image
   image.src = 'test.jpg'
   image.onload = () => {
-    const pre = document.createElement('pre')
-    pre.textContent = ascii.render(image, 120, 66)
-    document.body.appendChild(pre)
+    const el = document.createElement('pre')
+    el.textContent = '.'.repeat(0x100) + '\n.'.repeat(0xff)
+    document.body.appendChild(el)
+
+    const imageRatio = image.width / image.height
+    const fontRatio = el.clientWidth / el.clientHeight
+    const ratio = imageRatio / fontRatio
+    el.textContent = ascii.render(image, 100, 100 / ratio)
   }
 </script>
