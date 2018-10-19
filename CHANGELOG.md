@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/reinventing-wheels/ascii/compare/v0.6.0...v0.7.0) (2018-10-19)
+
+
+### Features
+
+* remove `commonjs` build target ([afa67a4](https://github.com/reinventing-wheels/ascii/commit/afa67a4))
+* remove sup/subscripts and some other weird chars ([1c0e062](https://github.com/reinventing-wheels/ascii/commit/1c0e062))
+
+
+
 <a name="0.6.0"></a>
 # [0.6.0](https://github.com/reinventing-wheels/ascii/compare/v0.5.0...v0.6.0) (2018-10-19)
 
