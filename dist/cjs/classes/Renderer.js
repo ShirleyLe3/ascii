@@ -10,12 +10,12 @@ class Renderer {
         this.ascii = ascii;
         this.context = dom_1.context2d();
         this.canvas = this.context.canvas;
-        this.bytes = new Uint8Array(1);
+        this.rgba = new Float32Array(1);
         const { regl } = ascii;
         this.src = regl.texture();
         this.lut = regl.texture();
         this.fbo1 = regl.framebuffer({ depthStencil: false, colorType: 'float' });
-        this.fbo2 = regl.framebuffer({ depthStencil: false });
+        this.fbo2 = regl.framebuffer({ depthStencil: false, colorType: 'float' });
         this.setup = new Setup_1.Setup(regl);
         this.pass1 = new Pass1_1.Pass1(regl);
         this.pass2 = new Pass2_1.Pass2(regl);
@@ -48,8 +48,8 @@ class Renderer {
         const w = settings.lutWidth * width;
         const h = settings.lutHeight * height;
         const length = width * height << 2;
-        if (this.bytes.length !== length)
-            this.bytes = new Uint8Array(length);
+        if (this.rgba.length !== length)
+            this.rgba = new Float32Array(length);
         src(this.resize(renderable, w, h));
         fbo1.resize(w, h);
         fbo2.resize(width, height);
@@ -58,10 +58,10 @@ class Renderer {
             this.pass1.command({ dst: fbo1, src, brightness, gamma, noise });
             this.pass2.command({ dst: fbo2, src: fbo1, lut }, () => {
                 regl.draw();
-                regl.read(this.bytes);
+                regl.read(this.rgba);
             });
         });
-        return this.bytes;
+        return this.rgba;
     }
 }
 exports.Renderer = Renderer;

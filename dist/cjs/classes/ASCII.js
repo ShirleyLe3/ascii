@@ -9,14 +9,23 @@ const Renderer_1 = require("./Renderer");
 const ASCIISettings_1 = require("./ASCIISettings");
 const downscale_1 = require("../downscale");
 const charCodes = function* () {
-    yield* fp_1.range(0x20, 0x7f);
-    yield* fp_1.range(0xa1, 0xc0);
-    yield* fp_1.range(0x2018, 0x2020);
+    yield* fp_1.range(0x20, 0x5f);
+    yield* fp_1.range(0x60, 0x7f);
+    yield* fp_1.range(0xa1, 0xa8);
+    yield* fp_1.range(0xa9, 0xad);
+    yield* fp_1.range(0xae, 0xb6);
+    yield* fp_1.range(0xb7, 0xc0);
+    yield* [0xd7, 0xf7];
+    yield* fp_1.range(0x2018, 0x2023);
+    yield* fp_1.range(0x2039, 0x203b);
+    yield* fp_1.range(0x2070, 0x20a0);
+    yield* fp_1.range(0x2219, 0x221b);
+    yield* [0x2043, 0x221e];
 };
 class ASCII {
     constructor(REGL, settings) {
         this.settings = new ASCIISettings_1.ASCIISettings;
-        this.charMap = new Uint16Array(charCodes());
+        this.charMap = new Uint16Array(this.filter(charCodes()));
         const canvas = dom_1.element('canvas')();
         const extensions = ['OES_texture_float'];
         this.regl = REGL({ canvas, extensions });
@@ -60,11 +69,19 @@ class ASCII {
                 lut[i] = srgb_1.rgb(lut[i] / brightest);
         return luts;
     }
-    *map(bytes, width, height) {
+    *filter(charCodes) {
+        const api = dom_1.context2d();
+        api.font = `1em ${this.settings.fontFace}`;
+        const ref = api.measureText(' ');
+        for (const cc of charCodes)
+            if (api.measureText(String.fromCharCode(cc)).width === ref.width)
+                yield cc;
+    }
+    *map(rgba, width, height) {
         const { charMap } = this;
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++)
-                yield charMap[bytes[x + y * width << 2]];
+                yield charMap[rgba[x + y * width << 2]];
             yield 0xa;
         }
     }
@@ -75,8 +92,8 @@ class ASCII {
     }
     render(renderable, width, height) {
         const widthʹ = math_1.floor(width), heightʹ = math_1.floor(height);
-        const bytes = this.renderer.render(renderable, widthʹ, heightʹ);
-        const chars = String.fromCharCode(...this.map(bytes, widthʹ, heightʹ));
+        const rgba = this.renderer.render(renderable, widthʹ, heightʹ);
+        const chars = String.fromCharCode(...this.map(rgba, widthʹ, heightʹ));
         return chars;
     }
 }

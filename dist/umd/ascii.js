@@ -72,7 +72,7 @@
         }
     }
 
-    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,(uv)+(xy)/(size))\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;const vec2 srcOffset=0.5*(0.5-vec2(U,V));const vec2 lutOffset=vec2(0.5);void main(){float bestDelta=float(X);int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r;for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++)delta+=abs(src[x]-TEX(uLut,uLutSize,0.,lutOffset+vec2(x,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++)for(int u=0;u<U;u++)delta+=abs(TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r-TEX(uLut,uLutSize,0.,lutOffset+vec2(x++,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0)/255.;}";
+    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,(uv)+(xy)/(size))\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;const vec2 srcOffset=0.5*(0.5-vec2(U,V));const vec2 lutOffset=vec2(0.5);void main(){float bestDelta=float(X);int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r;for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++)delta+=abs(src[x]-TEX(uLut,uLutSize,0.,lutOffset+vec2(x,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++)for(int u=0;u<U;u++)delta+=abs(TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r-TEX(uLut,uLutSize,0.,lutOffset+vec2(x++,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0);}";
     class Pass2 extends Shader {
         constructor(regl) {
             super(regl, {
@@ -97,12 +97,12 @@
             this.ascii = ascii;
             this.context = context2d();
             this.canvas = this.context.canvas;
-            this.bytes = new Uint8Array(1);
+            this.rgba = new Float32Array(1);
             const { regl } = ascii;
             this.src = regl.texture();
             this.lut = regl.texture();
             this.fbo1 = regl.framebuffer({ depthStencil: false, colorType: 'float' });
-            this.fbo2 = regl.framebuffer({ depthStencil: false });
+            this.fbo2 = regl.framebuffer({ depthStencil: false, colorType: 'float' });
             this.setup = new Setup(regl);
             this.pass1 = new Pass1(regl);
             this.pass2 = new Pass2(regl);
@@ -135,8 +135,8 @@
             const w = settings.lutWidth * width;
             const h = settings.lutHeight * height;
             const length = width * height << 2;
-            if (this.bytes.length !== length)
-                this.bytes = new Uint8Array(length);
+            if (this.rgba.length !== length)
+                this.rgba = new Float32Array(length);
             src(this.resize(renderable, w, h));
             fbo1.resize(w, h);
             fbo2.resize(width, height);
@@ -145,10 +145,10 @@
                 this.pass1.command({ dst: fbo1, src, brightness, gamma, noise });
                 this.pass2.command({ dst: fbo2, src: fbo1, lut }, () => {
                     regl.draw();
-                    regl.read(this.bytes);
+                    regl.read(this.rgba);
                 });
             });
-            return this.bytes;
+            return this.rgba;
         }
     }
 
@@ -201,14 +201,23 @@
         : fallback;
 
     const charCodes = function* () {
-        yield* range(0x20, 0x7f);
-        yield* range(0xa1, 0xc0);
-        yield* range(0x2018, 0x2020);
+        yield* range(0x20, 0x5f);
+        yield* range(0x60, 0x7f);
+        yield* range(0xa1, 0xa8);
+        yield* range(0xa9, 0xad);
+        yield* range(0xae, 0xb6);
+        yield* range(0xb7, 0xc0);
+        yield* [0xd7, 0xf7];
+        yield* range(0x2018, 0x2023);
+        yield* range(0x2039, 0x203b);
+        yield* range(0x2070, 0x20a0);
+        yield* range(0x2219, 0x221b);
+        yield* [0x2043, 0x221e];
     };
     class ASCII {
         constructor(REGL, settings) {
             this.settings = new ASCIISettings;
-            this.charMap = new Uint16Array(charCodes());
+            this.charMap = new Uint16Array(this.filter(charCodes()));
             const canvas = element('canvas')();
             const extensions = ['OES_texture_float'];
             this.regl = REGL({ canvas, extensions });
@@ -252,11 +261,19 @@
                     lut[i] = rgb(lut[i] / brightest);
             return luts;
         }
-        *map(bytes, width, height) {
+        *filter(charCodes) {
+            const api = context2d();
+            api.font = `1em ${this.settings.fontFace}`;
+            const ref = api.measureText(' ');
+            for (const cc of charCodes)
+                if (api.measureText(String.fromCharCode(cc)).width === ref.width)
+                    yield cc;
+        }
+        *map(rgba, width, height) {
             const { charMap } = this;
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++)
-                    yield charMap[bytes[x + y * width << 2]];
+                    yield charMap[rgba[x + y * width << 2]];
                 yield 0xa;
             }
         }
@@ -267,8 +284,8 @@
         }
         render(renderable, width, height) {
             const widthʹ = floor(width), heightʹ = floor(height);
-            const bytes = this.renderer.render(renderable, widthʹ, heightʹ);
-            const chars = String.fromCharCode(...this.map(bytes, widthʹ, heightʹ));
+            const rgba = this.renderer.render(renderable, widthʹ, heightʹ);
+            const chars = String.fromCharCode(...this.map(rgba, widthʹ, heightʹ));
             return chars;
         }
     }

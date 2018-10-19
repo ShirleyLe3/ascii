@@ -11,6 +11,7 @@ export declare class ASCII {
     private makeGlyph;
     private makeLut;
     private makeLuts;
+    private filter;
     private map;
     update(settings?: Partial<ASCIICoreSettings>): void;
     render(renderable: Renderable, width: number, height: number): string;

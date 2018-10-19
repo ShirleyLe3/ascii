@@ -11,9 +11,9 @@ export declare class Renderer {
     private readonly pass2;
     private readonly context;
     private readonly canvas;
-    private bytes;
+    private rgba;
     constructor(ascii: ASCII);
     private resize;
     update(): void;
-    render(renderable: Renderable, width: number, height: number): Uint8Array;
+    render(renderable: Renderable, width: number, height: number): Float32Array;
 }
