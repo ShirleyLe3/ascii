@@ -10,7 +10,7 @@
     "noUnusedParameters": true,
     "removeComments": true,
     "plugins": [
-      { "transform": "ts-transform-glsl" }
+      { "transform": "./src/gl/transform.ts" }
     ]
   },
   "include": [

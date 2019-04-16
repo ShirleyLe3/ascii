@@ -4,23 +4,23 @@
   pre { display: inline-block; font: 9pt/1em 'Consolas', monospace; }
   pre:hover { background: url('test.jpg') center/100% 100%; color: transparent; }
 </style>
-<script defer src='//unpkg.com/regl@1/dist/regl.min.js'></script>
 <script defer src='../dist/umd/ascii.js'></script>
 <script type='module'>
-  const ascii = new ASCII(createREGL, {
+  const renderer = new ASCII.SoftwareRenderer({
     fontFace: `'Consolas', monospace`
   })
 
-  const image = new Image
-  image.src = 'test.jpg'
-  image.onload = () => {
-    const el = document.createElement('pre')
-    el.textContent = '.'.repeat(0x100) + '\n.'.repeat(0xff)
-    document.body.appendChild(el)
+  Object.assign(new Image, {
+    src: 'test.jpg',
+    onload() {
+      const el = document.createElement('pre')
+      el.textContent = '.'.repeat(0x100) + '\n.'.repeat(0xff)
+      document.body.appendChild(el)
 
-    const imageRatio = image.width / image.height
-    const fontRatio = el.clientWidth / el.clientHeight
-    const ratio = imageRatio / fontRatio
-    el.textContent = ascii.render(image, 100, 100 / ratio)
-  }
+      const fontRatio = el.clientWidth / el.clientHeight
+      const imageRatio = this.width / this.height
+      const ratio = imageRatio / fontRatio
+      el.textContent = renderer.render(this, 100, 100 / ratio)
+    }
+  })
 </script>

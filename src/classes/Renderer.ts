@@ -1,9 +1,9 @@
+import { max, floor } from 'wheels/esm/math'
 import { overwrite } from 'wheels/esm/object'
 import { context2d } from 'wheels/esm/dom'
-import { Setup } from './shaders/Setup'
-import { Pass1 } from './shaders/Pass1'
-import { Pass2 } from './shaders/Pass2'
-import { ASCII } from './ASCII'
+import { chr, monospaced } from '../utils'
+import { Settings, CoreSettings } from './Settings'
+import { LUT } from './LUT'
 
 export type Renderable =
   HTMLImageElement  |
@@ -11,90 +11,56 @@ export type Renderable =
   HTMLVideoElement  |
   ImageBitmap
 
-export class Renderer {
-  private readonly src: any // regl textures
-  private readonly lut: any
+export abstract class Renderer {
+  protected readonly api: CanvasRenderingContext2D
+  protected readonly charMap: Uint16Array
+  protected readonly luts: LUT[]
 
-  private readonly fbo1: any // regl framebufers
-  private readonly fbo2: any
+  readonly settings = new Settings
 
-  private readonly setup: Setup
-  private readonly pass1: Pass1
-  private readonly pass2: Pass2
+  constructor(settings?: Partial<CoreSettings>) {
+    overwrite(this.settings, settings!)
 
-  private readonly context = context2d()
-  private readonly canvas = this.context.canvas
-  private rgba = new Float32Array(1)
-
-  constructor(private readonly ascii: ASCII) {
-    const { regl } = ascii
-
-    this.src = regl.texture()
-    this.lut = regl.texture()
-
-    this.fbo1 = regl.framebuffer({ depthStencil: false, colorType: 'float' })
-    this.fbo2 = regl.framebuffer({ depthStencil: false, colorType: 'float' })
-
-    this.setup = new Setup(regl)
-    this.pass1 = new Pass1(regl)
-    this.pass2 = new Pass2(regl)
+    this.api = context2d()()
+    this.charMap = this.makeCharMap()
+    this.luts = this.makeLUTs()
   }
 
-  private resize(renderable: Renderable, width: number, height: number) {
-    const { context, canvas, ascii: { settings: { quality } } } = this
+  private makeCharMap() {
+    const { alphabet, fontFace } = this.settings
 
-    if (quality === 'low')
-      return renderable
+    const charCodes = [...alphabet]
+      .filter(monospaced(fontFace))
+      .map(chr)
 
-    if (canvas.width !== width || canvas.height !== height) {
-      overwrite(canvas, { width, height })
-      context.imageSmoothingQuality = quality
-    }
-
-    context.drawImage(renderable, 0, 0, width, height)
-
-    return canvas
+    return Uint16Array.from(charCodes)
   }
 
-  update() {
-    const { ascii } = this
+  private makeLUTs() {
+    const { charMap, settings } = this
 
-    this.lut({
-      format: 'alpha',
-      type: 'float',
-      data: ascii.luts
-    })
+    const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings))
+    const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0)
 
-    this.setup.compile(ascii)
-    this.pass1.compile(ascii)
-    this.pass2.compile(ascii)
+    for (const lut of luts)
+      lut.normalize(0, maxʹ)
+
+    return luts
+  }
+
+  protected resize(renderable: Renderable, width: number, height: number) {
+    const { api, settings } = this
+
+    overwrite(api.canvas, { width, height })
+    api.imageSmoothingQuality = settings.quality
+    api.drawImage(renderable, 0, 0, width, height)
+
+    return api
   }
 
   render(renderable: Renderable, width: number, height: number) {
-    const { src, lut, fbo1, fbo2, ascii: { regl, settings } } = this
-    const { brightness, gamma, noise } = settings
-
-    const w = settings.lutWidth  * width
-    const h = settings.lutHeight * height
-
-    const length = width * height << 2
-    if (this.rgba.length !== length)
-      this.rgba = new Float32Array(length)
-
-    src(this.resize(renderable, w, h))
-
-    fbo1.resize(w, h)
-    fbo2.resize(width, height)
-    regl.poll()
-
-    this.setup.command(() => {
-      this.pass1.command({ dst: fbo1, src, brightness, gamma, noise })
-      this.pass2.command({ dst: fbo2, src: fbo1, lut }, () => {
-        regl.draw()
-        regl.read(this.rgba)
-      })
-    })
-
-    return this.rgba
+    return [...this.lines(renderable, floor(width), floor(height))].join('\n')
   }
+
+  abstract lines(renderable: Renderable, width: number, height: number): IterableIterator<string>
 }

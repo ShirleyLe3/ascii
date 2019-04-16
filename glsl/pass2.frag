@@ -1,69 +1,38 @@
-#define TEX(s,size,uv,xy) texture2D(s,(uv)+(xy)/(size))
-
-#define O ${settings.optimized ? 1 : 0}
 #define U ${settings.lutWidth}
 #define V ${settings.lutHeight}
-#define X ${luts[0].length}
-#define Y ${luts.length}
+#define X ${lut.width}
+#define Y ${lut.height}
 
 precision mediump float;
 
 uniform sampler2D uSrc;
-uniform sampler2D uLut;
-uniform vec2 uSrcSize;
-uniform vec2 uLutSize;
-varying vec2 vPosition;
+uniform sampler2D uLUT;
+in vec2 vPosition;
+out vec4 vFragColor;
 
-const vec2 srcOffset = 0.5*(0.5 - vec2(U, V));
-const vec2 lutOffset = vec2(0.5);
+struct Result {
+  int index;
+  float value;
+};
 
 void main() {
-  float bestDelta = float(X);
-  int   bestChar  = 0;
-
-#if O
-
-  float src[X]; // trading memory for speed
+  Result res = Result(0, float(X));
+  ivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;
+  float src[X];
 
   for (int v = 0; v < V; v++)
     for (int u = 0; u < U; u++)
-      src[u + v*U] = TEX(uSrc, uSrcSize, vPosition, srcOffset + vec2(u, v)).r;
+      src[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;
 
   for (int y = 0; y < Y; y++) {
-    float delta = 0.;
+    float value = 0.;
 
     for (int x = 0; x < X; x++)
-      delta += abs(
-        src[x] -
-        TEX(uLut, uLutSize, 0., lutOffset + vec2(x, y)).r
-      );
+      value += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);
 
-    if (delta < bestDelta) {
-      bestDelta = delta;
-      bestChar  = y;
-    }
+    if (res.value > value)
+      res = Result(y, value);
   }
 
-#else
-
-  for (int y = 0; y < Y; y++) {
-    int x = 0;
-    float delta = 0.;
-
-    for (int v = 0; v < V; v++)
-      for (int u = 0; u < U; u++)
-        delta += abs(
-          TEX(uSrc, uSrcSize, vPosition, srcOffset + vec2(u, v)).r -
-          TEX(uLut, uLutSize, 0., lutOffset + vec2(x++, y)).r
-        );
-
-    if (delta < bestDelta) {
-      bestDelta = delta;
-      bestChar  = y;
-    }
-  }
-
-#endif
-
-  gl_FragColor = vec4(bestChar, 0, 0, 0);
+  vFragColor = vec4(res.index, 0, 0, 0);
 }
