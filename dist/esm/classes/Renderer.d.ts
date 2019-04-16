@@ -1,19 +1,15 @@
-import { ASCII } from './ASCII';
+import { Settings, CoreSettings } from './Settings';
+import { LUT } from './LUT';
 export declare type Renderable = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
-export declare class Renderer {
-    private readonly ascii;
-    private readonly src;
-    private readonly lut;
-    private readonly fbo1;
-    private readonly fbo2;
-    private readonly setup;
-    private readonly pass1;
-    private readonly pass2;
-    private readonly context;
-    private readonly canvas;
-    private rgba;
-    constructor(ascii: ASCII);
-    private resize;
-    update(): void;
-    render(renderable: Renderable, width: number, height: number): Float32Array;
+export declare abstract class Renderer {
+    protected readonly api: CanvasRenderingContext2D;
+    protected readonly charMap: Uint16Array;
+    protected readonly luts: LUT[];
+    readonly settings: Settings;
+    constructor(settings?: Partial<CoreSettings>);
+    private makeCharMap;
+    private makeLUTs;
+    protected resize(renderable: Renderable, width: number, height: number): CanvasRenderingContext2D;
+    render(renderable: Renderable, width: number, height: number): string;
+    abstract lines(renderable: Renderable, width: number, height: number): IterableIterator<string>;
 }

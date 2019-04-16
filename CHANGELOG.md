@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.8.0"></a>
+# [0.8.0](https://github.com/reinventing-wheels/ascii/compare/v0.7.0...v0.8.0) (2019-04-16)
+
+
+### Features
+
+* add `fontGamma` ([55da05c](https://github.com/reinventing-wheels/ascii/commit/55da05c))
+* webgl2 port, software renderer, regl is no longer a dependency ([d260055](https://github.com/reinventing-wheels/ascii/commit/d260055))
+
+
+
 <a name="0.7.0"></a>
 # [0.7.0](https://github.com/reinventing-wheels/ascii/compare/v0.6.0...v0.7.0) (2018-10-19)
 

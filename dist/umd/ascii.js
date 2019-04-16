@@ -1,165 +1,50 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global.ASCII = factory());
-}(this, (function () { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    (global = global || self, factory(global.ASCII = {}));
+}(this, function (exports) { 'use strict';
 
-    const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+    /** Extracts an iterator from an iterable. */
 
-    const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
-
-    const range = function* (min, max, step = 1) {
-        for (let number = min; number < max; number += step)
+    /** Yields a sequence of monotonically increasing numbers. */
+    function* range(start = 0, stop = Infinity, step = 1) {
+        for (let number = start; number < stop; number += step)
             yield number;
-    };
+    }
 
     const extend = Object.assign;
     const overwrite = extend;
 
-    const element = name => options => overwrite(document.createElement(name), options);
-    const context2d = (options) => element('canvas')(options).getContext('2d');
+    const context2d = (...attributes) => (...settings) => overwrite(element('canvas')(...attributes).getContext('2d'), ...settings);
+    const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
 
-    const renderer = (tmpl, arg = '$') => new Function(arg, 'return `' + tmpl + '`');
-    const render = (tmpl, obj) => renderer(tmpl, '{' + Object.keys(obj) + '}')(obj);
+    const str = String.fromCharCode;
+    const chr = (str) => str.charCodeAt(0);
+    const monospaced = (font) => {
+        const api = context2d()({ font: `1em ${font}` });
+        const ref = api.measureText(' ');
+        return (char) => api.measureText(char).width === ref.width;
+    };
 
-    class Shader {
-        constructor(regl, binds) {
-            this.regl = regl;
-            this.binds = binds;
-        }
-        compile(arg) {
-            const { regl, binds } = this;
-            const { vert, frag } = binds;
-            this.command = regl({
-                ...binds,
-                ...vert && { vert: render(vert, arg) },
-                ...frag && { frag: render(frag, arg) }
-            });
-        }
-    }
+    const standard = str(...range(0x20, 0x5f), ...range(0x60, 0x7f));
+    const extended = standard + str(...range(0xa1, 0xa8), ...range(0xae, 0xb2), 0xa9, 0xab, 0xac, 0xb4, 0xb5, 0xb7, 0xbb, 0xbf, 0xd7, 0xf7, ...range(0x2018, 0x2023), 0x2039, 0x203a, 0x2219, 0x221a, 0x221e);
 
-    const vert = "attribute vec2 aPosition;varying vec2 vPosition;void main(){vPosition=0.5+(0.5*aPosition);gl_Position=vec4(aPosition,0.,1.);}";
-    class Setup extends Shader {
-        constructor(regl) {
-            super(regl, {
-                vert,
-                depth: {
-                    enable: false
-                },
-                attributes: {
-                    aPosition: [1, 1, -1, 1, 1, -1, -1, -1]
-                },
-                primitive: 'triangle strip',
-                count: 4
-            });
-        }
-    }
+    var alphabets = ({
+        standard: standard,
+        extended: extended
+    });
 
-    const frag = "#define MAP3(f,v) vec3(f(v.x),f(v.y),f(v.z))\n#define RGB(x) mix(x/12.92,pow((x+.055)/1.055,2.4),step(.04045,x))\n#define LUM(x) dot(x,vec3(.212655,.715158,.072187))\nprecision mediump float;uniform sampler2D uSrc;uniform float uBrightness;uniform float uGamma;uniform float uNoise;uniform float uTime;varying vec2 vPosition;float hash13(vec3 p3){p3=fract(p3*0.1031);p3+=dot(p3,p3.yzx+19.19);return fract((p3.x+p3.y)*p3.z);}void main(){vec3 srgb=texture2D(uSrc,vPosition).rgb;float signal=uBrightness*pow(LUM(MAP3(RGB,srgb)),uGamma);float noise=uNoise*(hash13(vec3(gl_FragCoord.xy,uTime))-0.5);gl_FragColor=vec4(signal+noise,0.,0.,0.);}";
-    class Pass1 extends Shader {
-        constructor(regl) {
-            super(regl, {
-                frag,
-                framebuffer: regl.prop('dst'),
-                uniforms: {
-                    uSrc: regl.prop('src'),
-                    uBrightness: regl.prop('brightness'),
-                    uGamma: regl.prop('gamma'),
-                    uNoise: regl.prop('noise'),
-                    uTime: regl.context('time')
-                }
-            });
-        }
-    }
+    const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
 
-    const frag$1 = "#define TEX(s,size,uv,xy) texture2D(s,(uv)+(xy)/(size))\n#define O ${settings.optimized ? 1 : 0}\n#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${luts[0].length}\n#define Y ${luts.length}\nprecision mediump float;uniform sampler2D uSrc;uniform sampler2D uLut;uniform vec2 uSrcSize;uniform vec2 uLutSize;varying vec2 vPosition;const vec2 srcOffset=0.5*(0.5-vec2(U,V));const vec2 lutOffset=vec2(0.5);void main(){float bestDelta=float(X);int bestChar=0;\n#if O\nfloat src[X];for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[u+(v*U)]=TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r;for(int y=0;y<Y;y++){float delta=0.;for(int x=0;x<X;x++)delta+=abs(src[x]-TEX(uLut,uLutSize,0.,lutOffset+vec2(x,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#else\nfor(int y=0;y<Y;y++){int x=0;float delta=0.;for(int v=0;v<V;v++)for(int u=0;u<U;u++)delta+=abs(TEX(uSrc,uSrcSize,vPosition,srcOffset+vec2(u,v)).r-TEX(uLut,uLutSize,0.,lutOffset+vec2(x++,y)).r);if(delta<bestDelta){bestDelta=delta;bestChar=y;}}\n#endif\ngl_FragColor=vec4(bestChar,0,0,0);}";
-    class Pass2 extends Shader {
-        constructor(regl) {
-            super(regl, {
-                frag: frag$1,
-                framebuffer: regl.prop('dst'),
-                context: {
-                    src: regl.prop('src'),
-                    lut: regl.prop('lut')
-                },
-                uniforms: {
-                    uSrc: regl.context('src'),
-                    uLut: regl.context('lut'),
-                    uSrcSize: ({ src }) => [src.width, src.height],
-                    uLutSize: ({ lut }) => [lut.width, lut.height]
-                }
-            });
-        }
-    }
-
-    class Renderer {
-        constructor(ascii) {
-            this.ascii = ascii;
-            this.context = context2d();
-            this.canvas = this.context.canvas;
-            this.rgba = new Float32Array(1);
-            const { regl } = ascii;
-            this.src = regl.texture();
-            this.lut = regl.texture();
-            this.fbo1 = regl.framebuffer({ depthStencil: false, colorType: 'float' });
-            this.fbo2 = regl.framebuffer({ depthStencil: false, colorType: 'float' });
-            this.setup = new Setup(regl);
-            this.pass1 = new Pass1(regl);
-            this.pass2 = new Pass2(regl);
-        }
-        resize(renderable, width, height) {
-            const { context, canvas, ascii: { settings: { quality } } } = this;
-            if (quality === 'low')
-                return renderable;
-            if (canvas.width !== width || canvas.height !== height) {
-                overwrite(canvas, { width, height });
-                context.imageSmoothingQuality = quality;
-            }
-            context.drawImage(renderable, 0, 0, width, height);
-            return canvas;
-        }
-        update() {
-            const { ascii } = this;
-            this.lut({
-                format: 'alpha',
-                type: 'float',
-                data: ascii.luts
-            });
-            this.setup.compile(ascii);
-            this.pass1.compile(ascii);
-            this.pass2.compile(ascii);
-        }
-        render(renderable, width, height) {
-            const { src, lut, fbo1, fbo2, ascii: { regl, settings } } = this;
-            const { brightness, gamma, noise } = settings;
-            const w = settings.lutWidth * width;
-            const h = settings.lutHeight * height;
-            const length = width * height << 2;
-            if (this.rgba.length !== length)
-                this.rgba = new Float32Array(length);
-            src(this.resize(renderable, w, h));
-            fbo1.resize(w, h);
-            fbo2.resize(width, height);
-            regl.poll();
-            this.setup.command(() => {
-                this.pass1.command({ dst: fbo1, src, brightness, gamma, noise });
-                this.pass2.command({ dst: fbo2, src: fbo1, lut }, () => {
-                    regl.draw();
-                    regl.read(this.rgba);
-                });
-            });
-            return this.rgba;
-        }
-    }
-
-    class ASCIICoreSettings {
+    class CoreSettings {
         constructor() {
-            this.optimized = true;
+            this.alphabet = standard;
             this.quality = 'high';
             this.fontFace = 'monospace';
             this.fontWidth = 40;
             this.fontHeight = 70;
             this.fontBlur = 6;
+            this.fontGamma = 1;
             this.lutWidth = 5;
             this.lutHeight = 7;
             this.lutPadding = 1;
@@ -168,8 +53,7 @@
             this.noise = 0;
         }
     }
-
-    class ASCIISettings extends ASCIICoreSettings {
+    class Settings extends CoreSettings {
         get lutWidthPadded() { return this.lutPadding * 2 + this.lutWidth; }
         get lutHeightPadded() { return this.lutPadding * 2 + this.lutHeight; }
         get lutWidthRatio() { return this.lutWidthPadded / this.lutWidth; }
@@ -178,21 +62,22 @@
         get fontHeightPadded() { return round(this.lutHeightRatio * this.fontHeight); }
     }
 
+    const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+
     const msb = (n) => 1 << max(0, 31 - clz32(n));
     const fallback = (src, width, height) => {
         let w = msb(src.canvas.width / width - 1) * width;
         let h = msb(src.canvas.height / height - 1) * height;
-        const tmp = context2d({ width: w, height: h });
+        const tmp = context2d({ width: w, height: h })();
         tmp.drawImage(src.canvas, 0, 0, w, h);
         for (let x, y; (x = w > width) || (y = h > height);)
             tmp.drawImage(tmp.canvas, 0, 0, w, h, 0, 0, w >>= x, h >>= y);
-        const dst = context2d({ width, height });
+        const dst = context2d({ width, height })();
         dst.drawImage(tmp.canvas, 0, 0);
         return dst;
     };
     const native = (src, width, height) => {
-        const dst = context2d({ width, height });
-        dst.imageSmoothingQuality = 'medium';
+        const dst = context2d({ width, height })({ imageSmoothingQuality: 'medium' });
         dst.drawImage(src.canvas, 0, 0, width, height);
         return dst;
     };
@@ -200,92 +85,272 @@
         ? native
         : fallback;
 
-    const charCodes = function* () {
-        yield* range(0x20, 0x5f);
-        yield* range(0x60, 0x7f);
-        yield* range(0xa1, 0xa8);
-        yield* range(0xae, 0xb2);
-        yield* [0xa9, 0xab, 0xac, 0xb4, 0xb5, 0xb7, 0xbb, 0xbf, 0xd7, 0xf7];
-        yield* range(0x2018, 0x2023);
-        yield* [0x2039, 0x203a, 0x2219, 0x221a, 0x221e];
-    };
-    class ASCII {
-        constructor(REGL, settings) {
-            this.settings = new ASCIISettings;
-            this.charMap = new Uint16Array(this.filter(charCodes()));
-            const canvas = element('canvas')();
-            const extensions = ['OES_texture_float'];
-            this.regl = REGL({ canvas, extensions });
-            this.renderer = new Renderer(this);
-            this.update(settings);
+    class LUT extends Float32Array {
+        constructor(width, height) {
+            super(width * height);
+            this.width = width;
+            this.height = height;
         }
-        makeGlyph(charCode) {
-            const { fontFace, fontBlur, fontWidth, fontHeight, fontWidthPadded, fontHeightPadded } = this.settings;
-            const glyph = context2d({ width: fontWidthPadded, height: fontHeightPadded });
-            const char = String.fromCharCode(charCode);
-            glyph.fillStyle = '#00f';
-            glyph.fillRect(0, 0, fontWidthPadded, fontHeightPadded);
-            glyph.fillStyle = '#000';
-            glyph.translate(fontWidthPadded / 2, fontHeightPadded / 2);
-            glyph.fillRect(-fontWidth / 2, -fontHeight / 2, fontWidth, fontHeight);
-            glyph.fillStyle = '#fff';
-            glyph.textAlign = 'center';
-            glyph.font = `${fontHeight}px ${fontFace}`;
-            glyph.translate(0, fontHeight / 4);
+        static fromCharCode(charCode, settings) {
+            const { fontFace, fontBlur, fontGamma } = settings;
+            const { fontWidth, fontHeight, fontWidthPadded, fontHeightPadded } = settings;
+            const { lutWidth, lutHeight, lutWidthPadded, lutHeightPadded, lutPadding } = settings;
+            const api = context2d({ width: fontWidthPadded, height: fontHeightPadded })();
+            const char = str(charCode);
+            api.fillStyle = "#00f";
+            api.fillRect(0, 0, fontWidthPadded, fontHeightPadded);
+            api.translate(fontWidthPadded / 2, fontHeightPadded / 2);
+            api.fillStyle = "#000";
+            api.fillRect(-fontWidth / 2, -fontHeight / 2, fontWidth, fontHeight);
+            api.translate(0, fontHeight / 4);
+            api.fillStyle = "#fff";
+            api.textAlign = 'center';
+            api.font = `${fontHeight}px ${fontFace}`;
             for (let i = 0; i < fontBlur;) {
-                glyph.filter = `blur(${1 << i}px)`;
-                glyph.globalAlpha = ++i / fontBlur;
-                glyph.fillText(char, 0, 0);
+                api.filter = `blur(${1 << i}px)`;
+                api.globalAlpha = (++i / fontBlur) ** fontGamma;
+                api.fillText(char, 0, 0);
             }
-            return glyph;
+            const scaled = downscale(api, lutWidthPadded, lutHeightPadded);
+            const rgba = scaled.getImageData(lutPadding, lutPadding, lutWidth, lutHeight).data;
+            const lut = new LUT(lutWidth, lutHeight);
+            for (let i = 0; i < lut.length; i++)
+                lut[i] = rgb(rgba[i << 2] / 0xff);
+            return lut;
         }
-        makeLut(charCode) {
-            const { lutWidth, lutHeight, lutPadding, lutWidthPadded, lutHeightPadded } = this.settings;
-            const scaled = downscale(this.makeGlyph(charCode), lutWidthPadded, lutHeightPadded);
-            const bytes = scaled.getImageData(lutPadding, lutPadding, lutWidth, lutHeight).data;
-            const floats = new Float32Array(bytes.length >> 2);
-            for (let i = 0; i < floats.length; i++)
-                floats[i] = bytes[i << 2] / 0xff;
-            return floats;
+        static combine(...luts) {
+            const width = luts[0].length;
+            const height = luts.length;
+            const lut = new LUT(width, height);
+            for (let i = 0; i < height; i++)
+                lut.set(luts[i], i * width);
+            return lut;
         }
-        makeLuts() {
-            const luts = Array.from(this.charMap, cc => this.makeLut(cc));
-            const brightest = luts.reduce((m, lut) => max(m, ...lut), 0);
-            for (const lut of luts)
-                for (let i = 0; i < lut.length; i++)
-                    lut[i] = rgb(lut[i] / brightest);
-            return luts;
+        normalize(min, max) {
+            for (let i = 0; i < this.length; i++)
+                this[i] = (this[i] - min) / (max - min);
         }
-        *filter(charCodes) {
-            const api = context2d();
-            api.font = `1em ${this.settings.fontFace}`;
-            const ref = api.measureText(' ');
-            for (const cc of charCodes)
-                if (api.measureText(String.fromCharCode(cc)).width === ref.width)
-                    yield cc;
-        }
-        *map(rgba, width, height) {
-            const { charMap } = this;
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++)
-                    yield charMap[rgba[x + y * width << 2]];
-                yield 0xa;
-            }
-        }
-        update(settings) {
-            overwrite(this.settings, settings);
-            this.luts = this.makeLuts();
-            this.renderer.update();
-        }
-        render(renderable, width, height) {
-            const widthʹ = floor(width), heightʹ = floor(height);
-            const rgba = this.renderer.render(renderable, widthʹ, heightʹ);
-            const chars = String.fromCharCode(...this.map(rgba, widthʹ, heightʹ));
-            return chars;
+        compare(other) {
+            let acc = 0;
+            for (let i = this.length; i--;)
+                acc += abs(this[i] - other[i]);
+            return acc;
         }
     }
 
-    return ASCII;
+    class Renderer {
+        constructor(settings) {
+            this.settings = new Settings;
+            overwrite(this.settings, settings);
+            this.api = context2d()();
+            this.charMap = this.makeCharMap();
+            this.luts = this.makeLUTs();
+        }
+        makeCharMap() {
+            const { alphabet, fontFace } = this.settings;
+            const charCodes = [...alphabet]
+                .filter(monospaced(fontFace))
+                .map(chr);
+            return Uint16Array.from(charCodes);
+        }
+        makeLUTs() {
+            const { charMap, settings } = this;
+            const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings));
+            const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0);
+            for (const lut of luts)
+                lut.normalize(0, maxʹ);
+            return luts;
+        }
+        resize(renderable, width, height) {
+            const { api, settings } = this;
+            overwrite(api.canvas, { width, height });
+            api.imageSmoothingQuality = settings.quality;
+            api.drawImage(renderable, 0, 0, width, height);
+            return api;
+        }
+        render(renderable, width, height) {
+            return [...this.lines(renderable, floor(width), floor(height))].join('\n');
+        }
+    }
 
-})));
+    const TRIANGLE_STRIP = 0x0005, ARRAY_BUFFER = 0x8892, STATIC_DRAW = 0x88E4, UNSIGNED_BYTE = 0x1401, FLOAT = 0x1406, RGBA = 0x1908, FRAGMENT_SHADER = 0x8B30, VERTEX_SHADER = 0x8B31, LINK_STATUS = 0x8B82, NEAREST = 0x2600, TEXTURE_MAG_FILTER = 0x2800, TEXTURE_MIN_FILTER = 0x2801, TEXTURE_2D = 0x0DE1, TEXTURE0 = 0x84C0, COMPILE_STATUS = 0x8B81, FRAMEBUFFER = 0x8D40, COLOR_ATTACHMENT0 = 0x8CE0;
+
+    const RED = 0x1903, R32F = 0x822E;
+
+    const api = (attributes, ...extensions) => {
+        const canvas = element('canvas')();
+        const gl = canvas.getContext('webgl2', attributes);
+        if (!gl)
+            throw new Error('WebGL2 is not available');
+        for (const ext of extensions)
+            if (!gl.getExtension(ext))
+                throw new Error(`"${ext}" extension is not available`);
+        return gl;
+    };
+    const shader = (gl, type, source) => {
+        const sourceʹ = '#version 300 es\n' + source;
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, sourceʹ);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, COMPILE_STATUS))
+            throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${number(sourceʹ)}\n`);
+        return shader;
+    };
+    const program = (gl, vert, frag) => {
+        const program = gl.createProgram();
+        gl.attachShader(program, vert);
+        gl.attachShader(program, frag);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, LINK_STATUS))
+            throw new Error(`Program error: ${gl.getProgramInfoLog(program)}`);
+        return program;
+    };
+    const buffer = (gl, target = ARRAY_BUFFER) => {
+        const object = gl.createBuffer();
+        return context(gl, object, object => gl.bindBuffer(target, object));
+    };
+    const texture = (gl, target = TEXTURE_2D) => {
+        const object = gl.createTexture();
+        return context(gl, object, object => gl.bindTexture(target, object));
+    };
+    const framebuffer = (gl, target = FRAMEBUFFER) => {
+        const object = gl.createFramebuffer();
+        return context(gl, object, object => gl.bindFramebuffer(target, object));
+    };
+    const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
+    const pad = (size, value) => '0'.repeat(max(0, size - value.length)) + value;
+    const number = (source, n = 1) => source.replace(/^.*/gm, line => pad(5, `${n++}: `) + line);
+    const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
+
+    const render = (tmpl, obj, arg = '$') => new Function(arg, '{' + Object.keys(obj) + '}', 'return `' + tmpl + '`')(obj, obj);
+
+    const V_BASE = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
+    const F_PASS1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
+    const F_PASS2 = "#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${lut.width}\n#define Y ${lut.height}\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(res.index, 0, 0, 0);\n}\n";
+    const filterNearest = gl => {
+        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST);
+        gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST);
+    };
+    const quadGeometry = (index) => gl => {
+        const quad = Float32Array.of(1, 1, -1, 1, 1, -1, -1, -1);
+        gl.bufferData(ARRAY_BUFFER, quad, STATIC_DRAW);
+        gl.vertexAttribPointer(index, 2, FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(index);
+    };
+    class HardwareRenderer extends Renderer {
+        constructor(settings) {
+            super(settings);
+            this.gl = api({}, 'EXT_color_buffer_float');
+            this.fbo = framebuffer(this.gl)();
+            this.txLUT = texture(this.gl)(filterNearest);
+            this.txOdd = texture(this.gl)(filterNearest);
+            this.txEven = texture(this.gl)(filterNearest);
+            this.lut = LUT.combine(...this.luts);
+            this.indices = new Float32Array();
+            const vBase = shader(this.gl, VERTEX_SHADER, render(V_BASE, this));
+            const fPass1 = shader(this.gl, FRAGMENT_SHADER, render(F_PASS1, this));
+            const fPass2 = shader(this.gl, FRAGMENT_SHADER, render(F_PASS2, this));
+            this.pass1 = program(this.gl, vBase, fPass1);
+            this.pass2 = program(this.gl, vBase, fPass2);
+            buffer(this.gl)(quadGeometry(0));
+        }
+        *lines(renderable, width, height) {
+            const { settings, charMap, lut, gl, pass1, pass2, fbo, txLUT, txOdd, txEven } = this;
+            const srcWidth = settings.lutWidth * width;
+            const srcHeight = settings.lutHeight * height;
+            const src = this.resize(renderable, srcWidth, srcHeight).canvas;
+            const uPass1 = uniforms(gl, pass1);
+            const uPass2 = uniforms(gl, pass2);
+            if (this.indices.length !== width * height)
+                this.indices = new Float32Array(width * height);
+            gl.bindFramebuffer(FRAMEBUFFER, fbo);
+            gl.activeTexture(TEXTURE0 + 2);
+            gl.bindTexture(TEXTURE_2D, txLUT);
+            gl.texImage2D(TEXTURE_2D, 0, R32F, lut.width, lut.height, 0, RED, FLOAT, lut);
+            gl.activeTexture(TEXTURE0 + 1);
+            gl.bindTexture(TEXTURE_2D, txOdd);
+            gl.texImage2D(TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, src);
+            gl.activeTexture(TEXTURE0 + 0);
+            gl.bindTexture(TEXTURE_2D, txEven);
+            gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
+            gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, txEven, 0);
+            gl.useProgram(pass1);
+            gl.uniform1i(uPass1('uSrc'), 1);
+            gl.uniform1f(uPass1('uBrightness'), settings.brightness);
+            gl.uniform1f(uPass1('uGamma'), settings.gamma);
+            gl.uniform1f(uPass1('uNoise'), settings.noise);
+            gl.uniform1f(uPass1('uRandom'), Math.random());
+            gl.viewport(0, 0, srcWidth, srcHeight);
+            gl.drawArrays(TRIANGLE_STRIP, 0, 4);
+            gl.activeTexture(TEXTURE0 + 1);
+            gl.bindTexture(TEXTURE_2D, txEven);
+            gl.activeTexture(TEXTURE0 + 0);
+            gl.bindTexture(TEXTURE_2D, txOdd);
+            gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
+            gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, txOdd, 0);
+            gl.useProgram(pass2);
+            gl.uniform1i(uPass2('uSrc'), 1);
+            gl.uniform1i(uPass2('uLUT'), 2);
+            gl.viewport(0, 0, width, height);
+            gl.drawArrays(TRIANGLE_STRIP, 0, 4);
+            gl.readPixels(0, 0, width, height, RED, FLOAT, this.indices);
+            gl.bindFramebuffer(FRAMEBUFFER, null);
+            for (let i = 0; i < this.indices.length;) {
+                const slice = this.indices.subarray(i, i += width);
+                const codes = Array.from(slice, i => charMap[i]);
+                yield str(...codes);
+            }
+        }
+    }
+
+    class SoftwareRenderer extends Renderer {
+        *lines(renderable, width, height) {
+            const { settings, charMap, luts } = this;
+            const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
+            const srcWidth = lutWidth * width;
+            const srcHeight = lutHeight * height;
+            const src = this.resize(renderable, srcWidth, srcHeight);
+            const rgba = src.getImageData(0, 0, srcWidth, srcHeight).data;
+            const buffer = new Float32Array(lutWidth * lutHeight);
+            for (let y = 0; y < srcHeight; y += lutHeight) {
+                const codes = [];
+                for (let x = 0; x < srcWidth; x += lutWidth) {
+                    let index = 0;
+                    let value = Infinity;
+                    for (let v = 0; v < lutHeight; v++) {
+                        for (let u = 0; u < lutWidth; u++) {
+                            let i = (x + u) + (y + v) * srcWidth << 2;
+                            const r = 0.2126 * rgb(rgba[i++] / 0xff);
+                            const g = 0.7152 * rgb(rgba[i++] / 0xff);
+                            const b = 0.0722 * rgb(rgba[i++] / 0xff);
+                            const s = brightness * (r + g + b) ** gamma;
+                            const n = noise * (random() - 0.5);
+                            buffer[index++] = s + n;
+                        }
+                    }
+                    for (let i = luts.length; i--;) {
+                        const delta = luts[i].compare(buffer);
+                        if (delta < value) {
+                            value = delta;
+                            index = i;
+                        }
+                    }
+                    codes.push(charMap[index]);
+                }
+                yield str(...codes);
+            }
+        }
+    }
+
+    exports.CoreSettings = CoreSettings;
+    exports.HardwareRenderer = HardwareRenderer;
+    exports.LUT = LUT;
+    exports.Renderer = Renderer;
+    exports.Settings = Settings;
+    exports.SoftwareRenderer = SoftwareRenderer;
+    exports.alphabets = alphabets;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+}));
 //# sourceMappingURL=ascii.js.map
