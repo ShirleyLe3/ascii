@@ -13,8 +13,9 @@ const enum Color {
 
 export class LUT extends Float32Array {
   static fromCharCode(charCode: number, settings: Settings) {
-    const { fontFace, fontBlur, fontWidth, fontHeight, fontWidthPadded, fontHeightPadded } = settings
-    const { lutWidth, lutHeight, lutPadding, lutWidthPadded, lutHeightPadded } = settings
+    const { fontFace, fontBlur, fontGamma } = settings
+    const { fontWidth, fontHeight, fontWidthPadded, fontHeightPadded } = settings
+    const { lutWidth, lutHeight, lutWidthPadded, lutHeightPadded, lutPadding } = settings
 
     const api = context2d({ width: fontWidthPadded, height: fontHeightPadded })()
     const char = str(charCode)
@@ -33,7 +34,7 @@ export class LUT extends Float32Array {
 
     for (let i = 0; i < fontBlur;) {
       api.filter = `blur(${1 << i}px)`
-      api.globalAlpha = ++i / fontBlur
+      api.globalAlpha = (++i / fontBlur)**fontGamma
       api.fillText(char, 0, 0)
     }
 

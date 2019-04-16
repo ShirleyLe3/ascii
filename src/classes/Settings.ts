@@ -8,6 +8,7 @@ export class CoreSettings {
   fontWidth  = 40
   fontHeight = 70
   fontBlur   = 6
+  fontGamma  = 1
   lutWidth   = 5
   lutHeight  = 7
   lutPadding = 1
