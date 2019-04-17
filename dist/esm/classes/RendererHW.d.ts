@@ -1,5 +1,5 @@
 import { Renderer, Renderable } from './Renderer';
-import { CoreSettings } from './Settings';
+import { Settings } from './Settings';
 export declare class HardwareRenderer extends Renderer {
     private readonly pass1;
     private readonly pass2;
@@ -10,6 +10,6 @@ export declare class HardwareRenderer extends Renderer {
     private readonly txEven;
     private readonly lut;
     private indices;
-    constructor(settings?: Partial<CoreSettings>);
+    constructor(settings?: Partial<Settings>);
     lines(renderable: Renderable, width: number, height: number): IterableIterator<string>;
 }

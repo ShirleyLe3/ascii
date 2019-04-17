@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.9.0"></a>
+# [0.9.0](https://github.com/reinventing-wheels/ascii/compare/v0.8.0...v0.9.0) (2019-04-17)
+
+
+### Features
+
+* remove `CoreSettings` ([53fbf42](https://github.com/reinventing-wheels/ascii/commit/53fbf42))
+* use fibonacci sequence for blurring ([2fce900](https://github.com/reinventing-wheels/ascii/commit/2fce900))
+
+
+
 <a name="0.8.0"></a>
 # [0.8.0](https://github.com/reinventing-wheels/ascii/compare/v0.7.0...v0.8.0) (2019-04-16)
 

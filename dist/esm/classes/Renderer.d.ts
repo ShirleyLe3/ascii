@@ -1,4 +1,4 @@
-import { Settings, CoreSettings } from './Settings';
+import { Settings } from './Settings';
 import { LUT } from './LUT';
 export declare type Renderable = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
 export declare abstract class Renderer {
@@ -6,7 +6,7 @@ export declare abstract class Renderer {
     protected readonly charMap: Uint16Array;
     protected readonly luts: LUT[];
     readonly settings: Settings;
-    constructor(settings?: Partial<CoreSettings>);
+    constructor(settings?: Partial<Settings>);
     private makeCharMap;
     private makeLUTs;
     protected resize(renderable: Renderable, width: number, height: number): CanvasRenderingContext2D;

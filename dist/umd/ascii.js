@@ -34,33 +34,25 @@
         extended: extended
     });
 
-    const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
-
-    class CoreSettings {
+    class Settings {
         constructor() {
             this.alphabet = standard;
             this.quality = 'high';
             this.fontFace = 'monospace';
             this.fontWidth = 40;
             this.fontHeight = 70;
-            this.fontBlur = 6;
+            this.fontBlur = 9;
             this.fontGamma = 1;
             this.lutWidth = 5;
             this.lutHeight = 7;
             this.lutPadding = 1;
-            this.brightness = 1;
-            this.gamma = 1;
-            this.noise = 0;
+            this.brightness = 1.0;
+            this.gamma = 1.0;
+            this.noise = 0.0;
         }
     }
-    class Settings extends CoreSettings {
-        get lutWidthPadded() { return this.lutPadding * 2 + this.lutWidth; }
-        get lutHeightPadded() { return this.lutPadding * 2 + this.lutHeight; }
-        get lutWidthRatio() { return this.lutWidthPadded / this.lutWidth; }
-        get lutHeightRatio() { return this.lutHeightPadded / this.lutHeight; }
-        get fontWidthPadded() { return round(this.lutWidthRatio * this.fontWidth); }
-        get fontHeightPadded() { return round(this.lutHeightRatio * this.fontHeight); }
-    }
+
+    const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
 
     const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
 
@@ -92,26 +84,29 @@
             this.height = height;
         }
         static fromCharCode(charCode, settings) {
-            const { fontFace, fontBlur, fontGamma } = settings;
-            const { fontWidth, fontHeight, fontWidthPadded, fontHeightPadded } = settings;
-            const { lutWidth, lutHeight, lutWidthPadded, lutHeightPadded, lutPadding } = settings;
-            const api = context2d({ width: fontWidthPadded, height: fontHeightPadded })();
+            const { fontWidth, fontHeight, fontFace, fontBlur, fontGamma } = settings;
+            const { lutWidth, lutHeight, lutPadding } = settings;
+            const lutWidthʹ = lutPadding * 2 + lutWidth;
+            const lutHeightʹ = lutPadding * 2 + lutHeight;
+            const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
+            const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
+            const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })();
             const char = str(charCode);
             api.fillStyle = "#00f";
-            api.fillRect(0, 0, fontWidthPadded, fontHeightPadded);
-            api.translate(fontWidthPadded / 2, fontHeightPadded / 2);
+            api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);
+            api.translate(fontWidthʹ / 2, fontHeightʹ / 2);
             api.fillStyle = "#000";
             api.fillRect(-fontWidth / 2, -fontHeight / 2, fontWidth, fontHeight);
             api.translate(0, fontHeight / 4);
             api.fillStyle = "#fff";
             api.textAlign = 'center';
             api.font = `${fontHeight}px ${fontFace}`;
-            for (let i = 0; i < fontBlur;) {
-                api.filter = `blur(${1 << i}px)`;
+            for (let i = 0, m = 1, n = 1; i < fontBlur; [m, n] = [n, n + m]) {
+                api.filter = `blur(${n}px)`;
                 api.globalAlpha = (++i / fontBlur) ** fontGamma;
                 api.fillText(char, 0, 0);
             }
-            const scaled = downscale(api, lutWidthPadded, lutHeightPadded);
+            const scaled = downscale(api, lutWidthʹ, lutHeightʹ);
             const rgba = scaled.getImageData(lutPadding, lutPadding, lutWidth, lutHeight).data;
             const lut = new LUT(lutWidth, lutHeight);
             for (let i = 0; i < lut.length; i++)
@@ -342,7 +337,6 @@
         }
     }
 
-    exports.CoreSettings = CoreSettings;
     exports.HardwareRenderer = HardwareRenderer;
     exports.LUT = LUT;
     exports.Renderer = Renderer;

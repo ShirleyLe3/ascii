@@ -1,4 +1,4 @@
-export declare class CoreSettings {
+export declare class Settings {
     alphabet: string;
     quality: ImageSmoothingQuality;
     fontFace: string;
@@ -12,12 +12,4 @@ export declare class CoreSettings {
     brightness: number;
     gamma: number;
     noise: number;
-}
-export declare class Settings extends CoreSettings {
-    readonly lutWidthPadded: number;
-    readonly lutHeightPadded: number;
-    readonly lutWidthRatio: number;
-    readonly lutHeightRatio: number;
-    readonly fontWidthPadded: number;
-    readonly fontHeightPadded: number;
 }
