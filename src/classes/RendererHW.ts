@@ -90,7 +90,7 @@ export class HardwareRenderer extends Renderer {
     gl.viewport(0, 0, srcWidth, srcHeight)
     gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
-    // 2st pass
+    // 2nd pass
     gl.activeTexture(gle.TEXTURE0 + Texture.src)
     gl.bindTexture(gle.TEXTURE_2D, txEven)
 
