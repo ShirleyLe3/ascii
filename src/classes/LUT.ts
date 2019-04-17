@@ -37,8 +37,8 @@ export class LUT extends Float32Array {
     api.textAlign = 'center'
     api.font = `${fontHeight}px ${fontFace}`
 
-    for (let i = 0; i < fontBlur;) {
-      api.filter = `blur(${1 << i}px)`
+    for (let i = 0, m = 1, n = 1; i < fontBlur; [m, n] = [n, n + m]) {
+      api.filter = `blur(${n}px)`
       api.globalAlpha = (++i / fontBlur)**fontGamma
       api.fillText(char, 0, 0)
     }

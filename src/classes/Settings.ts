@@ -7,7 +7,7 @@ export class Settings {
   fontFace   = 'monospace'
   fontWidth  = 40
   fontHeight = 70
-  fontBlur   = 6
+  fontBlur   = 9
   fontGamma  = 1
 
   lutWidth   = 5
