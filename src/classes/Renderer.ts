@@ -2,7 +2,7 @@ import { max, floor } from 'wheels/esm/math'
 import { overwrite } from 'wheels/esm/object'
 import { context2d } from 'wheels/esm/dom'
 import { chr, monospaced } from '../utils'
-import { Settings, CoreSettings } from './Settings'
+import { Settings } from './Settings'
 import { LUT } from './LUT'
 
 export type Renderable =
@@ -18,7 +18,7 @@ export abstract class Renderer {
 
   readonly settings = new Settings
 
-  constructor(settings?: Partial<CoreSettings>) {
+  constructor(settings?: Partial<Settings>) {
     overwrite(this.settings, settings!)
 
     this.api = context2d()()

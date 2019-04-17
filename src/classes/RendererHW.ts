@@ -3,7 +3,7 @@ import * as glu from '../gl/utils'
 import { render } from 'wheels/esm/text/template'
 import { str } from '../utils'
 import { Renderer, Renderable } from './Renderer'
-import { CoreSettings } from './Settings'
+import { Settings } from './Settings'
 import { LUT } from './LUT'
 
 import V_BASE  from 'glsl/base.vert'
@@ -38,7 +38,7 @@ export class HardwareRenderer extends Renderer {
   private readonly lut = LUT.combine(...this.luts)
   private indices = new Float32Array()
 
-  constructor(settings?: Partial<CoreSettings>) {
+  constructor(settings?: Partial<Settings>) {
     super(settings)
 
     const vBase  = glu.shader(this.gl, gle.VERTEX_SHADER,   render(V_BASE,  this))

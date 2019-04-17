@@ -1,8 +1,8 @@
-import { abs } from 'wheels/esm/math'
-import { rgb } from 'wheels/esm/color/srgb'
 import { context2d } from 'wheels/esm/dom'
-import { downscale } from '../downscale'
+import { abs, round } from 'wheels/esm/math'
+import { rgb } from 'wheels/esm/color/srgb'
 import { str } from '../utils'
+import { downscale } from '../downscale'
 import { Settings } from './Settings'
 
 const enum Color {
@@ -13,17 +13,22 @@ const enum Color {
 
 export class LUT extends Float32Array {
   static fromCharCode(charCode: number, settings: Settings) {
-    const { fontFace, fontBlur, fontGamma } = settings
-    const { fontWidth, fontHeight, fontWidthPadded, fontHeightPadded } = settings
-    const { lutWidth, lutHeight, lutWidthPadded, lutHeightPadded, lutPadding } = settings
+    const { fontWidth, fontHeight, fontFace, fontBlur, fontGamma } = settings
+    const { lutWidth, lutHeight, lutPadding } = settings
 
-    const api = context2d({ width: fontWidthPadded, height: fontHeightPadded })()
+    const lutWidthʹ   = lutPadding*2 + lutWidth
+    const lutHeightʹ  = lutPadding*2 + lutHeight
+
+    const fontWidthʹ  = round(lutWidthʹ  / lutWidth  * fontWidth)
+    const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight)
+
+    const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })()
     const char = str(charCode)
 
     api.fillStyle = Color.outline
-    api.fillRect(0, 0, fontWidthPadded, fontHeightPadded)
+    api.fillRect(0, 0, fontWidthʹ, fontHeightʹ)
 
-    api.translate(fontWidthPadded/2, fontHeightPadded/2)
+    api.translate(fontWidthʹ/2, fontHeightʹ/2)
     api.fillStyle = Color.background
     api.fillRect(-fontWidth/2, -fontHeight/2, fontWidth, fontHeight)
 
@@ -38,7 +43,7 @@ export class LUT extends Float32Array {
       api.fillText(char, 0, 0)
     }
 
-    const scaled = downscale(api, lutWidthPadded, lutHeightPadded)
+    const scaled = downscale(api, lutWidthʹ, lutHeightʹ)
     const rgba = scaled.getImageData(lutPadding, lutPadding, lutWidth, lutHeight).data
     const lut = new LUT(lutWidth, lutHeight)
 
