@@ -8,12 +8,12 @@ export class Settings {
   fontWidth  = 40
   fontHeight = 70
   fontBlur   = 9
-  fontGamma  = 1
+  fontGamma  = 1.0
 
   lutWidth   = 5
   lutHeight  = 7
   lutPadding = 1
-  lutGamma   = 1
+  lutGamma   = 1.0
 
   brightness = 1.0
   gamma      = 1.0
