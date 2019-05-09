@@ -8,7 +8,7 @@
   "types": "dist/esm/index.d.js",
   "dependencies": {
     "it": "reinventing-wheels/it#v0.3.0",
-    "wheels": "reinventing-wheels/wheels#v0.5.0"
+    "wheels": "reinventing-wheels/wheels#v0.6.0"
   },
   "devDependencies": {
     "@types/webgl2": "^0.0.4",
