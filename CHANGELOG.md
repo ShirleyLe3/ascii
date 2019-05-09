@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="0.10.0"></a>
+# [0.10.0](https://github.com/reinventing-wheels/ascii/compare/v0.9.0...v0.10.0) (2019-05-09)
+
+
+### Features
+
+* add `lutGamma` ([9d42369](https://github.com/reinventing-wheels/ascii/commit/9d42369))
+* add 3rd alphabet ([13a6187](https://github.com/reinventing-wheels/ascii/commit/13a6187))
+
+
+
 <a name="0.9.0"></a>
 # [0.9.0](https://github.com/reinventing-wheels/ascii/compare/v0.8.0...v0.9.0) (2019-04-17)
 

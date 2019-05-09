@@ -11,7 +11,7 @@ export class LUT extends Float32Array {
     }
     static fromCharCode(charCode, settings) {
         const { fontWidth, fontHeight, fontFace, fontBlur, fontGamma } = settings;
-        const { lutWidth, lutHeight, lutPadding } = settings;
+        const { lutWidth, lutHeight, lutPadding, lutGamma } = settings;
         const lutWidthʹ = lutPadding * 2 + lutWidth;
         const lutHeightʹ = lutPadding * 2 + lutHeight;
         const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
@@ -36,7 +36,7 @@ export class LUT extends Float32Array {
         const rgba = scaled.getImageData(lutPadding, lutPadding, lutWidth, lutHeight).data;
         const lut = new LUT(lutWidth, lutHeight);
         for (let i = 0; i < lut.length; i++)
-            lut[i] = rgb(rgba[i << 2] / 0xff);
+            lut[i] = rgb(rgba[i << 2] / 0xff) ** lutGamma;
         return lut;
     }
     static combine(...luts) {

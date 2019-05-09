@@ -9,6 +9,7 @@ export declare class Settings {
     lutWidth: number;
     lutHeight: number;
     lutPadding: number;
+    lutGamma: number;
     brightness: number;
     gamma: number;
     noise: number;

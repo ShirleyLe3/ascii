@@ -14,6 +14,12 @@
 
     const extend = Object.assign;
     const overwrite = extend;
+    const proto = (object) => {
+        const props = new Set();
+        for (let o = object; o && o !== Object.prototype; o = Object.getPrototypeOf(o))
+            Object.getOwnPropertyNames(o).forEach(prop => props.add(prop));
+        return props;
+    };
 
     const context2d = (...attributes) => (...settings) => overwrite(element('canvas')(...attributes).getContext('2d'), ...settings);
     const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
@@ -26,26 +32,30 @@
         return (char) => api.measureText(char).width === ref.width;
     };
 
-    const standard = str(...range(0x20, 0x5f), ...range(0x60, 0x7f));
-    const extended = standard + str(...range(0xa1, 0xa8), ...range(0xae, 0xb2), 0xa9, 0xab, 0xac, 0xb4, 0xb5, 0xb7, 0xbb, 0xbf, 0xd7, 0xf7, ...range(0x2018, 0x2023), 0x2039, 0x203a, 0x2219, 0x221a, 0x221e);
+    const alphabet = str(...range(0x20, 0x5f), ...range(0x60, 0x7f), ...range(0xa1, 0xa8), ...range(0xae, 0xb2), 0xa9, 0xab, 0xac, 0xb4, 0xb5, 0xb7, 0xbb, 0xbf, 0xd7, 0xf7, ...range(0x2018, 0x2023), 0x2039, 0x203a, 0x2219, 0x221a, 0x221e);
+    const ascii = alphabet.replace(/[^\x00-\x7f]/g, '');
+    const extended = alphabet.replace(/[^\x00-\xff]/g, '');
+    const unicode = alphabet;
 
     var alphabets = ({
-        standard: standard,
-        extended: extended
+        ascii: ascii,
+        extended: extended,
+        unicode: unicode
     });
 
     class Settings {
         constructor() {
-            this.alphabet = standard;
+            this.alphabet = ascii;
             this.quality = 'high';
             this.fontFace = 'monospace';
             this.fontWidth = 40;
             this.fontHeight = 70;
             this.fontBlur = 9;
-            this.fontGamma = 1;
+            this.fontGamma = 1.0;
             this.lutWidth = 5;
             this.lutHeight = 7;
             this.lutPadding = 1;
+            this.lutGamma = 1.0;
             this.brightness = 1.0;
             this.gamma = 1.0;
             this.noise = 0.0;
@@ -62,8 +72,8 @@
         let h = msb(src.canvas.height / height - 1) * height;
         const tmp = context2d({ width: w, height: h })();
         tmp.drawImage(src.canvas, 0, 0, w, h);
-        for (let x, y; (x = w > width) || (y = h > height);)
-            tmp.drawImage(tmp.canvas, 0, 0, w, h, 0, 0, w >>= x, h >>= y);
+        for (let x, y; x = w > width, y = h > height, x || y;)
+            tmp.drawImage(tmp.canvas, 0, 0, w, h, 0, 0, w >>= +x, h >>= +y);
         const dst = context2d({ width, height })();
         dst.drawImage(tmp.canvas, 0, 0);
         return dst;
@@ -85,7 +95,7 @@
         }
         static fromCharCode(charCode, settings) {
             const { fontWidth, fontHeight, fontFace, fontBlur, fontGamma } = settings;
-            const { lutWidth, lutHeight, lutPadding } = settings;
+            const { lutWidth, lutHeight, lutPadding, lutGamma } = settings;
             const lutWidthʹ = lutPadding * 2 + lutWidth;
             const lutHeightʹ = lutPadding * 2 + lutHeight;
             const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
@@ -110,7 +120,7 @@
             const rgba = scaled.getImageData(lutPadding, lutPadding, lutWidth, lutHeight).data;
             const lut = new LUT(lutWidth, lutHeight);
             for (let i = 0; i < lut.length; i++)
-                lut[i] = rgb(rgba[i << 2] / 0xff);
+                lut[i] = rgb(rgba[i << 2] / 0xff) ** lutGamma;
             return lut;
         }
         static combine(...luts) {
@@ -217,7 +227,7 @@
     const number = (source, n = 1) => source.replace(/^.*/gm, line => pad(5, `${n++}: `) + line);
     const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
 
-    const render = (tmpl, obj, arg = '$') => new Function(arg, '{' + Object.keys(obj) + '}', 'return `' + tmpl + '`')(obj, obj);
+    const render = (tmpl, context = {}, ref = '$') => new Function(`{${[...proto(context)]}}`, ref, `return \`${tmpl}\``)(context, context);
 
     const V_BASE = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
     const F_PASS1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
