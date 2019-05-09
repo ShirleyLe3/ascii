@@ -13,9 +13,9 @@ import * as ASCII from 'ascii/dist/esm'
 
 // fast, uses webgl2
 const renderer = new ASCII.HardwareRenderer({
-  // `standard` and `extended` are available
+  // `ascii`, `extended` and `unicode` are available
   // you can also use your own, of course
-  alphabet: ASCII.alphabets.standard,
+  alphabet: ASCII.alphabets.ascii,
 
   // should match the font you're going to use
   // to display the result
