@@ -10,8 +10,8 @@ const fallback = (src: CanvasRenderingContext2D, width: number, height: number) 
 
   const tmp = context2d({ width: w, height: h })()
   tmp.drawImage(src.canvas, 0, 0, w, h)
-  for (let x: any, y: any; (x = w > width) || (y = h > height);)
-    tmp.drawImage(tmp.canvas, 0, 0, w, h, 0, 0, w >>= x, h >>= y)
+  for (let x, y; x = w > width, y = h > height, x || y;)
+    tmp.drawImage(tmp.canvas, 0, 0, w, h, 0, 0, w >>= +x, h >>= +y)
 
   const dst = context2d({ width, height })()
   dst.drawImage(tmp.canvas, 0, 0)
