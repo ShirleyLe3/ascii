@@ -1,7 +1,7 @@
-import { standard } from '../alphabets'
+import { ascii } from '../alphabets'
 
 export class Settings {
-  alphabet   = standard
+  alphabet   = ascii
   quality    = 'high' as ImageSmoothingQuality
 
   fontFace   = 'monospace'
