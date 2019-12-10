@@ -29,7 +29,7 @@ export const shader = (gl: WebGL2RenderingContext, type: GLenum, source: string)
   gl.compileShader(shader)
 
   if (!gl.getShaderParameter(shader, gle.COMPILE_STATUS))
-    throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${number(sourceʹ)}\n`)
+    throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${lineNumbers(sourceʹ)}\n`)
 
   return shader
 }
@@ -72,11 +72,11 @@ export const uniforms = (gl: WebGL2RenderingContext, program: WebGLProgram) =>
 
 //
 
-const pad = (size: number, value: string) =>
+const zeroPad = (size: number, value: string) =>
   '0'.repeat(max(0, size - value.length)) + value
 
-const number = (source: string, n = 1) =>
-  source.replace(/^.*/gm, line => pad(5, `${n++}: `) + line)
+const lineNumbers = (source: string, n = 1) =>
+  source.replace(/^.*/gm, line => zeroPad(5, `${n++}: `) + line)
 
 const context = <T>(gl: WebGL2RenderingContext, object: T, bind: Binder<T>): Context<T> =>
   fn => (fn && (bind(object), fn(gl, object), bind(null)), object)
