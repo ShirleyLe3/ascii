@@ -1,4 +1,4 @@
-import { rangeʹ as range } from 'it/dist/esm'
+import { range } from 'it/dist/esm/uncurried'
 import { str } from './utils'
 
 const alphabet = str(
