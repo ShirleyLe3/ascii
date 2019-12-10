@@ -1,4 +1,4 @@
-// https://www.khronos.org/registry/webgl/specs/latest/2.0/
+// https://www.khronos.org/registry/webgl/specs/latest/2.0/#3.7
 export const
 
 READ_BUFFER = 0x0C02,
