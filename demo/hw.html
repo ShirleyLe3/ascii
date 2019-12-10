@@ -22,7 +22,7 @@
       visible: ''
     }
 
-    async componentDidMount() {
+    async run() {
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d')
       const renderer = new ASCII.HardwareRenderer({
@@ -37,7 +37,7 @@
       const ihʹ = ih - 2*p // cropped image height
       const irʹ = iwʹ/ihʹ // cropped image width/height ratio
 
-      for (;; await frame()) {
+      for (this.running = true; this.running; await frame()) {
         const { width: rw, height: rh } = this.refs.root.getBoundingClientRect()
         const { width: hw, height: hh } = this.refs.hidden.getBoundingClientRect()
 
@@ -57,6 +57,14 @@
 
         this.setState({ visible: rendered })
       }
+    }
+
+    componentDidMount() {
+      this.run()
+    }
+
+    componentWillUnmount() {
+      this.running = false
     }
 
     render({}, { hidden, visible }) {
