@@ -11,7 +11,6 @@
     "wheels": "reinventing-wheels/wheels#v0.7.0"
   },
   "devDependencies": {
-    "@types/webgl2": "^0.0.5",
     "deepmerge": "^4.2.2",
     "rollup": "^1.10.0",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -19,6 +18,7 @@
     "rollup-plugin-terser": "^5.1.2",
     "rollup-plugin-typescript2": "^0.25.3",
     "standard-version": "^7.0.1",
+    "ts-node": "^8.5.4",
     "tslint": "^5.15.0",
     "tslint-preset": "reinventing-wheels/tslint-preset#v0.1.0",
     "ttypescript": "^1.5.6",
