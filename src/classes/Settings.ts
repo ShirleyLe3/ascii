@@ -13,6 +13,8 @@ export class Settings {
   lutWidth   = 5
   lutHeight  = 7
   lutPadding = 1
+  lutMin     = 0.0
+  lutMax     = 1.0
   lutGamma   = 1.0
 
   brightness = 1.0

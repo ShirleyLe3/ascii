@@ -38,12 +38,13 @@ export abstract class Renderer {
 
   private makeLUTs() {
     const { charMap, settings } = this
+    const { lutMin, lutMax } = settings
 
     const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings))
     const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0)
 
     for (const lut of luts)
-      lut.normalize(0, maxʹ)
+      lut.normalize(lutMin * maxʹ, lutMax * maxʹ)
 
     return luts
   }
