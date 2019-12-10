@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<meta name='viewport' content='width=device-width,user-scalable=no'>
+
+<style>
+  body { background: black; color: white; }
+  html, body, .demo { width: 100%; height: 100%; margin: 0; padding: 0; }
+  .demo { display: flex; align-items: center; justify-content: center; }
+  .demo { overflow: hidden; font: 9pt/1em 'Consolas', monospace; }
+  .demo .hidden { position: fixed; bottom: 100%; right: 100%; }
+  .demo * { white-space: pre; }
+</style>
+
+<script defer src='../dist/umd/ascii.js'></script>
+<script type='module'>
+  import { fetchImage, frame, update } from './lib/util.js'
+  import { Component, render, html } from './lib/dom.js'
+
+  class Demo extends Component {
+    refs = {}
+    state = {
+      hidden: ' '.repeat(1000) + '\n '.repeat(999),
+      visible: ''
+    }
+
+    async componentDidMount() {
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+      const renderer = new ASCII.HardwareRenderer({
+        alphabet: ASCII.alphabets.extended,
+        fontFace: getComputedStyle(this.refs.root).fontFamily
+      })
+
+      const image = await fetchImage({ src: 'assets/image.jpg' })
+      const { width: iw, height: ih } = image
+      const p = Math.round(Math.min(iw, ih)/36) // padding
+      const iwʹ = iw - 2*p // cropped image width
+      const ihʹ = ih - 2*p // cropped image height
+      const irʹ = iwʹ/ihʹ // cropped image width/height ratio
+
+      for (;; await frame()) {
+        const { width: rw, height: rh } = this.refs.root.getBoundingClientRect()
+        const { width: hw, height: hh } = this.refs.hidden.getBoundingClientRect()
+
+        const rr = rw/rh // root element width/height ratio
+        const cw = rr > irʹ ? iwʹ : Math.round(ihʹ*rr) // canvas width
+        const ch = rr > irʹ ? Math.round(iwʹ/rr) : ihʹ // canvas height
+
+        const t = Date.now()
+        const x = p*Math.cos(Math.PI*t/3e3)
+        const y = p*Math.sin(Math.PI*t/5e3)
+        update(canvas, { width: cw, height: ch })
+        context.drawImage(image, (cw - iw)/2 + x, (ch - ih)/2 + y)
+
+        const w = Math.floor(1000*rw/hw)
+        const h = Math.floor(1000*rh/hh)
+        const rendered = renderer.render(canvas, w, h)
+
+        this.setState({ visible: rendered })
+      }
+    }
+
+    render({}, { hidden, visible }) {
+      return html`<div class=demo ref=${e => this.refs.root = e}>
+        <div class=hidden ref=${e => this.refs.hidden = e}>${hidden}</>
+        <div class=visible ref=${e => this.refs.visible = e}>${visible}</>
+      </>`
+    }
+  }
+
+  render(html`<${Demo} />`, document.body)
+</script>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<meta name='viewport' content='width=device-width,user-scalable=no'>
+
+<style>
+  body { background: black; color: white; text-align: center; }
+  pre { display: inline-block; font: 9pt/1em 'Consolas', monospace; }
+  pre:hover { background: var(--url) center/100% 100%; color: transparent; }
+</style>
+
+<script defer src='../dist/umd/ascii.js'></script>
+<script type='module'>
+  import { fetchImage } from './lib/util.js'
+
+  const demo = async () => {
+    const image = await fetchImage({ src: 'assets/image.jpg' })
+
+    const el = document.querySelector('pre')
+    el.style = `--url: url("${image.src}")`
+    el.textContent = ' '.repeat(0x100) + '\n '.repeat(0xff)
+
+    const fontFace = getComputedStyle(el).fontFamily
+    const fontRatio = el.clientWidth / el.clientHeight
+    const imageRatio = image.width / image.height
+    const ratio = imageRatio / fontRatio
+    const renderer = new ASCII.SoftwareRenderer({ fontFace })
+    el.textContent = renderer.render(image, 100, 100 / ratio)
+  }
+
+  demo()
+</script>
+
+<pre></pre>
