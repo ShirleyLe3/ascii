@@ -17,7 +17,7 @@ export const shader = (gl, type, source) => {
     gl.shaderSource(shader, sourceʹ);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gle.COMPILE_STATUS))
-        throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${number(sourceʹ)}\n`);
+        throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${lineNumbers(sourceʹ)}\n`);
     return shader;
 };
 export const program = (gl, vert, frag) => {
@@ -46,6 +46,6 @@ export const framebuffer = (gl, target = gle.FRAMEBUFFER) => {
     return context(gl, object, object => gl.bindFramebuffer(target, object));
 };
 export const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
-const pad = (size, value) => '0'.repeat(max(0, size - value.length)) + value;
-const number = (source, n = 1) => source.replace(/^.*/gm, line => pad(5, `${n++}: `) + line);
+const zeroPad = (size, value) => '0'.repeat(max(0, size - value.length)) + value;
+const lineNumbers = (source, n = 1) => source.replace(/^.*/gm, line => zeroPad(5, `${n++}: `) + line);
 const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);

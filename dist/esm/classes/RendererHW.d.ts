@@ -11,5 +11,5 @@ export declare class HardwareRenderer extends Renderer {
     private readonly lut;
     private indices;
     constructor(settings?: Partial<Settings>);
-    lines(renderable: Renderable, width: number, height: number): IterableIterator<string>;
+    lines(renderable: Renderable, width: number, height: number): Generator<string, void, unknown>;
 }

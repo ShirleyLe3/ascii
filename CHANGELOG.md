@@ -1,6 +1,13 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.10.1](https://github.com/reinventing-wheels/ascii/compare/v0.10.0...v0.10.1) (2019-12-10)
+
+
+### Features
+
+* add `lutMin` and `lutMax` ([9d1b7e0](https://github.com/reinventing-wheels/ascii/commit/9d1b7e036eb92e1ae83b3a25017bbb441195e4b6))
 
 <a name="0.10.0"></a>
 # [0.10.0](https://github.com/reinventing-wheels/ascii/compare/v0.9.0...v0.10.0) (2019-05-09)

@@ -9,6 +9,8 @@ export declare class Settings {
     lutWidth: number;
     lutHeight: number;
     lutPadding: number;
+    lutMin: number;
+    lutMax: number;
     lutGamma: number;
     brightness: number;
     gamma: number;

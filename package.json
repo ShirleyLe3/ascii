@@ -1,6 +1,6 @@
 {
   "name": "ascii",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "license": "MIT",
   "main": "dist/umd/ascii.js",
   "browser": "dist/umd/ascii.js",

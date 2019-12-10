@@ -2,14 +2,17 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
     (global = global || self, factory(global.ASCII = {}));
-}(this, function (exports) { 'use strict';
+}(this, (function (exports) { 'use strict';
 
-    /** Extracts an iterator from an iterable. */
-
-    /** Yields a sequence of monotonically increasing numbers. */
+    /**
+     * @example
+     * range() // (0, 1, 2, 3, 4, …)
+     * range(0, 5) // (0, 1, 2, 3, 4)
+     * range(1, 10, 2) // (1, 3, 5, 7, 9)
+     */
     function* range(start = 0, stop = Infinity, step = 1) {
-        for (let number = start; number < stop; number += step)
-            yield number;
+        for (let n = start; n < stop; n += step)
+            yield n;
     }
 
     const extend = Object.assign;
@@ -38,6 +41,7 @@
     const unicode = alphabet;
 
     var alphabets = ({
+        __proto__: null,
         ascii: ascii,
         extended: extended,
         unicode: unicode
@@ -55,6 +59,8 @@
             this.lutWidth = 5;
             this.lutHeight = 7;
             this.lutPadding = 1;
+            this.lutMin = 0.0;
+            this.lutMax = 1.0;
             this.lutGamma = 1.0;
             this.brightness = 1.0;
             this.gamma = 1.0;
@@ -160,10 +166,11 @@
         }
         makeLUTs() {
             const { charMap, settings } = this;
+            const { lutMin, lutMax } = settings;
             const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings));
             const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0);
             for (const lut of luts)
-                lut.normalize(0, maxʹ);
+                lut.normalize(lutMin * maxʹ, lutMax * maxʹ);
             return luts;
         }
         resize(renderable, width, height) {
@@ -198,7 +205,7 @@
         gl.shaderSource(shader, sourceʹ);
         gl.compileShader(shader);
         if (!gl.getShaderParameter(shader, COMPILE_STATUS))
-            throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${number(sourceʹ)}\n`);
+            throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${lineNumbers(sourceʹ)}\n`);
         return shader;
     };
     const program = (gl, vert, frag) => {
@@ -223,8 +230,8 @@
         return context(gl, object, object => gl.bindFramebuffer(target, object));
     };
     const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
-    const pad = (size, value) => '0'.repeat(max(0, size - value.length)) + value;
-    const number = (source, n = 1) => source.replace(/^.*/gm, line => pad(5, `${n++}: `) + line);
+    const zeroPad = (size, value) => '0'.repeat(max(0, size - value.length)) + value;
+    const lineNumbers = (source, n = 1) => source.replace(/^.*/gm, line => zeroPad(5, `${n++}: `) + line);
     const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
 
     const render = (tmpl, context = {}, ref = '$') => new Function(`{${[...proto(context)]}}`, ref, `return \`${tmpl}\``)(context, context);
@@ -356,5 +363,5 @@
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));
 //# sourceMappingURL=ascii.js.map

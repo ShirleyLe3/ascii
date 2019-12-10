@@ -1,4 +1,3 @@
-/// <reference types="webgl2" />
 export declare type Callback<T = WebGLObject> = (gl: WebGL2RenderingContext, object: T) => void;
 export declare type Binder<T = WebGLObject> = (object: T | null) => void;
 export declare type Context<T = WebGLObject> = (fn?: Callback<T>) => T;
