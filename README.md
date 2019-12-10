@@ -3,7 +3,7 @@ Makes ASCII-art from any renderable input ([demo][demo])
 ## Installation
 
 ```sh
-yarn add reinventing-wheels/ascii
+npm install reinventing-wheels/ascii
 ```
 
 ## Usage
