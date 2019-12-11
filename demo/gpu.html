@@ -10,10 +10,10 @@
   .demo * { white-space: pre; }
 </style>
 
-<script defer src='../dist/umd/ascii.js'></script>
 <script type='module'>
   import { fetchImage, frame, update } from './lib/util.js'
   import { Component, render, html } from './lib/dom.js'
+  import { GPURenderer } from '../dist/bundle.esm.js'
 
   class Demo extends Component {
     refs = {}
@@ -25,7 +25,7 @@
     async run() {
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d')
-      const renderer = new ASCII.HardwareRenderer({
+      const renderer = new GPURenderer({
         fontFace: getComputedStyle(this.refs.root).fontFamily
       })
 

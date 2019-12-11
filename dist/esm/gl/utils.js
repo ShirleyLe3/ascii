@@ -46,6 +46,8 @@ export const framebuffer = (gl, target = gle.FRAMEBUFFER) => {
     return context(gl, object, object => gl.bindFramebuffer(target, object));
 };
 export const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
+//
 const zeroPad = (size, value) => '0'.repeat(max(0, size - value.length)) + value;
 const lineNumbers = (source, n = 1) => source.replace(/^.*/gm, line => zeroPad(5, `${n++}: `) + line);
 const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
+//# sourceMappingURL=utils.js.map

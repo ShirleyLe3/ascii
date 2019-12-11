@@ -13,3 +13,4 @@ export declare abstract class Renderer {
     render(renderable: Renderable, width: number, height: number): string;
     abstract lines(renderable: Renderable, width: number, height: number): IterableIterator<string>;
 }
+//# sourceMappingURL=Renderer.d.ts.map

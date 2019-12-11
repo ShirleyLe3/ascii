@@ -39,3 +39,4 @@ export class Renderer {
         return [...this.lines(renderable, floor(width), floor(height))].join('\n');
     }
 }
+//# sourceMappingURL=Renderer.js.map

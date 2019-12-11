@@ -1,5 +1,6 @@
 import { max, clz32 } from 'wheels/esm/math';
 import { context2d } from 'wheels/esm/dom';
+// most significant bit (but msb(x) is always >=1)
 const msb = (n) => 1 << max(0, 31 - clz32(n));
 const fallback = (src, width, height) => {
     let w = msb(src.canvas.width / width - 1) * width;
@@ -20,3 +21,4 @@ const native = (src, width, height) => {
 export const downscale = 'imageSmoothingQuality' in CanvasRenderingContext2D.prototype
     ? native
     : fallback;
+//# sourceMappingURL=downscale.js.map

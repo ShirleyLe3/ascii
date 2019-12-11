@@ -1,7 +1,7 @@
 Makes ASCII-art from any renderable input
 
-- [`SoftwareRenderer` demo][sw-demo]
-- [`HardwareRenderer` demo][hw-demo]
+- [`CPURenderer` demo][demo-cpu]
+- [`GPURenderer` demo][demo-gpu]
 
 ## Installation
 
@@ -19,7 +19,7 @@ npm install reinventing-wheels/ascii
 import * as ASCII from 'ascii/dist/esm'
 
 // fast, uses webgl2
-const renderer = new ASCII.HardwareRenderer({
+const renderer = new ASCII.GPURenderer({
   // `ascii`, `extended` and `unicode` are available
   // you can also use your own, of course
   alphabet: ASCII.alphabets.ascii,
@@ -34,7 +34,7 @@ const renderer = new ASCII.HardwareRenderer({
 })
 
 // slow, uses canvas 2d api
-const renderer = new ASCII.SoftwareRenderer({
+const renderer = new ASCII.CPURenderer({
   // ...
 })
 
@@ -49,5 +49,5 @@ const result = renderer.render(source, width, height)
 [ts]: //www.typescriptlang.org
 [vsc]: //code.visualstudio.com
 [git-urls]: //docs.npmjs.com/files/package.json#git-urls-as-dependencies
-[hw-demo]: //reinventing-wheels.github.io/ascii/demo/hw.html
-[sw-demo]: //reinventing-wheels.github.io/ascii/demo/sw.html
+[demo-cpu]: //reinventing-wheels.github.io/ascii/demo/cpu.html
+[demo-gpu]: //reinventing-wheels.github.io/ascii/demo/gpu.html

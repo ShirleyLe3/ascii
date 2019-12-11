@@ -19,3 +19,4 @@ export class Settings {
         this.noise = 0.0;
     }
 }
+//# sourceMappingURL=Settings.js.map

@@ -17,7 +17,7 @@ const quadGeometry = (index) => gl => {
     gl.vertexAttribPointer(index, 2, gle.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(index);
 };
-export class HardwareRenderer extends Renderer {
+export class GPURenderer extends Renderer {
     constructor(settings) {
         super(settings);
         this.gl = glu.api({}, 'EXT_color_buffer_float');
@@ -32,7 +32,7 @@ export class HardwareRenderer extends Renderer {
         const fPass2 = glu.shader(this.gl, gle.FRAGMENT_SHADER, render(F_PASS2, this));
         this.pass1 = glu.program(this.gl, vBase, fPass1);
         this.pass2 = glu.program(this.gl, vBase, fPass2);
-        glu.buffer(this.gl)(quadGeometry(0));
+        glu.buffer(this.gl)(quadGeometry(0 /* position */));
     }
     *lines(renderable, width, height) {
         const { settings, charMap, lut, gl, pass1, pass2, fbo, txLUT, txOdd, txEven } = this;
@@ -43,37 +43,42 @@ export class HardwareRenderer extends Renderer {
         const uPass2 = glu.uniforms(gl, pass2);
         if (this.indices.length !== width * height)
             this.indices = new Float32Array(width * height);
+        // enable framebuffer
         gl.bindFramebuffer(gle.FRAMEBUFFER, fbo);
-        gl.activeTexture(gle.TEXTURE0 + 2);
+        // 1st pass
+        gl.activeTexture(gle.TEXTURE0 + 2 /* lut */);
         gl.bindTexture(gle.TEXTURE_2D, txLUT);
         gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, lut.width, lut.height, 0, gle.RED, gle.FLOAT, lut);
-        gl.activeTexture(gle.TEXTURE0 + 1);
+        gl.activeTexture(gle.TEXTURE0 + 1 /* src */);
         gl.bindTexture(gle.TEXTURE_2D, txOdd);
         gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, src);
-        gl.activeTexture(gle.TEXTURE0 + 0);
+        gl.activeTexture(gle.TEXTURE0 + 0 /* dst */);
         gl.bindTexture(gle.TEXTURE_2D, txEven);
         gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null);
         gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, txEven, 0);
         gl.useProgram(pass1);
-        gl.uniform1i(uPass1('uSrc'), 1);
+        gl.uniform1i(uPass1('uSrc'), 1 /* src */);
         gl.uniform1f(uPass1('uBrightness'), settings.brightness);
         gl.uniform1f(uPass1('uGamma'), settings.gamma);
         gl.uniform1f(uPass1('uNoise'), settings.noise);
         gl.uniform1f(uPass1('uRandom'), Math.random());
         gl.viewport(0, 0, srcWidth, srcHeight);
         gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4);
-        gl.activeTexture(gle.TEXTURE0 + 1);
+        // 2nd pass
+        gl.activeTexture(gle.TEXTURE0 + 1 /* src */);
         gl.bindTexture(gle.TEXTURE_2D, txEven);
-        gl.activeTexture(gle.TEXTURE0 + 0);
+        gl.activeTexture(gle.TEXTURE0 + 0 /* dst */);
         gl.bindTexture(gle.TEXTURE_2D, txOdd);
         gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null);
         gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, txOdd, 0);
         gl.useProgram(pass2);
-        gl.uniform1i(uPass2('uSrc'), 1);
-        gl.uniform1i(uPass2('uLUT'), 2);
+        gl.uniform1i(uPass2('uSrc'), 1 /* src */);
+        gl.uniform1i(uPass2('uLUT'), 2 /* lut */);
         gl.viewport(0, 0, width, height);
         gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4);
+        // read from framebuffer
         gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this.indices);
+        // disable framebuffer
         gl.bindFramebuffer(gle.FRAMEBUFFER, null);
         for (let i = 0; i < this.indices.length;) {
             const slice = this.indices.subarray(i, i += width);
@@ -82,3 +87,4 @@ export class HardwareRenderer extends Renderer {
         }
     }
 }
+//# sourceMappingURL=GPURenderer.js.map

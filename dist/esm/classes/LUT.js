@@ -18,13 +18,13 @@ export class LUT extends Float32Array {
         const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
         const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })();
         const char = str(charCode);
-        api.fillStyle = "#00f";
+        api.fillStyle = "#00f" /* outline */;
         api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);
         api.translate(fontWidthʹ / 2, fontHeightʹ / 2);
-        api.fillStyle = "#000";
+        api.fillStyle = "#000" /* background */;
         api.fillRect(-fontWidth / 2, -fontHeight / 2, fontWidth, fontHeight);
         api.translate(0, fontHeight / 4);
-        api.fillStyle = "#fff";
+        api.fillStyle = "#fff" /* foreground */;
         api.textAlign = 'center';
         api.font = `${fontHeight}px ${fontFace}`;
         for (let i = 0, m = 1, n = 1; i < fontBlur; [m, n] = [n, n + m]) {
@@ -58,3 +58,4 @@ export class LUT extends Float32Array {
         return acc;
     }
 }
+//# sourceMappingURL=LUT.js.map

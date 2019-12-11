@@ -8,3 +8,4 @@ export declare class LUT extends Float32Array {
     normalize(min: number, max: number): void;
     compare(other: ArrayLike<number>): number;
 }
+//# sourceMappingURL=LUT.d.ts.map

@@ -1,6 +1,6 @@
 import { Renderer, Renderable } from './Renderer';
 import { Settings } from './Settings';
-export declare class HardwareRenderer extends Renderer {
+export declare class GPURenderer extends Renderer {
     private readonly pass1;
     private readonly pass2;
     private readonly gl;
@@ -13,3 +13,4 @@ export declare class HardwareRenderer extends Renderer {
     constructor(settings?: Partial<Settings>);
     lines(renderable: Renderable, width: number, height: number): Generator<string, void, unknown>;
 }
+//# sourceMappingURL=GPURenderer.d.ts.map

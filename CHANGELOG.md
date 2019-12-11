@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.11.0](https://github.com/reinventing-wheels/ascii/compare/v0.10.1...v0.11.0) (2019-12-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename `Renderer` classes
+
+### Features
+
+* rename `Renderer` classes ([6b3350e](https://github.com/reinventing-wheels/ascii/commit/6b3350e5b338f42402db17fd0d3ad8fda6caf0a1))
+
 ### [0.10.1](https://github.com/reinventing-wheels/ascii/compare/v0.10.0...v0.10.1) (2019-12-10)
 
 

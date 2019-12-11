@@ -1,7 +1,8 @@
 import * as alphabets from './alphabets';
 export { alphabets };
-export { Settings } from './classes/Settings';
-export { Renderer, Renderable } from './classes/Renderer';
-export { HardwareRenderer } from './classes/RendererHW';
-export { SoftwareRenderer } from './classes/RendererSW';
-export { LUT } from './classes/LUT';
+export * from './classes/Settings';
+export * from './classes/Renderer';
+export * from './classes/CPURenderer';
+export * from './classes/GPURenderer';
+export * from './classes/LUT';
+//# sourceMappingURL=index.d.ts.map

@@ -8,9 +8,9 @@
   pre:hover { background: var(--url) center/100% 100%; color: transparent; }
 </style>
 
-<script defer src='../dist/umd/ascii.js'></script>
 <script type='module'>
   import { fetchImage } from './lib/util.js'
+  import { CPURenderer } from '../dist/bundle.esm.js'
 
   const demo = async () => {
     const image = await fetchImage({ src: 'assets/image.jpg' })
@@ -23,7 +23,7 @@
     const fontRatio = el.clientWidth / el.clientHeight
     const imageRatio = image.width / image.height
     const ratio = imageRatio / fontRatio
-    const renderer = new ASCII.SoftwareRenderer({ fontFace })
+    const renderer = new CPURenderer({ fontFace })
     el.textContent = renderer.render(image, 100, 100 / ratio)
   }
 

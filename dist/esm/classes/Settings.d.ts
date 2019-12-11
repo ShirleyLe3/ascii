@@ -16,3 +16,4 @@ export declare class Settings {
     gamma: number;
     noise: number;
 }
+//# sourceMappingURL=Settings.d.ts.map

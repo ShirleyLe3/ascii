@@ -3,8 +3,8 @@ import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 const isShaderSourceFile = /\.(?:glsl|vert|frag)$/i;
 const minifyShaderSource = (shader) => shader
-    .replace(/\/\*[^]*\*\/|\/\/.+/g, '')
-    .replace(/\s+/g, m => m[0]);
+    .replace(/\/\*[^]*\*\/|\/\/.+/g, '') // remove comments
+    .replace(/\s+/g, m => m[0]); // compress whitespaces
 const extractNameIdentifier = (ic) => ic.namedBindings
     ? ts.isNamedImports(ic.namedBindings)
         ? ic.namedBindings.elements[0].name
@@ -35,3 +35,4 @@ export default () => ctx => sf => {
         ts.visitEachChild(node, visitor, ctx);
     return ts.visitNode(sf, visitor);
 };
+//# sourceMappingURL=transform.js.map

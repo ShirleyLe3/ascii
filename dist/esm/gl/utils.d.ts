@@ -10,3 +10,4 @@ export declare const buffer: Factory<WebGLBuffer>;
 export declare const texture: Factory<WebGLTexture>;
 export declare const framebuffer: Factory<WebGLFramebuffer>;
 export declare const uniforms: (gl: WebGL2RenderingContext, program: WebGLProgram) => (name: string) => WebGLUniformLocation | null;
+//# sourceMappingURL=utils.d.ts.map
