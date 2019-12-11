@@ -25,7 +25,7 @@ const quadGeometry = (index: number): glu.Callback => gl => {
   gl.enableVertexAttribArray(index)
 }
 
-export class HardwareRenderer extends Renderer {
+export class GPURenderer extends Renderer {
   private readonly pass1: WebGLProgram
   private readonly pass2: WebGLProgram
 

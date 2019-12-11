@@ -10,7 +10,7 @@ const enum Y {
   b = 0.0722
 }
 
-export class SoftwareRenderer extends Renderer {
+export class CPURenderer extends Renderer {
   *lines(renderable: Renderable, width: number, height: number) {
     const { settings, charMap, luts } = this
     const { lutWidth, lutHeight, brightness, gamma, noise } = settings
