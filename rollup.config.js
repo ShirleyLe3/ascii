@@ -1,55 +1,43 @@
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
-import typescript from 'rollup-plugin-typescript2'
 import { terser } from 'rollup-plugin-terser'
+import cleanup from 'rollup-plugin-cleanup'
+import resolve from 'rollup-plugin-node-resolve'
+import sourcemaps from 'rollup-plugin-sourcemaps'
 import merge from 'deepmerge'
-import tts from 'ttypescript'
 import pkg from './package.json'
 
-const production = !process.env.ROLLUP_WATCH
-const globals = {}
+const ESM = pkg.browser.replace(/\bumd\b/, 'esm')
+const UMD = pkg.browser
+
+//
 
 const base = {
-  input: 'src/index.ts',
+  input: pkg.module,
   output: {
-    globals,
     freeze: false,
     interop: false,
+    preferConst: true,
     sourcemap: true
   },
   plugins: [
     resolve(),
-    commonjs(),
-    typescript({
-      clean: true,
-      typescript: tts,
-      tsconfigOverride: {
-        compilerOptions: {
-          module: 'esnext',
-          sourceMap: true
-        }
-      }
-    })
-  ],
-  external: Object.keys(globals)
+    sourcemaps()
+  ]
 }
 
-const umd = merge(base, {
-  output: {
-    format: 'umd',
-    file: pkg.browser,
-    name: pkg.name.toUpperCase()
-  }
-})
+const dev = {
+  plugins: [
+    cleanup()
+  ]
+}
 
-const min = merge(umd, {
-  output: {
-    file: pkg.browser.replace(/\w+$/, 'min.$&')
-  },
+const min = {
   plugins: [
     terser({
       ecma: 8,
       compress: {
+        hoist_funs: true,
+        hoist_vars: true,
+        pure_getters: true,
         unsafe: true,
         unsafe_arrows: true,
         unsafe_comps: true,
@@ -58,13 +46,47 @@ const min = merge(umd, {
         unsafe_methods: true,
         unsafe_proto: true,
         unsafe_regexp: true,
-        unsafe_undefined: true,
-        pure_getters: true
+        unsafe_undefined: true
       }
     })
   ]
+}
+
+//
+
+const esm = merge(base, {
+  output: {
+    format: 'esm',
+    file: ESM
+  }
 })
 
-export default production
-  ? [ umd, min ]
-  : [ umd ]
+const umd = merge(base, {
+  output: {
+    format: 'umd',
+    file: UMD,
+    name: pkg.name
+  }
+})
+
+//
+
+const esmDev = merge(esm, dev)
+const esmMin = merge(merge(esm, min), {
+  output: {
+    file: ESM.replace(/(?=js$)/, 'min.')
+  }
+})
+
+const umdDev = merge(umd, dev)
+const umdMin = merge(merge(umd, min), {
+  output: {
+    file: UMD.replace(/(?=js$)/, 'min.')
+  }
+})
+
+//
+
+export default !process.env.ROLLUP_WATCH
+  ? [ esmDev, umdDev, esmMin, umdMin ]
+  : [ esmDev, umdDev ]

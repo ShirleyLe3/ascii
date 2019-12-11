@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
-    "outDir": "lib",
     "rootDir": "src",
     "target": "esnext",
     "module": "commonjs",
     "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "removeComments": true,
     "plugins": [
       { "transform": "./src/gl/transform.ts" }
     ]

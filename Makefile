@@ -12,7 +12,7 @@ clean:
 	rm -rf dist
 
 build: node_modules
-	ttsc -d -m esnext --outDir dist/esm
+	ttsc -m esnext --outDir dist/esm
 	rollup -c
 
 release: all
