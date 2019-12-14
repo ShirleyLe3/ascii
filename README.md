@@ -5,7 +5,7 @@ Makes ASCII-art from any renderable input
 
 ## Installation
 
-**Tip:** see [Git URLs as Dependencies][git-urls] for more info
+> **Tip:** see [Git URLs as Dependencies][git-urls]
 
 ```sh
 npm install reinventing-wheels/ascii
@@ -13,7 +13,7 @@ npm install reinventing-wheels/ascii
 
 ## Usage
 
-**Tip:** use [VSCode][vsc] or any other editor with [TypeScript][ts] declarations support for the best experience
+> **Tip:** use [VSCode][vsc] or any other editor with [TypeScript][ts] declarations support
 
 ```js
 import * as ASCII from 'ascii/dist/esm'
@@ -21,13 +21,14 @@ import * as ASCII from 'ascii/dist/esm'
 // fast, uses webgl2
 const renderer = new ASCII.GPURenderer({
   // `ascii`, `extended` and `unicode` are available
-  // you can also use your own, of course
+  // you can also provide your own, of course
   alphabet: ASCII.alphabets.ascii,
 
   // should match the font you're going to use
   // to display the result
   fontFace: 'monospace',
 
+  // rendering settings
   brightness: 1.0,
   gamma: 1.0,
   noise: 0.0
@@ -44,7 +45,7 @@ const result = renderer.render(source, width, height)
 // each is `width` symbols wide
 ```
 
-**Note:** the library is browser-only, the example assumes you're using build tools
+> **Note:** the library is browser-only, the example assumes using something to bundle the code
 
 [ts]: //www.typescriptlang.org
 [vsc]: //code.visualstudio.com
