@@ -5,6 +5,7 @@ export class Settings {
   quality    = 'high' as ImageSmoothingQuality
 
   fontFace   = 'monospace'
+  fontBase   = 0.25
   fontWidth  = 40
   fontHeight = 70
   fontBlur   = 9
