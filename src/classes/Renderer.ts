@@ -3,7 +3,7 @@ import { overwrite } from 'wheels/esm/object'
 import { context2d } from 'wheels/esm/dom'
 import { chr, monospaced } from '../utils'
 import { Settings } from './Settings'
-import { LUT } from './LUT'
+import { LUT, fromCharCode } from './LUT'
 
 export type Renderable =
   HTMLImageElement  |
@@ -40,7 +40,7 @@ export abstract class Renderer {
     const { charMap, settings } = this
     const { lutMin, lutMax } = settings
 
-    const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings))
+    const luts = Array.from(charMap, cc => fromCharCode(cc, settings))
     const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0)
 
     for (const lut of luts)

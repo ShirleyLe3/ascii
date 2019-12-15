@@ -4,7 +4,7 @@ import { render } from 'wheels/esm/text/template'
 import { str } from '../utils'
 import { Renderer, Renderable } from './Renderer'
 import { Settings } from './Settings'
-import { LUT } from './LUT'
+import { combine } from './LUT'
 
 import V_BASE  from 'glsl/base.vert'
 import F_PASS1 from 'glsl/pass1.frag'
@@ -35,7 +35,7 @@ export class GPURenderer extends Renderer {
   private readonly txOdd  = glu.texture(this.gl)(filterNearest)
   private readonly txEven = glu.texture(this.gl)(filterNearest)
 
-  private readonly lut = LUT.combine(...this.luts)
+  private readonly lut = combine(...this.luts)
   private indices = new Float32Array()
 
   constructor(settings?: Partial<Settings>) {
