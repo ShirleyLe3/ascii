@@ -1,7 +1,7 @@
 import { range } from 'it/dist/esm/uncurried'
 import { str } from './utils'
 
-const alphabet = str(
+export const unicode = str(
   // ascii
   ...range(0x20, 0x5f), // _!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^
   ...range(0x60, 0x7f), // `abcdefghijklmnopqrstuvwxyz{|}~
@@ -16,6 +16,5 @@ const alphabet = str(
   0x2039, 0x203a, 0x2219, 0x221a, 0x221e // ‹›∙√∞
 )
 
-export const ascii    = alphabet.replace(/[^\x00-\x7f]/g, '')
-export const extended = alphabet.replace(/[^\x00-\xff]/g, '')
-export const unicode  = alphabet
+export const extended = unicode.replace(/[^\x00-\xff]/g, '')
+export const ascii    = unicode.replace(/[^\x00-\x7f]/g, '')

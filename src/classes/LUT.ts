@@ -12,7 +12,7 @@ const enum Color {
 }
 
 export const fromCharCode = (charCode: number, settings: Settings) => {
-  const { fontWidth, fontHeight, fontFace, fontBlur, fontGamma } = settings
+  const { fontWidth, fontHeight, fontFamily, fontBlur, fontGamma } = settings
   const { fontBase, lutWidth, lutHeight, lutPadding, lutGamma } = settings
 
   const lutWidthʹ   = lutPadding*2 + lutWidth
@@ -34,7 +34,7 @@ export const fromCharCode = (charCode: number, settings: Settings) => {
   api.translate(0, fontHeight*(0.5 - fontBase))
   api.fillStyle = Color.foreground
   api.textAlign = 'center'
-  api.font = `${fontHeight}px ${fontFace}`
+  api.font = `${fontHeight}px ${fontFamily}`
 
   for (let i = 0, m = 1, n = 1; i < fontBlur; [m, n] = [n, n + m]) {
     api.filter = `blur(${n}px)`

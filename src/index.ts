@@ -1,6 +1,6 @@
-import * as alphabets from './alphabets'
+import * as charSets from './charsets'
 
-export { alphabets }
+export { charSets }
 export * from './classes/Settings'
 export * from './classes/Renderer'
 export * from './classes/CPURenderer'

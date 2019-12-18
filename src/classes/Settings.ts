@@ -1,9 +1,9 @@
-import { ascii } from '../alphabets'
+import { ascii } from '../charsets'
 
 export class Settings {
-  alphabet   = ascii
+  charSet    = ascii
 
-  fontFace   = 'monospace'
+  fontFamily = 'monospace'
   fontBase   = 0.25
   fontWidth  = 40
   fontHeight = 70

@@ -22,10 +22,10 @@ export abstract class Renderer {
   }
 
   private makeCharMap() {
-    const { alphabet, fontFace } = this.settings
+    const { charSet, fontFamily } = this.settings
 
-    const charCodes = [...alphabet]
-      .filter(monospaced(fontFace))
+    const charCodes = [...charSet]
+      .filter(monospaced(fontFamily))
       .map(chr)
 
     return Uint16Array.from(charCodes)
