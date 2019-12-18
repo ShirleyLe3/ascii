@@ -4,12 +4,7 @@ import { context2d } from 'wheels/esm/dom'
 import { chr, monospaced } from '../utils'
 import { Settings } from './Settings'
 import { LUT, fromCharCode } from './LUT'
-
-export type Renderable =
-  HTMLImageElement  |
-  HTMLCanvasElement |
-  HTMLVideoElement  |
-  ImageBitmap
+import { Source } from '../canvas'
 
 export abstract class Renderer {
   protected readonly api: CanvasRenderingContext2D
@@ -49,19 +44,9 @@ export abstract class Renderer {
     return luts
   }
 
-  protected resize(renderable: Renderable, width: number, height: number) {
-    const { api, settings } = this
-
-    overwrite(api.canvas, { width, height })
-    api.imageSmoothingQuality = settings.quality
-    api.drawImage(renderable, 0, 0, width, height)
-
-    return api
+  render(src: Source, width: number, height: number) {
+    return [...this.lines(src, floor(width), floor(height))].join('\n')
   }
 
-  render(renderable: Renderable, width: number, height: number) {
-    return [...this.lines(renderable, floor(width), floor(height))].join('\n')
-  }
-
-  abstract lines(renderable: Renderable, width: number, height: number): IterableIterator<string>
+  abstract lines(src: Source, width: number, height: number): IterableIterator<string>
 }

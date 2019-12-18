@@ -2,9 +2,10 @@ import * as gle from '../gl/enums'
 import * as glu from '../gl/utils'
 import { render } from 'wheels/esm/text/template'
 import { str } from '../utils'
-import { Renderer, Renderable } from './Renderer'
+import { Renderer } from './Renderer'
 import { Settings } from './Settings'
 import { combine } from './LUT'
+import { resize, Source } from '../canvas'
 
 import V_BASE  from 'glsl/base.vert'
 import F_PASS1 from 'glsl/pass1.frag'
@@ -51,12 +52,12 @@ export class GPURenderer extends Renderer {
     glu.buffer(this.gl)(quadGeometry(Attribute.position))
   }
 
-  *lines(renderable: Renderable, width: number, height: number) {
+  *lines(src: Source, width: number, height: number) {
     const { settings, charMap, lut, gl, pass1, pass2, fbo, txLUT, txOdd, txEven } = this
 
     const srcWidth  = settings.lutWidth  * width
     const srcHeight = settings.lutHeight * height
-    const src = this.resize(renderable, srcWidth, srcHeight).canvas
+    const srcʹ = resize(src, srcWidth, srcHeight)
 
     const uPass1 = glu.uniforms(gl, pass1)
     const uPass2 = glu.uniforms(gl, pass2)
@@ -74,7 +75,7 @@ export class GPURenderer extends Renderer {
 
     gl.activeTexture(gle.TEXTURE0 + Texture.src)
     gl.bindTexture(gle.TEXTURE_2D, txOdd)
-    gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, src)
+    gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ.canvas)
 
     gl.activeTexture(gle.TEXTURE0 + Texture.dst)
     gl.bindTexture(gle.TEXTURE_2D, txEven)

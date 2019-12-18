@@ -2,7 +2,6 @@ import { ascii } from '../alphabets'
 
 export class Settings {
   alphabet   = ascii
-  quality    = 'high' as ImageSmoothingQuality
 
   fontFace   = 'monospace'
   fontBase   = 0.25

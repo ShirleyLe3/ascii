@@ -2,7 +2,7 @@ import { context2d } from 'wheels/esm/dom'
 import { abs, round } from 'wheels/esm/math'
 import { rgb } from 'wheels/esm/color/srgb'
 import { str } from '../utils'
-import { downscale } from '../canvas'
+import { resize } from '../canvas'
 import { Settings } from './Settings'
 
 const enum Color {
@@ -42,9 +42,10 @@ export const fromCharCode = (charCode: number, settings: Settings) => {
     api.fillText(char, 0, 0)
   }
 
-  const scaled = downscale(api, lutWidthʹ, lutHeightʹ)
-  const rgba = scaled.getImageData(lutPadding, lutPadding, lutWidth, lutHeight).data
   const lut = new LUT(lutWidth, lutHeight)
+  const rgba = resize(api, lutWidthʹ, lutHeightʹ)
+    .getImageData(lutPadding, lutPadding, lutWidth, lutHeight)
+    .data
 
   for (let i = 0; i < lut.length; i++)
     lut[i] = rgb(rgba[i << 2] / 0xff)**lutGamma

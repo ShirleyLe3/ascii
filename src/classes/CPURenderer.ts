@@ -1,7 +1,8 @@
-import { Renderer, Renderable } from './Renderer'
+import { Renderer } from './Renderer'
 import { random } from 'wheels/esm/math'
 import { rgb } from 'wheels/esm/color/srgb'
 import { str } from '../utils'
+import { resize, Source } from '../canvas'
 
 // https://en.wikipedia.org/wiki/SRGB
 const enum Y {
@@ -11,15 +12,15 @@ const enum Y {
 }
 
 export class CPURenderer extends Renderer {
-  *lines(renderable: Renderable, width: number, height: number) {
+  *lines(src: Source, width: number, height: number) {
     const { settings, charMap, luts } = this
     const { lutWidth, lutHeight, brightness, gamma, noise } = settings
 
     const srcWidth  = lutWidth  * width
     const srcHeight = lutHeight * height
-    const src = this.resize(renderable, srcWidth, srcHeight)
+    const srcʹ = resize(src, srcWidth, srcHeight)
 
-    const rgba = src.getImageData(0, 0, srcWidth, srcHeight).data
+    const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data
     const buffer = new Float32Array(lutWidth * lutHeight)
 
     for (let y = 0; y < srcHeight; y += lutHeight) {
