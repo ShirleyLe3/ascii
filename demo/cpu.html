@@ -19,11 +19,12 @@
     el.style = `--url: url("${image.src}")`
     el.textContent = ' '.repeat(0x100) + '\n '.repeat(0xff)
 
-    const fontFace = getComputedStyle(el).fontFamily
     const fontRatio = el.clientWidth / el.clientHeight
     const imageRatio = image.width / image.height
     const ratio = imageRatio / fontRatio
-    const renderer = new CPURenderer({ fontFace })
+
+    const { fontFamily } = getComputedStyle(el)
+    const renderer = new CPURenderer({ fontFamily })
     el.textContent = renderer.render(image, 100, 100 / ratio)
   }
 

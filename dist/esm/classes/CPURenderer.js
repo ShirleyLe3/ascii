@@ -1,15 +1,16 @@
-import { Renderer } from './Renderer';
-import { random } from 'wheels/esm/math';
 import { rgb } from 'wheels/esm/color/srgb';
+import { random } from 'wheels/esm/math';
+import { resize } from '../canvas';
 import { str } from '../utils';
+import { Renderer } from './Renderer';
 export class CPURenderer extends Renderer {
-    *lines(renderable, width, height) {
+    *lines(src, width, height) {
         const { settings, charMap, luts } = this;
         const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
         const srcWidth = lutWidth * width;
         const srcHeight = lutHeight * height;
-        const src = this.resize(renderable, srcWidth, srcHeight);
-        const rgba = src.getImageData(0, 0, srcWidth, srcHeight).data;
+        const srcʹ = resize(src, srcWidth, srcHeight);
+        const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
         const buffer = new Float32Array(lutWidth * lutHeight);
         for (let y = 0; y < srcHeight; y += lutHeight) {
             const codes = [];

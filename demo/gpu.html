@@ -23,11 +23,10 @@
     }
 
     async run() {
+      const { fontFamily } = getComputedStyle(this.refs.root)
+      const renderer = new GPURenderer({ fontFamily })
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d')
-      const renderer = new GPURenderer({
-        fontFace: getComputedStyle(this.refs.root).fontFamily
-      })
 
       const image = await fetchImage({ src: 'assets/image.jpg' })
       const { width: iw, height: ih } = image

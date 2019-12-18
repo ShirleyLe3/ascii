@@ -1,7 +1,7 @@
 export declare class Settings {
-    alphabet: string;
-    quality: ImageSmoothingQuality;
-    fontFace: string;
+    charSet: string;
+    fontFamily: string;
+    fontBase: number;
     fontWidth: number;
     fontHeight: number;
     fontBlur: number;

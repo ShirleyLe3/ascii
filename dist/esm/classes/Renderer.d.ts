@@ -1,6 +1,6 @@
-import { Settings } from './Settings';
+import { Source } from '../canvas';
 import { LUT } from './LUT';
-export declare type Renderable = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap;
+import { Settings } from './Settings';
 export declare abstract class Renderer {
     protected readonly api: CanvasRenderingContext2D;
     protected readonly charMap: Uint16Array;
@@ -9,8 +9,7 @@ export declare abstract class Renderer {
     constructor(settings?: Partial<Settings>);
     private makeCharMap;
     private makeLUTs;
-    protected resize(renderable: Renderable, width: number, height: number): CanvasRenderingContext2D;
-    render(renderable: Renderable, width: number, height: number): string;
-    abstract lines(renderable: Renderable, width: number, height: number): IterableIterator<string>;
+    render(src: Source, width: number, height: number): string;
+    abstract lines(src: Source, width: number, height: number): IterableIterator<string>;
 }
 //# sourceMappingURL=Renderer.d.ts.map

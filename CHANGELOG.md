@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.0](https://github.com/reinventing-wheels/ascii/compare/v0.11.0...v0.12.0) (2019-12-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename a few settings
+
+### Features
+
+* add `fontBase` ([46c376c](https://github.com/reinventing-wheels/ascii/commit/46c376c701c4939cfa77e98c80e6c8ff8e1dfd65))
+* export static methods as functions ([60e15f2](https://github.com/reinventing-wheels/ascii/commit/60e15f2c3f3aa6fef6151f07b150796df1e107fa))
+* refactoring and improvements ([86c78e5](https://github.com/reinventing-wheels/ascii/commit/86c78e5f4dcdf8ec379632ddaa287540715ebc5b))
+* rename a few settings ([b82a1de](https://github.com/reinventing-wheels/ascii/commit/b82a1debd18e72ec5ba3e6e5292461d04e458ed9))
+* use fallback method of downscaling as the main one ([f051d75](https://github.com/reinventing-wheels/ascii/commit/f051d75066bb8da103f17f0a4fb6e510b9b871c0))
+
 ## [0.11.0](https://github.com/reinventing-wheels/ascii/compare/v0.10.1...v0.11.0) (2019-12-11)
 
 

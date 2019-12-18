@@ -22,11 +22,11 @@ import * as ASCII from 'ascii/dist/esm'
 const renderer = new ASCII.GPURenderer({
   // `ascii`, `extended` and `unicode` are available
   // you can also provide your own, of course
-  alphabet: ASCII.alphabets.ascii,
+  charSet: ASCII.charSets.ascii,
 
   // should match the font you're going to use
   // to display the result
-  fontFace: 'monospace',
+  fontFamily: 'monospace',
 
   // rendering settings
   brightness: 1.0,

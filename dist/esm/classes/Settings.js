@@ -1,9 +1,9 @@
-import { ascii } from '../alphabets';
+import { ascii } from '../charsets';
 export class Settings {
     constructor() {
-        this.alphabet = ascii;
-        this.quality = 'high';
-        this.fontFace = 'monospace';
+        this.charSet = ascii;
+        this.fontFamily = 'monospace';
+        this.fontBase = 0.25;
         this.fontWidth = 40;
         this.fontHeight = 70;
         this.fontBlur = 9;
