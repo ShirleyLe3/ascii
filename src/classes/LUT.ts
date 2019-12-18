@@ -2,7 +2,7 @@ import { context2d } from 'wheels/esm/dom'
 import { abs, round } from 'wheels/esm/math'
 import { rgb } from 'wheels/esm/color/srgb'
 import { str } from '../utils'
-import { downscale } from '../downscale'
+import { downscale } from '../canvas'
 import { Settings } from './Settings'
 
 const enum Color {
