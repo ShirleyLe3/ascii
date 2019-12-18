@@ -10,18 +10,16 @@
     "wheels": "reinventing-wheels/wheels#v0.7.0"
   },
   "devDependencies": {
-    "deepmerge": "^4.2.2",
-    "rollup": "^1.10.0",
+    "rollup": "^1.27.10",
     "rollup-plugin-cleanup": "^3.1.1",
-    "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
-    "rollup-plugin-terser": "^5.1.2",
+    "rollup-plugin-terser": "^5.1.3",
     "standard-version": "^7.0.1",
     "ts-node": "^8.5.4",
-    "tslint": "^5.15.0",
+    "tslint": "^5.20.1",
     "tslint-preset": "reinventing-wheels/tslint-preset#v0.1.0",
-    "ttypescript": "^1.5.6",
-    "typescript": "^3.4.3"
+    "ttypescript": "^1.5.8",
+    "typescript": "^3.7.3"
   }
 }
