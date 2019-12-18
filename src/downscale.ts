@@ -4,7 +4,7 @@ import { context2d } from 'wheels/esm/dom'
 // most significant bit (but msb(x) is always >=1)
 const msb = (n: number) => 1 << max(0, 31 - clz32(n))
 
-const fallback = (src: CanvasRenderingContext2D, width: number, height: number) => {
+export const downscale = (src: CanvasRenderingContext2D, width: number, height: number) => {
   let w = msb(src.canvas.width  / width  - 1) * width
   let h = msb(src.canvas.height / height - 1) * height
 
@@ -17,14 +17,3 @@ const fallback = (src: CanvasRenderingContext2D, width: number, height: number) 
   dst.drawImage(tmp.canvas, 0, 0)
   return dst
 }
-
-const native = (src: CanvasRenderingContext2D, width: number, height: number) => {
-  const dst = context2d({ width, height })({ imageSmoothingQuality: 'medium' })
-  dst.drawImage(src.canvas, 0, 0, width, height)
-  return dst
-}
-
-export const downscale =
-  'imageSmoothingQuality' in CanvasRenderingContext2D.prototype
-    ? native
-    : fallback
