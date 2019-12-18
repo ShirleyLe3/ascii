@@ -1,8 +1,8 @@
-import { Renderer } from './Renderer'
-import { random } from 'wheels/esm/math'
 import { rgb } from 'wheels/esm/color/srgb'
-import { str } from '../utils'
+import { random } from 'wheels/esm/math'
 import { resize, Source } from '../canvas'
+import { str } from '../utils'
+import { Renderer } from './Renderer'
 
 // https://en.wikipedia.org/wiki/SRGB
 const enum Y {

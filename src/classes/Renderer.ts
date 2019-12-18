@@ -1,10 +1,10 @@
-import { max, floor } from 'wheels/esm/math'
-import { overwrite } from 'wheels/esm/object'
 import { context2d } from 'wheels/esm/dom'
-import { chr, monospaced } from '../utils'
-import { Settings } from './Settings'
-import { LUT, fromCharCode } from './LUT'
+import { floor, max } from 'wheels/esm/math'
+import { overwrite } from 'wheels/esm/object'
 import { Source } from '../canvas'
+import { chr, monospaced } from '../utils'
+import { fromCharCode, LUT } from './LUT'
+import { Settings } from './Settings'
 
 export abstract class Renderer {
   protected readonly api: CanvasRenderingContext2D

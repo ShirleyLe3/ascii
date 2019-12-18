@@ -1,5 +1,5 @@
-import { max, clz32 } from 'wheels/esm/math'
 import { context2d } from 'wheels/esm/dom'
+import { clz32, max } from 'wheels/esm/math'
 
 // most significant bit (but msb(x) is always >=1)
 const msb = (n: number) => 1 << max(0, 31 - clz32(n))

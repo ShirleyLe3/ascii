@@ -1,8 +1,8 @@
+import { rgb } from 'wheels/esm/color/srgb'
 import { context2d } from 'wheels/esm/dom'
 import { abs, round } from 'wheels/esm/math'
-import { rgb } from 'wheels/esm/color/srgb'
-import { str } from '../utils'
 import { resize } from '../canvas'
+import { str } from '../utils'
 import { Settings } from './Settings'
 
 const enum Color {
