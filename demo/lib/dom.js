@@ -1,7 +1,7 @@
-import { createElement } from 'https://unpkg.com/preact@10?module'
-import htm from 'https://unpkg.com/htm@2?module'
+import { createElement } from 'https://cdn.jsdelivr.net/npm/preact@10/dist/preact.module.js'
+import htm from 'https://cdn.jsdelivr.net/npm/htm@2/dist/htm.module.js'
 
 const html = htm.bind(createElement)
 
-export * from 'https://unpkg.com/preact@10?module'
+export * from 'https://cdn.jsdelivr.net/npm/preact@10/dist/preact.module.js'
 export { htm, html }
