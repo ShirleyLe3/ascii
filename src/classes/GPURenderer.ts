@@ -36,7 +36,7 @@ export class GPURenderer extends Renderer {
   private readonly txOdd  = glu.texture(this.gl)(filterNearest)
   private readonly txEven = glu.texture(this.gl)(filterNearest)
 
-  private readonly lut = combine(...this.luts)
+  private readonly lut = combine(this.luts)
   private indices = new Float32Array()
 
   constructor(settings?: Partial<Settings>) {

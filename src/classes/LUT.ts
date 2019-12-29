@@ -53,7 +53,7 @@ export const fromCharCode = (charCode: number, settings: Settings) => {
   return lut
 }
 
-export const combine = (...luts: LUT[]) => {
+export const combine = (luts: LUT[]) => {
   const width = luts[0].length
   const height = luts.length
   const lut = new LUT(width, height)
