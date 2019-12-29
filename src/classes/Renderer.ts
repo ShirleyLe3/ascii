@@ -48,5 +48,5 @@ export abstract class Renderer {
     return [...this.lines(src, floor(width), floor(height))].join('\n')
   }
 
-  abstract lines(src: Source, width: number, height: number): IterableIterator<string>
+  abstract lines(src: Source, width: number, height: number): Generator<string>
 }

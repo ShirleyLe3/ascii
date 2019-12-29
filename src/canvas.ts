@@ -27,7 +27,7 @@ export const resize = (src: Source, w: number, h: number) => {
   if (w === wʹ && h === hʹ)
     return tmp
 
-  for (let x, y; x = wʹ > w, y = hʹ > h, x || y;)
+  for (let x, y; x = w < wʹ, y = h < hʹ, x || y;)
     tmp.drawImage(tmp.canvas, 0, 0, wʹ, hʹ, 0, 0, wʹ >>= +x, hʹ >>= +y)
 
   const dst = context2d({ width: w, height: h })()
