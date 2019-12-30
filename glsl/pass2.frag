@@ -7,6 +7,7 @@ precision mediump float;
 
 uniform sampler2D uSrc;
 uniform sampler2D uLUT;
+uniform int uCharMap[Y];
 in vec2 vPosition;
 out vec4 vFragColor;
 
@@ -34,5 +35,5 @@ void main() {
       res = Result(y, value);
   }
 
-  vFragColor = vec4(res.index, 0, 0, 0);
+  vFragColor = vec4(uCharMap[res.index], 0, 0, 0);
 }

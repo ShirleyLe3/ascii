@@ -8,7 +8,7 @@ import { Settings } from './Settings'
 
 export abstract class Renderer {
   protected readonly api: CanvasRenderingContext2D
-  protected readonly charMap: Uint16Array
+  protected readonly charMap: Int32Array
   protected readonly luts: LUT[]
 
   readonly settings = new Settings
@@ -28,7 +28,7 @@ export abstract class Renderer {
       .filter(monospaced(fontFamily))
       .map(chr)
 
-    return Uint16Array.from(charCodes)
+    return Int32Array.from(charCodes)
   }
 
   private makeLUTs() {

@@ -103,6 +103,7 @@ export class GPURenderer extends Renderer {
     gl.useProgram(pass2)
     gl.uniform1i(uPass2('uSrc'), Texture.src)
     gl.uniform1i(uPass2('uLUT'), Texture.lut)
+    gl.uniform1iv(uPass2('uCharMap'), charMap)
     gl.viewport(0, 0, width, height)
     gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
@@ -112,10 +113,7 @@ export class GPURenderer extends Renderer {
     // disable framebuffer
     gl.bindFramebuffer(gle.FRAMEBUFFER, null)
 
-    for (let i = 0; i < this.indices.length;) {
-      const slice = this.indices.subarray(i, i += width)
-      const codes = Array.from(slice, i => charMap[i])
-      yield str(...codes)
-    }
+    for (let i = 0; i < this.indices.length;)
+      yield str(...this.indices.subarray(i, i += width))
   }
 }
