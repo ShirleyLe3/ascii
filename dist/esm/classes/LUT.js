@@ -34,7 +34,7 @@ export const fromCharCode = (charCode, settings) => {
         lut[i] = rgb(rgba[i << 2] / 0xff) ** lutGamma;
     return lut;
 };
-export const combine = (...luts) => {
+export const combine = (luts) => {
     const width = luts[0].length;
     const height = luts.length;
     const lut = new LUT(width, height);

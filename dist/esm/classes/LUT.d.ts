@@ -1,6 +1,6 @@
 import { Settings } from './Settings';
 export declare const fromCharCode: (charCode: number, settings: Settings) => LUT;
-export declare const combine: (...luts: LUT[]) => LUT;
+export declare const combine: (luts: LUT[]) => LUT;
 export declare class LUT extends Float32Array {
     width: number;
     height: number;

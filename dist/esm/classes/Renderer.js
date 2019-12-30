@@ -17,7 +17,7 @@ export class Renderer {
         const charCodes = [...charSet]
             .filter(monospaced(fontFamily))
             .map(chr);
-        return Uint16Array.from(charCodes);
+        return Int32Array.from(charCodes);
     }
     makeLUTs() {
         const { charMap, settings } = this;
