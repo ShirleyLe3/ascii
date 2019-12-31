@@ -3,7 +3,7 @@ import { floor, max } from 'wheels/esm/math'
 import { overwrite } from 'wheels/esm/object'
 import { Source } from '../canvas'
 import { chr, monospaced } from '../utils'
-import { LUT, fromCharCode } from './LUT'
+import { LUT } from './LUT'
 import { Settings } from './Settings'
 
 export abstract class Renderer {
@@ -35,7 +35,7 @@ export abstract class Renderer {
     const { charMap, settings } = this
     const { lutMin, lutMax } = settings
 
-    const luts = Array.from(charMap, cc => fromCharCode(cc, settings))
+    const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings))
     const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0)
 
     for (const lut of luts)

@@ -3,7 +3,7 @@ import { Source, resize } from '../canvas'
 import * as gle from '../gl/enums'
 import * as glu from '../gl/utils'
 import { str } from '../utils'
-import { combine } from './LUT'
+import { LUT } from './LUT'
 import { Renderer } from './Renderer'
 import { Settings } from './Settings'
 
@@ -36,7 +36,7 @@ export class GPURenderer extends Renderer {
   private readonly txOdd  = glu.texture(this.gl)(filterNearest)
   private readonly txEven = glu.texture(this.gl)(filterNearest)
 
-  private readonly lut = combine(this.luts)
+  private readonly lut = LUT.combine(this.luts)
   private indices = new Float32Array()
 
   constructor(settings?: Partial<Settings>) {
