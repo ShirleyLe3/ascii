@@ -17,9 +17,10 @@ build: node_modules
 	rollup -c
 
 watch: node_modules
-	tmux a -t watch || tmux new -s watch \
-		tsc -w -m esnext --outDir dist/esm \; \
-		splitw -dbl 6 rollup -wc
+	tmux \
+		new tsc -w -m esnext --outDir dist/esm \; \
+		splitw -dbl 6 rollup -wc \; \
+		set-option destroy-unattached on
 
 release: all
 	git add dist
