@@ -12,6 +12,10 @@ const enum Color {
 }
 
 export class LUT extends Float32Array {
+  constructor(public width: number, public height: number) {
+    super(width * height)
+  }
+
   static fromCharCode(charCode: number, settings: Settings) {
     const { fontWidth, fontHeight, fontFamily, fontBlur, fontGamma } = settings
     const { fontBase, lutWidth, lutHeight, lutPadding, lutGamma } = settings
@@ -63,10 +67,6 @@ export class LUT extends Float32Array {
       lut.set(luts[i], i*width)
 
     return lut
-  }
-
-  constructor(public width: number, public height: number) {
-    super(width * height)
   }
 
   normalize(min: number, max: number) {
