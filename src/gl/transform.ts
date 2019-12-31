@@ -1,6 +1,6 @@
 import * as ts from 'typescript'
 import { readFileSync } from 'fs'
-import { resolve, dirname } from 'path'
+import { dirname, resolve } from 'path'
 
 const isShaderSourceFile = /\.(?:glsl|vert|frag)$/i
 
@@ -42,7 +42,7 @@ export default (): ts.TransformerFactory<ts.SourceFile> => ctx => sf => {
   const cwd = dirname(sf.fileName)
 
   const visitor: ts.Visitor = node =>
-    transformImport(node, cwd) ||
+    transformImport(node, cwd) ??
     ts.visitEachChild(node, visitor, ctx)
 
   return ts.visitNode(sf, visitor)

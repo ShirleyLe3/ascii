@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { context2d } from 'wheels/esm/dom'
 
 export const str = String.fromCharCode

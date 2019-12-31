@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent, @typescript-eslint/camelcase */
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14
 export const
 

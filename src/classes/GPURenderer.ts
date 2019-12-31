@@ -1,5 +1,5 @@
 import { render } from 'wheels/esm/text/template'
-import { resize, Source } from '../canvas'
+import { Source, resize } from '../canvas'
 import * as gle from '../gl/enums'
 import * as glu from '../gl/utils'
 import { str } from '../utils'

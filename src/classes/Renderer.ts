@@ -3,7 +3,7 @@ import { floor, max } from 'wheels/esm/math'
 import { overwrite } from 'wheels/esm/object'
 import { Source } from '../canvas'
 import { chr, monospaced } from '../utils'
-import { fromCharCode, LUT } from './LUT'
+import { LUT, fromCharCode } from './LUT'
 import { Settings } from './Settings'
 
 export abstract class Renderer {
@@ -11,7 +11,7 @@ export abstract class Renderer {
   protected readonly charMap: Int32Array
   protected readonly luts: LUT[]
 
-  readonly settings = new Settings
+  readonly settings = new Settings()
 
   constructor(settings?: Partial<Settings>) {
     overwrite(this.settings, settings!)

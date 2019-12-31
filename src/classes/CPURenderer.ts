@@ -1,6 +1,6 @@
 import { rgb } from 'wheels/esm/color/srgb'
 import { random } from 'wheels/esm/math'
-import { resize, Source } from '../canvas'
+import { Source, resize } from '../canvas'
 import { str } from '../utils'
 import { Renderer } from './Renderer'
 
@@ -32,7 +32,7 @@ export class CPURenderer extends Renderer {
 
         for (let v = 0; v < lutHeight; v++) {
           for (let u = 0; u < lutWidth; u++) {
-            let i = (x+u) + (y+v)*srcWidth << 2
+            let i = x+u + (y+v)*srcWidth << 2
 
             const r = Y.r * rgb(rgba[i++] / 0xff)
             const g = Y.g * rgb(rgba[i++] / 0xff)
