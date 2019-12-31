@@ -1,5 +1,4 @@
 import * as gle from './enums'
-import { max } from 'wheels/esm/math'
 import { element } from 'wheels/esm/dom'
 
 export type Callback<T = WebGLObject> = (gl: WebGL2RenderingContext, object: T) => void
@@ -73,11 +72,8 @@ export const uniforms = (gl: WebGL2RenderingContext, program: WebGLProgram) =>
 
 //
 
-const zeroPad = (size: number, value: string) =>
-  '0'.repeat(max(0, size - value.length)) + value
-
 const lineNumbers = (source: string, n = 1) =>
-  source.replace(/^.*/gm, line => zeroPad(5, `${n++}: `) + line)
+  source.replace(/^/gm, () => `${n++}: `.padStart(5, '0'))
 
 const context = <T>(gl: WebGL2RenderingContext, object: T, bind: Binder<T>): Context<T> =>
   fn => (fn && (bind(object), fn(gl, object), bind(null)), object)
