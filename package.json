@@ -10,6 +10,10 @@
     "wheels": "reinventing-wheels/wheels#v0.7.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.14.0",
+    "@typescript-eslint/parser": "^2.14.0",
+    "eslint": "^6.8.0",
+    "eslint-config-defaults": "github:reinventing-wheels/eslint-config-defaults#v0.0.1",
     "rollup": "^1.27.10",
     "rollup-plugin-cleanup": "^3.1.1",
     "rollup-plugin-node-resolve": "^5.2.0",
@@ -17,8 +21,6 @@
     "rollup-plugin-terser": "^5.1.3",
     "standard-version": "^7.0.1",
     "ts-patch": "^1.0.5",
-    "tslint": "^5.20.1",
-    "tslint-preset": "reinventing-wheels/tslint-preset#v0.1.0",
     "typescript": "^3.7.3"
   }
 }
