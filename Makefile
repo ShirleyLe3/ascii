@@ -12,12 +12,13 @@ clean:
 	rm -rf dist
 
 build: node_modules
-	ttsc -m esnext --outDir dist/esm
+	ts-patch i -s
+	tsc -m esnext --outDir dist/esm
 	rollup -c
 
 watch: node_modules
 	tmux a -t watch || tmux new -s watch \
-		ttsc -w -m esnext --outDir dist/esm \; \
+		tsc -w -m esnext --outDir dist/esm \; \
 		splitw -dbl 6 rollup -wc
 
 release: all
