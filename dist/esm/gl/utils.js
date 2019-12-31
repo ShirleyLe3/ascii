@@ -6,13 +6,14 @@ export const api = (attributes, ...extensions) => {
     const gl = canvas.getContext('webgl2', attributes);
     if (!gl)
         throw new Error('WebGL2 is not available');
-    for (const ext of extensions)
+    for (const ext of extensions) {
         if (!gl.getExtension(ext))
             throw new Error(`"${ext}" extension is not available`);
+    }
     return gl;
 };
 export const shader = (gl, type, source) => {
-    const sourceʹ = '#version 300 es\n' + source;
+    const sourceʹ = `#version 300 es\n${source}`;
     const shader = gl.createShader(type);
     gl.shaderSource(shader, sourceʹ);
     gl.compileShader(shader);

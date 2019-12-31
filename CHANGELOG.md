@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.2](https://github.com/reinventing-wheels/ascii/compare/v0.12.1...v0.12.2) (2019-12-31)
+
+
+### Bug Fixes
+
+* remove `Renderer::api` ([90ed0ec](https://github.com/reinventing-wheels/ascii/commit/90ed0ece7c3de6be4ba8339a8b711aca7eb2e1e3))
+
 ### [0.12.1](https://github.com/reinventing-wheels/ascii/compare/v0.12.0...v0.12.1) (2019-12-30)
 
 ## [0.12.0](https://github.com/reinventing-wheels/ascii/compare/v0.11.0...v0.12.0) (2019-12-18)

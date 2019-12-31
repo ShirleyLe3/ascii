@@ -2,7 +2,6 @@ import { Source } from '../canvas';
 import { LUT } from './LUT';
 import { Settings } from './Settings';
 export declare abstract class Renderer {
-    protected readonly api: CanvasRenderingContext2D;
     protected readonly charMap: Int32Array;
     protected readonly luts: LUT[];
     readonly settings: Settings;

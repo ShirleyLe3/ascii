@@ -3,7 +3,7 @@ import { resize } from '../canvas';
 import * as gle from '../gl/enums';
 import * as glu from '../gl/utils';
 import { str } from '../utils';
-import { combine } from './LUT';
+import { LUT } from './LUT';
 import { Renderer } from './Renderer';
 const V_BASE = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
 const F_PASS1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
@@ -26,7 +26,7 @@ export class GPURenderer extends Renderer {
         this.txLUT = glu.texture(this.gl)(filterNearest);
         this.txOdd = glu.texture(this.gl)(filterNearest);
         this.txEven = glu.texture(this.gl)(filterNearest);
-        this.lut = combine(this.luts);
+        this.lut = LUT.combine(this.luts);
         this.indices = new Float32Array();
         const vBase = glu.shader(this.gl, gle.VERTEX_SHADER, render(V_BASE, this));
         const fPass1 = glu.shader(this.gl, gle.FRAGMENT_SHADER, render(F_PASS1, this));

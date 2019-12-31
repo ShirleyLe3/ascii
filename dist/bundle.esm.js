@@ -65,50 +65,50 @@ const resize = (src, w, h) => {
     return dst;
 };
 
-const fromCharCode = (charCode, settings) => {
-    const { fontWidth, fontHeight, fontFamily, fontBlur, fontGamma } = settings;
-    const { fontBase, lutWidth, lutHeight, lutPadding, lutGamma } = settings;
-    const lutWidthʹ = lutPadding * 2 + lutWidth;
-    const lutHeightʹ = lutPadding * 2 + lutHeight;
-    const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
-    const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
-    const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })();
-    const char = str(charCode);
-    api.fillStyle = "#00f" ;
-    api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);
-    api.translate(fontWidthʹ / 2, fontHeightʹ / 2);
-    api.fillStyle = "#000" ;
-    api.fillRect(-fontWidth / 2, -fontHeight / 2, fontWidth, fontHeight);
-    api.translate(0, fontHeight * (0.5 - fontBase));
-    api.fillStyle = "#fff" ;
-    api.textAlign = 'center';
-    api.font = `${fontHeight}px ${fontFamily}`;
-    for (let i = 0, m = 1, n = 1; i < fontBlur; [m, n] = [n, n + m]) {
-        api.filter = `blur(${n}px)`;
-        api.globalAlpha = (++i / fontBlur) ** fontGamma;
-        api.fillText(char, 0, 0);
-    }
-    const lut = new LUT(lutWidth, lutHeight);
-    const rgba = resize(api, lutWidthʹ, lutHeightʹ)
-        .getImageData(lutPadding, lutPadding, lutWidth, lutHeight)
-        .data;
-    for (let i = 0; i < lut.length; i++)
-        lut[i] = rgb(rgba[i << 2] / 0xff) ** lutGamma;
-    return lut;
-};
-const combine = (luts) => {
-    const width = luts[0].length;
-    const height = luts.length;
-    const lut = new LUT(width, height);
-    for (let i = 0; i < height; i++)
-        lut.set(luts[i], i * width);
-    return lut;
-};
 class LUT extends Float32Array {
     constructor(width, height) {
         super(width * height);
         this.width = width;
         this.height = height;
+    }
+    static fromCharCode(charCode, settings) {
+        const { fontWidth, fontHeight, fontFamily, fontBlur, fontGamma } = settings;
+        const { fontBase, lutWidth, lutHeight, lutPadding, lutGamma } = settings;
+        const lutWidthʹ = lutPadding * 2 + lutWidth;
+        const lutHeightʹ = lutPadding * 2 + lutHeight;
+        const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
+        const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
+        const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })();
+        const char = str(charCode);
+        api.fillStyle = "#00f" ;
+        api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);
+        api.translate(fontWidthʹ / 2, fontHeightʹ / 2);
+        api.fillStyle = "#000" ;
+        api.fillRect(-fontWidth / 2, -fontHeight / 2, fontWidth, fontHeight);
+        api.translate(0, fontHeight * (0.5 - fontBase));
+        api.fillStyle = "#fff" ;
+        api.textAlign = 'center';
+        api.font = `${fontHeight}px ${fontFamily}`;
+        for (let i = 0, m = 1, n = 1; i < fontBlur; [m, n] = [n, n + m]) {
+            api.filter = `blur(${n}px)`;
+            api.globalAlpha = (++i / fontBlur) ** fontGamma;
+            api.fillText(char, 0, 0);
+        }
+        const lut = new LUT(lutWidth, lutHeight);
+        const rgba = resize(api, lutWidthʹ, lutHeightʹ)
+            .getImageData(lutPadding, lutPadding, lutWidth, lutHeight)
+            .data;
+        for (let i = 0; i < lut.length; i++)
+            lut[i] = rgb(rgba[i << 2] / 0xff) ** lutGamma;
+        return lut;
+    }
+    static combine(luts) {
+        const width = luts[0].length;
+        const height = luts.length;
+        const lut = new LUT(width, height);
+        for (let i = 0; i < height; i++)
+            lut.set(luts[i], i * width);
+        return lut;
     }
     normalize(min, max) {
         for (let i = 0; i < this.length; i++)
@@ -145,9 +145,8 @@ class Settings {
 
 class Renderer {
     constructor(settings) {
-        this.settings = new Settings;
+        this.settings = new Settings();
         overwrite(this.settings, settings);
-        this.api = context2d()();
         this.charMap = this.makeCharMap();
         this.luts = this.makeLUTs();
     }
@@ -161,7 +160,7 @@ class Renderer {
     makeLUTs() {
         const { charMap, settings } = this;
         const { lutMin, lutMax } = settings;
-        const luts = Array.from(charMap, cc => fromCharCode(cc, settings));
+        const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings));
         const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0);
         for (const lut of luts)
             lut.normalize(lutMin * maxʹ, lutMax * maxʹ);
@@ -188,7 +187,7 @@ class CPURenderer extends Renderer {
                 let value = Infinity;
                 for (let v = 0; v < lutHeight; v++) {
                     for (let u = 0; u < lutWidth; u++) {
-                        let i = (x + u) + (y + v) * srcWidth << 2;
+                        let i = x + u + (y + v) * srcWidth << 2;
                         const r = 0.2126  * rgb(rgba[i++] / 0xff);
                         const g = 0.7152  * rgb(rgba[i++] / 0xff);
                         const b = 0.0722  * rgb(rgba[i++] / 0xff);
@@ -225,13 +224,14 @@ const api = (attributes, ...extensions) => {
     const gl = canvas.getContext('webgl2', attributes);
     if (!gl)
         throw new Error('WebGL2 is not available');
-    for (const ext of extensions)
+    for (const ext of extensions) {
         if (!gl.getExtension(ext))
             throw new Error(`"${ext}" extension is not available`);
+    }
     return gl;
 };
 const shader = (gl, type, source) => {
-    const sourceʹ = '#version 300 es\n' + source;
+    const sourceʹ = `#version 300 es\n${source}`;
     const shader = gl.createShader(type);
     gl.shaderSource(shader, sourceʹ);
     gl.compileShader(shader);
@@ -286,7 +286,7 @@ class GPURenderer extends Renderer {
         this.txLUT = texture(this.gl)(filterNearest);
         this.txOdd = texture(this.gl)(filterNearest);
         this.txEven = texture(this.gl)(filterNearest);
-        this.lut = combine(this.luts);
+        this.lut = LUT.combine(this.luts);
         this.indices = new Float32Array();
         const vBase = shader(this.gl, VERTEX_SHADER, render(V_BASE, this));
         const fPass1 = shader(this.gl, FRAGMENT_SHADER, render(F_PASS1, this));
@@ -342,5 +342,5 @@ class GPURenderer extends Renderer {
     }
 }
 
-export { CPURenderer, GPURenderer, LUT, Renderer, Settings, charsets as charSets, combine, fromCharCode };
+export { CPURenderer, GPURenderer, LUT, Renderer, Settings, charsets as charSets };
 //# sourceMappingURL=bundle.esm.js.map

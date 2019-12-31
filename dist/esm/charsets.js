@@ -1,3 +1,4 @@
+/* eslint-disable function-call-argument-newline */
 import { range } from 'it/dist/esm/uncurried';
 import { str } from './utils';
 export const unicode = str(

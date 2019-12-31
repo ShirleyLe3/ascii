@@ -19,7 +19,7 @@ export class CPURenderer extends Renderer {
                 let value = Infinity;
                 for (let v = 0; v < lutHeight; v++) {
                     for (let u = 0; u < lutWidth; u++) {
-                        let i = (x + u) + (y + v) * srcWidth << 2;
+                        let i = x + u + (y + v) * srcWidth << 2;
                         const r = 0.2126 /* r */ * rgb(rgba[i++] / 0xff);
                         const g = 0.7152 /* g */ * rgb(rgba[i++] / 0xff);
                         const b = 0.0722 /* b */ * rgb(rgba[i++] / 0xff);

@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { dirname, resolve } from 'path';
 const isShaderSourceFile = /\.(?:glsl|vert|frag)$/i;
 const minifyShaderSource = (shader) => shader
     .replace(/\/\*[^]*\*\/|\/\/.+/g, '') // remove comments
@@ -31,7 +31,7 @@ const transformImport = (node, cwd) => {
 };
 export default () => ctx => sf => {
     const cwd = dirname(sf.fileName);
-    const visitor = node => transformImport(node, cwd) ||
+    const visitor = node => transformImport(node, cwd) ??
         ts.visitEachChild(node, visitor, ctx);
     return ts.visitNode(sf, visitor);
 };

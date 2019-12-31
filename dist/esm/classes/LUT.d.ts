@@ -1,10 +1,10 @@
 import { Settings } from './Settings';
-export declare const fromCharCode: (charCode: number, settings: Settings) => LUT;
-export declare const combine: (luts: LUT[]) => LUT;
 export declare class LUT extends Float32Array {
     width: number;
     height: number;
     constructor(width: number, height: number);
+    static fromCharCode(charCode: number, settings: Settings): LUT;
+    static combine(luts: LUT[]): LUT;
     normalize(min: number, max: number): void;
     compare(other: ArrayLike<number>): number;
 }
