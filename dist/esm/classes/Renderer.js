@@ -7,20 +7,20 @@ export class Renderer {
     constructor(settings) {
         this.settings = new Settings();
         overwrite(this.settings, settings);
-        this.charMap = this.makeCharMap();
-        this.luts = this.makeLUTs();
+        this._charMap = this._makeCharMap();
+        this._luts = this._makeLUTs();
     }
-    makeCharMap() {
+    _makeCharMap() {
         const { charSet, fontFamily } = this.settings;
         const charCodes = [...charSet]
             .filter(monospaced(fontFamily))
             .map(chr);
         return Int32Array.from(charCodes);
     }
-    makeLUTs() {
-        const { charMap, settings } = this;
+    _makeLUTs() {
+        const { _charMap, settings } = this;
         const { lutMin, lutMax } = settings;
-        const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings));
+        const luts = Array.from(_charMap, cc => LUT.fromCharCode(cc, settings));
         const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0);
         for (const lut of luts)
             lut.normalize(lutMin * maxʹ, lutMax * maxʹ);

@@ -11,18 +11,13 @@
 
     const extend = Object.assign;
     const overwrite = extend;
-    const proto = (object) => {
-        const props = new Set();
-        for (let o = object; o && o !== Object.prototype; o = Object.getPrototypeOf(o))
-            Object.getOwnPropertyNames(o).forEach(prop => props.add(prop));
-        return props;
-    };
 
     const context2d = (...attributes) => (...settings) => overwrite(element('canvas')(...attributes).getContext('2d'), ...settings);
     const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
 
     const str = String.fromCharCode;
     const chr = (str) => str.charCodeAt(0);
+    const render = (str, ctx = {}, ref = '$') => new Function(`{${Object.keys(ctx)}}`, ref, `return \`${str}\``)(ctx, ctx);
     const monospaced = (font) => {
         const api = context2d()({ font: `1em ${font}` });
         const ref = api.measureText(' ');
@@ -153,20 +148,20 @@
         constructor(settings) {
             this.settings = new Settings();
             overwrite(this.settings, settings);
-            this.charMap = this.makeCharMap();
-            this.luts = this.makeLUTs();
+            this._charMap = this._makeCharMap();
+            this._luts = this._makeLUTs();
         }
-        makeCharMap() {
+        _makeCharMap() {
             const { charSet, fontFamily } = this.settings;
             const charCodes = [...charSet]
                 .filter(monospaced(fontFamily))
                 .map(chr);
             return Int32Array.from(charCodes);
         }
-        makeLUTs() {
-            const { charMap, settings } = this;
+        _makeLUTs() {
+            const { _charMap, settings } = this;
             const { lutMin, lutMax } = settings;
-            const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings));
+            const luts = Array.from(_charMap, cc => LUT.fromCharCode(cc, settings));
             const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0);
             for (const lut of luts)
                 lut.normalize(lutMin * maxʹ, lutMax * maxʹ);
@@ -179,7 +174,7 @@
 
     class CPURenderer extends Renderer {
         *lines(src, width, height) {
-            const { settings, charMap, luts } = this;
+            const { settings, _charMap, _luts } = this;
             const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
             const srcWidth = lutWidth * width;
             const srcHeight = lutHeight * height;
@@ -202,21 +197,19 @@
                             buffer[index++] = s + n;
                         }
                     }
-                    for (let i = luts.length; i--;) {
-                        const delta = luts[i].compare(buffer);
+                    for (let i = _luts.length; i--;) {
+                        const delta = _luts[i].compare(buffer);
                         if (delta < value) {
                             value = delta;
                             index = i;
                         }
                     }
-                    codes.push(charMap[index]);
+                    codes.push(_charMap[index]);
                 }
                 yield str(...codes);
             }
         }
     }
-
-    const render = (tmpl, context = {}, ref = '$') => new Function(`{${[...proto(context)]}}`, ref, `return \`${tmpl}\``)(context, context);
 
     const 
     TRIANGLE_STRIP = 0x0005, ARRAY_BUFFER = 0x8892, STATIC_DRAW = 0x88E4, UNSIGNED_BYTE = 0x1401, FLOAT = 0x1406,
@@ -267,13 +260,12 @@
         return context(gl, object, object => gl.bindFramebuffer(target, object));
     };
     const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
-    const zeroPad = (size, value) => '0'.repeat(max(0, size - value.length)) + value;
-    const lineNumbers = (source, n = 1) => source.replace(/^.*/gm, line => zeroPad(5, `${n++}: `) + line);
+    const lineNumbers = (source, n = 1) => source.replace(/^/gm, () => `${n++}: `.padStart(5, '0'));
     const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
 
     const V_BASE = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
     const F_PASS1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
-    const F_PASS2 = "#define U ${settings.lutWidth}\n#define V ${settings.lutHeight}\n#define X ${lut.width}\n#define Y ${lut.height}\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
+    const F_PASS2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
     const filterNearest = gl => {
         gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST);
         gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST);
@@ -287,64 +279,68 @@
     class GPURenderer extends Renderer {
         constructor(settings) {
             super(settings);
-            this.gl = api({}, 'EXT_color_buffer_float');
-            this.fbo = framebuffer(this.gl)();
-            this.txLUT = texture(this.gl)(filterNearest);
-            this.txOdd = texture(this.gl)(filterNearest);
-            this.txEven = texture(this.gl)(filterNearest);
-            this.lut = LUT.combine(this.luts);
-            this.indices = new Float32Array();
-            const vBase = shader(this.gl, VERTEX_SHADER, render(V_BASE, this));
-            const fPass1 = shader(this.gl, FRAGMENT_SHADER, render(F_PASS1, this));
-            const fPass2 = shader(this.gl, FRAGMENT_SHADER, render(F_PASS2, this));
-            this.pass1 = program(this.gl, vBase, fPass1);
-            this.pass2 = program(this.gl, vBase, fPass2);
-            buffer(this.gl)(quadGeometry(0 ));
+            this._gl = api({}, 'EXT_color_buffer_float');
+            this._fbo = framebuffer(this._gl)();
+            this._txLUT = texture(this._gl)(filterNearest);
+            this._txOdd = texture(this._gl)(filterNearest);
+            this._txEven = texture(this._gl)(filterNearest);
+            this._lut = LUT.combine(this._luts);
+            this._indices = new Float32Array();
+            const vBase = shader(this._gl, VERTEX_SHADER, V_BASE);
+            const fPass1 = shader(this._gl, FRAGMENT_SHADER, F_PASS1);
+            const fPass2 = shader(this._gl, FRAGMENT_SHADER, render(F_PASS2, {
+                chars: this._charMap.length,
+                width: this.settings.lutWidth,
+                height: this.settings.lutHeight
+            }));
+            this._pass1 = program(this._gl, vBase, fPass1);
+            this._pass2 = program(this._gl, vBase, fPass2);
+            buffer(this._gl)(quadGeometry(0 ));
         }
         *lines(src, width, height) {
-            const { settings, charMap, lut, gl, pass1, pass2, fbo, txLUT, txOdd, txEven } = this;
+            const { settings, _charMap, _lut, _gl, _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
             const srcWidth = settings.lutWidth * width;
             const srcHeight = settings.lutHeight * height;
             const srcʹ = resize(src, srcWidth, srcHeight);
-            const uPass1 = uniforms(gl, pass1);
-            const uPass2 = uniforms(gl, pass2);
-            if (this.indices.length !== width * height)
-                this.indices = new Float32Array(width * height);
-            gl.bindFramebuffer(FRAMEBUFFER, fbo);
-            gl.activeTexture(TEXTURE0 + 2 );
-            gl.bindTexture(TEXTURE_2D, txLUT);
-            gl.texImage2D(TEXTURE_2D, 0, R32F, lut.width, lut.height, 0, RED, FLOAT, lut);
-            gl.activeTexture(TEXTURE0 + 1 );
-            gl.bindTexture(TEXTURE_2D, txOdd);
-            gl.texImage2D(TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, srcʹ.canvas);
-            gl.activeTexture(TEXTURE0 + 0 );
-            gl.bindTexture(TEXTURE_2D, txEven);
-            gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
-            gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, txEven, 0);
-            gl.useProgram(pass1);
-            gl.uniform1i(uPass1('uSrc'), 1 );
-            gl.uniform1f(uPass1('uBrightness'), settings.brightness);
-            gl.uniform1f(uPass1('uGamma'), settings.gamma);
-            gl.uniform1f(uPass1('uNoise'), settings.noise);
-            gl.uniform1f(uPass1('uRandom'), Math.random());
-            gl.viewport(0, 0, srcWidth, srcHeight);
-            gl.drawArrays(TRIANGLE_STRIP, 0, 4);
-            gl.activeTexture(TEXTURE0 + 1 );
-            gl.bindTexture(TEXTURE_2D, txEven);
-            gl.activeTexture(TEXTURE0 + 0 );
-            gl.bindTexture(TEXTURE_2D, txOdd);
-            gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
-            gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, txOdd, 0);
-            gl.useProgram(pass2);
-            gl.uniform1i(uPass2('uSrc'), 1 );
-            gl.uniform1i(uPass2('uLUT'), 2 );
-            gl.uniform1iv(uPass2('uCharMap'), charMap);
-            gl.viewport(0, 0, width, height);
-            gl.drawArrays(TRIANGLE_STRIP, 0, 4);
-            gl.readPixels(0, 0, width, height, RED, FLOAT, this.indices);
-            gl.bindFramebuffer(FRAMEBUFFER, null);
-            for (let i = 0; i < this.indices.length;)
-                yield str(...this.indices.subarray(i, i += width));
+            const uPass1 = uniforms(_gl, _pass1);
+            const uPass2 = uniforms(_gl, _pass2);
+            if (this._indices.length !== width * height)
+                this._indices = new Float32Array(width * height);
+            _gl.bindFramebuffer(FRAMEBUFFER, _fbo);
+            _gl.activeTexture(TEXTURE0 + 2 );
+            _gl.bindTexture(TEXTURE_2D, _txLUT);
+            _gl.texImage2D(TEXTURE_2D, 0, R32F, _lut.width, _lut.height, 0, RED, FLOAT, _lut);
+            _gl.activeTexture(TEXTURE0 + 1 );
+            _gl.bindTexture(TEXTURE_2D, _txOdd);
+            _gl.texImage2D(TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, srcʹ.canvas);
+            _gl.activeTexture(TEXTURE0 + 0 );
+            _gl.bindTexture(TEXTURE_2D, _txEven);
+            _gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
+            _gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, _txEven, 0);
+            _gl.useProgram(_pass1);
+            _gl.uniform1i(uPass1('uSrc'), 1 );
+            _gl.uniform1f(uPass1('uBrightness'), settings.brightness);
+            _gl.uniform1f(uPass1('uGamma'), settings.gamma);
+            _gl.uniform1f(uPass1('uNoise'), settings.noise);
+            _gl.uniform1f(uPass1('uRandom'), Math.random());
+            _gl.viewport(0, 0, srcWidth, srcHeight);
+            _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
+            _gl.activeTexture(TEXTURE0 + 1 );
+            _gl.bindTexture(TEXTURE_2D, _txEven);
+            _gl.activeTexture(TEXTURE0 + 0 );
+            _gl.bindTexture(TEXTURE_2D, _txOdd);
+            _gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
+            _gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, _txOdd, 0);
+            _gl.useProgram(_pass2);
+            _gl.uniform1i(uPass2('uSrc'), 1 );
+            _gl.uniform1i(uPass2('uLUT'), 2 );
+            _gl.uniform1iv(uPass2('uCharMap'), _charMap);
+            _gl.viewport(0, 0, width, height);
+            _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
+            _gl.readPixels(0, 0, width, height, RED, FLOAT, this._indices);
+            _gl.bindFramebuffer(FRAMEBUFFER, null);
+            for (let i = 0; i < this._indices.length;)
+                yield str(...this._indices.subarray(i, i += width));
         }
     }
 

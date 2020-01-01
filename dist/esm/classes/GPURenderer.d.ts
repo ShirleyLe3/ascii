@@ -2,15 +2,15 @@ import { Source } from '../canvas';
 import { Renderer } from './Renderer';
 import { Settings } from './Settings';
 export declare class GPURenderer extends Renderer {
-    private readonly pass1;
-    private readonly pass2;
-    private readonly gl;
-    private readonly fbo;
-    private readonly txLUT;
-    private readonly txOdd;
-    private readonly txEven;
-    private readonly lut;
-    private indices;
+    private readonly _pass1;
+    private readonly _pass2;
+    private readonly _gl;
+    private readonly _fbo;
+    private readonly _txLUT;
+    private readonly _txOdd;
+    private readonly _txEven;
+    private readonly _lut;
+    private _indices;
     constructor(settings?: Partial<Settings>);
     lines(src: Source, width: number, height: number): Generator<string, void, unknown>;
 }

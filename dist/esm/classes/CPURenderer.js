@@ -5,7 +5,7 @@ import { str } from '../utils';
 import { Renderer } from './Renderer';
 export class CPURenderer extends Renderer {
     *lines(src, width, height) {
-        const { settings, charMap, luts } = this;
+        const { settings, _charMap, _luts } = this;
         const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
         const srcWidth = lutWidth * width;
         const srcHeight = lutHeight * height;
@@ -28,14 +28,14 @@ export class CPURenderer extends Renderer {
                         buffer[index++] = s + n; // signal + noise
                     }
                 }
-                for (let i = luts.length; i--;) {
-                    const delta = luts[i].compare(buffer);
+                for (let i = _luts.length; i--;) {
+                    const delta = _luts[i].compare(buffer);
                     if (delta < value) {
                         value = delta;
                         index = i;
                     }
                 }
-                codes.push(charMap[index]);
+                codes.push(_charMap[index]);
             }
             yield str(...codes);
         }
