@@ -13,7 +13,7 @@ const enum Y {
 
 export class CPURenderer extends Renderer {
   *lines(src: Source, width: number, height: number) {
-    const { settings, charMap, luts } = this
+    const { settings, _charMap, _luts } = this
     const { lutWidth, lutHeight, brightness, gamma, noise } = settings
 
     const srcWidth  = lutWidth  * width
@@ -45,8 +45,8 @@ export class CPURenderer extends Renderer {
           }
         }
 
-        for (let i = luts.length; i--;) {
-          const delta = luts[i].compare(buffer)
+        for (let i = _luts.length; i--;) {
+          const delta = _luts[i].compare(buffer)
 
           if (delta < value) {
             value = delta
@@ -54,7 +54,7 @@ export class CPURenderer extends Renderer {
           }
         }
 
-        codes.push(charMap[index])
+        codes.push(_charMap[index])
       }
 
       yield str(...codes)

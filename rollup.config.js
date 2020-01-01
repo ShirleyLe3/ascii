@@ -42,6 +42,11 @@ const min = {
     ...basePlugins,
     terser({
       ecma: 8,
+      mangle: {
+        properties: {
+          regex: /^_/
+        }
+      },
       compress: {
         hoist_funs: true,
         hoist_vars: true,

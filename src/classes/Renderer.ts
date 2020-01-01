@@ -6,19 +6,19 @@ import { LUT } from './LUT'
 import { Settings } from './Settings'
 
 export abstract class Renderer {
-  protected readonly charMap: Int32Array
-  protected readonly luts: LUT[]
+  protected readonly _charMap: Int32Array
+  protected readonly _luts: LUT[]
 
   readonly settings = new Settings()
 
   constructor(settings?: Partial<Settings>) {
     overwrite(this.settings, settings!)
 
-    this.charMap = this.makeCharMap()
-    this.luts = this.makeLUTs()
+    this._charMap = this._makeCharMap()
+    this._luts = this._makeLUTs()
   }
 
-  private makeCharMap() {
+  private _makeCharMap() {
     const { charSet, fontFamily } = this.settings
 
     const charCodes = [...charSet]
@@ -28,11 +28,11 @@ export abstract class Renderer {
     return Int32Array.from(charCodes)
   }
 
-  private makeLUTs() {
-    const { charMap, settings } = this
+  private _makeLUTs() {
+    const { _charMap, settings } = this
     const { lutMin, lutMax } = settings
 
-    const luts = Array.from(charMap, cc => LUT.fromCharCode(cc, settings))
+    const luts = Array.from(_charMap, cc => LUT.fromCharCode(cc, settings))
     const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0)
 
     for (const lut of luts)

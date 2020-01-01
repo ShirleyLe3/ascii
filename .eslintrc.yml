@@ -1,1 +1,7 @@
 extends: 'defaults'
+rules:
+  '@typescript-eslint/member-naming':
+    - error
+    - private: '^_'
+      protected: '^_'
+      public: '^[^_]'

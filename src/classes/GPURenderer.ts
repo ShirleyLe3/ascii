@@ -26,97 +26,97 @@ const quadGeometry = (index: number): glu.Callback => gl => {
 }
 
 export class GPURenderer extends Renderer {
-  private readonly pass1: WebGLProgram
-  private readonly pass2: WebGLProgram
+  private readonly _pass1: WebGLProgram
+  private readonly _pass2: WebGLProgram
 
-  private readonly gl     = glu.api({}, 'EXT_color_buffer_float')
-  private readonly fbo    = glu.framebuffer(this.gl)()
-  private readonly txLUT  = glu.texture(this.gl)(filterNearest)
-  private readonly txOdd  = glu.texture(this.gl)(filterNearest)
-  private readonly txEven = glu.texture(this.gl)(filterNearest)
+  private readonly _gl     = glu.api({}, 'EXT_color_buffer_float')
+  private readonly _fbo    = glu.framebuffer(this._gl)()
+  private readonly _txLUT  = glu.texture(this._gl)(filterNearest)
+  private readonly _txOdd  = glu.texture(this._gl)(filterNearest)
+  private readonly _txEven = glu.texture(this._gl)(filterNearest)
 
-  private readonly lut = LUT.combine(this.luts)
-  private indices = new Float32Array()
+  private readonly _lut = LUT.combine(this._luts)
+  private _indices = new Float32Array()
 
   constructor(settings?: Partial<Settings>) {
     super(settings)
 
-    const vBase  = glu.shader(this.gl, gle.VERTEX_SHADER, V_BASE)
-    const fPass1 = glu.shader(this.gl, gle.FRAGMENT_SHADER, F_PASS1)
-    const fPass2 = glu.shader(this.gl, gle.FRAGMENT_SHADER, render(F_PASS2, {
-      chars: this.charMap.length,
+    const vBase  = glu.shader(this._gl, gle.VERTEX_SHADER, V_BASE)
+    const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, F_PASS1)
+    const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(F_PASS2, {
+      chars: this._charMap.length,
       width: this.settings.lutWidth,
       height: this.settings.lutHeight
     }))
 
-    this.pass1 = glu.program(this.gl, vBase, fPass1)
-    this.pass2 = glu.program(this.gl, vBase, fPass2)
+    this._pass1 = glu.program(this._gl, vBase, fPass1)
+    this._pass2 = glu.program(this._gl, vBase, fPass2)
 
-    glu.buffer(this.gl)(quadGeometry(Attribute.position))
+    glu.buffer(this._gl)(quadGeometry(Attribute.position))
   }
 
   *lines(src: Source, width: number, height: number) {
-    const { settings, charMap, lut, gl, pass1, pass2, fbo, txLUT, txOdd, txEven } = this
+    const { settings, _charMap, _lut, _gl, _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this
 
     const srcWidth  = settings.lutWidth  * width
     const srcHeight = settings.lutHeight * height
     const srcʹ = resize(src, srcWidth, srcHeight)
 
-    const uPass1 = glu.uniforms(gl, pass1)
-    const uPass2 = glu.uniforms(gl, pass2)
+    const uPass1 = glu.uniforms(_gl, _pass1)
+    const uPass2 = glu.uniforms(_gl, _pass2)
 
-    if (this.indices.length !== width * height)
-      this.indices = new Float32Array(width * height)
+    if (this._indices.length !== width * height)
+      this._indices = new Float32Array(width * height)
 
     // enable framebuffer
-    gl.bindFramebuffer(gle.FRAMEBUFFER, fbo)
+    _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo)
 
     // 1st pass
-    gl.activeTexture(gle.TEXTURE0 + Texture.lut)
-    gl.bindTexture(gle.TEXTURE_2D, txLUT)
-    gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, lut.width, lut.height, 0, gle.RED, gle.FLOAT, lut)
+    _gl.activeTexture(gle.TEXTURE0 + Texture.lut)
+    _gl.bindTexture(gle.TEXTURE_2D, _txLUT)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, _lut.width, _lut.height, 0, gle.RED, gle.FLOAT, _lut)
 
-    gl.activeTexture(gle.TEXTURE0 + Texture.src)
-    gl.bindTexture(gle.TEXTURE_2D, txOdd)
-    gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ.canvas)
+    _gl.activeTexture(gle.TEXTURE0 + Texture.src)
+    _gl.bindTexture(gle.TEXTURE_2D, _txOdd)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ.canvas)
 
-    gl.activeTexture(gle.TEXTURE0 + Texture.dst)
-    gl.bindTexture(gle.TEXTURE_2D, txEven)
-    gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null)
-    gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, txEven, 0)
+    _gl.activeTexture(gle.TEXTURE0 + Texture.dst)
+    _gl.bindTexture(gle.TEXTURE_2D, _txEven)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null)
+    _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txEven, 0)
 
-    gl.useProgram(pass1)
-    gl.uniform1i(uPass1('uSrc'), Texture.src)
-    gl.uniform1f(uPass1('uBrightness'), settings.brightness)
-    gl.uniform1f(uPass1('uGamma'), settings.gamma)
-    gl.uniform1f(uPass1('uNoise'), settings.noise)
-    gl.uniform1f(uPass1('uRandom'), Math.random())
-    gl.viewport(0, 0, srcWidth, srcHeight)
-    gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
+    _gl.useProgram(_pass1)
+    _gl.uniform1i(uPass1('uSrc'), Texture.src)
+    _gl.uniform1f(uPass1('uBrightness'), settings.brightness)
+    _gl.uniform1f(uPass1('uGamma'), settings.gamma)
+    _gl.uniform1f(uPass1('uNoise'), settings.noise)
+    _gl.uniform1f(uPass1('uRandom'), Math.random())
+    _gl.viewport(0, 0, srcWidth, srcHeight)
+    _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
     // 2nd pass
-    gl.activeTexture(gle.TEXTURE0 + Texture.src)
-    gl.bindTexture(gle.TEXTURE_2D, txEven)
+    _gl.activeTexture(gle.TEXTURE0 + Texture.src)
+    _gl.bindTexture(gle.TEXTURE_2D, _txEven)
 
-    gl.activeTexture(gle.TEXTURE0 + Texture.dst)
-    gl.bindTexture(gle.TEXTURE_2D, txOdd)
-    gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null)
-    gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, txOdd, 0)
+    _gl.activeTexture(gle.TEXTURE0 + Texture.dst)
+    _gl.bindTexture(gle.TEXTURE_2D, _txOdd)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null)
+    _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txOdd, 0)
 
-    gl.useProgram(pass2)
-    gl.uniform1i(uPass2('uSrc'), Texture.src)
-    gl.uniform1i(uPass2('uLUT'), Texture.lut)
-    gl.uniform1iv(uPass2('uCharMap'), charMap)
-    gl.viewport(0, 0, width, height)
-    gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
+    _gl.useProgram(_pass2)
+    _gl.uniform1i(uPass2('uSrc'), Texture.src)
+    _gl.uniform1i(uPass2('uLUT'), Texture.lut)
+    _gl.uniform1iv(uPass2('uCharMap'), _charMap)
+    _gl.viewport(0, 0, width, height)
+    _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
     // read from framebuffer
-    gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this.indices)
+    _gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this._indices)
 
     // disable framebuffer
-    gl.bindFramebuffer(gle.FRAMEBUFFER, null)
+    _gl.bindFramebuffer(gle.FRAMEBUFFER, null)
 
-    for (let i = 0; i < this.indices.length;)
-      yield str(...this.indices.subarray(i, i += width))
+    for (let i = 0; i < this._indices.length;)
+      yield str(...this._indices.subarray(i, i += width))
   }
 }
