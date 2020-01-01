@@ -1,7 +1,7 @@
-#define U ${settings.lutWidth}
-#define V ${settings.lutHeight}
-#define X ${lut.width}
-#define Y ${lut.height}
+#define U ${ width }
+#define V ${ height }
+#define X ${ width * height }
+#define Y ${ chars }
 
 precision mediump float;
 

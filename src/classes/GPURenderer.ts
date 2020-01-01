@@ -1,8 +1,7 @@
-import { render } from 'wheels/esm/text/template'
 import { Source, resize } from '../canvas'
 import * as gle from '../gl/enums'
 import * as glu from '../gl/utils'
-import { str } from '../utils'
+import { render, str } from '../utils'
 import { LUT } from './LUT'
 import { Renderer } from './Renderer'
 import { Settings } from './Settings'
@@ -42,9 +41,13 @@ export class GPURenderer extends Renderer {
   constructor(settings?: Partial<Settings>) {
     super(settings)
 
-    const vBase  = glu.shader(this.gl, gle.VERTEX_SHADER,   render(V_BASE,  this))
-    const fPass1 = glu.shader(this.gl, gle.FRAGMENT_SHADER, render(F_PASS1, this))
-    const fPass2 = glu.shader(this.gl, gle.FRAGMENT_SHADER, render(F_PASS2, this))
+    const vBase  = glu.shader(this.gl, gle.VERTEX_SHADER, V_BASE)
+    const fPass1 = glu.shader(this.gl, gle.FRAGMENT_SHADER, F_PASS1)
+    const fPass2 = glu.shader(this.gl, gle.FRAGMENT_SHADER, render(F_PASS2, {
+      chars: this.charMap.length,
+      width: this.settings.lutWidth,
+      height: this.settings.lutHeight
+    }))
 
     this.pass1 = glu.program(this.gl, vBase, fPass1)
     this.pass2 = glu.program(this.gl, vBase, fPass2)
