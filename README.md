@@ -20,7 +20,7 @@ import * as ASCII from 'ascii/dist/esm'
 
 // fast, uses webgl2
 const renderer = new ASCII.GPURenderer({
-  // `ascii`, `extended` and `unicode` are available
+  // `ascii`, `extended` and `extra` are available
   // you can also provide your own, of course
   charSet: ASCII.charSets.ascii,
 
