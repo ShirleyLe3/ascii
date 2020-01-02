@@ -1,21 +1,17 @@
-/* eslint-disable function-call-argument-newline */
-import { range } from 'it/dist/esm/uncurried'
-import { str } from './utils'
+/* eslint-disable prefer-template */
+import { chr, str } from './utils'
 
-export const unicode = str(
-  // ascii
-  ...range(0x20, 0x5f), // _!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^
-  ...range(0x60, 0x7f), // `abcdefghijklmnopqrstuvwxyz{|}~
+const expand = (pair: string) => {
+  const [a, b] = [...pair].map(chr)
+  const codes = [...Array(b - a).keys()].map(n => a + n)
+  return str(...codes)
+}
 
-  // extended ascii
-  ...range(0xa1, 0xa8), // ¡¢£¤¥¦§
-  ...range(0xae, 0xb2), // ®¯°±
-  0xa9, 0xab, 0xac, 0xb4, 0xb5, 0xb7, 0xbb, 0xbf, 0xd7, 0xf7, // ©«¬´µ·»¿×÷
+export const ascii =
+  expand(' ^') + expand('`~')
 
-  // unicode
-  ...range(0x2018, 0x2023), // ‘’‚‛“”„‟†‡•
-  0x2039, 0x203a, 0x2219, 0x221a, 0x221e // ‹›∙√∞
-)
+export const extended =
+  ascii + expand('¡§') + expand('®±') + '©«¬´µ·»¿×÷'
 
-export const extended = unicode.replace(/[^\x00-\xff]/g, '')
-export const ascii    = unicode.replace(/[^\x00-\x7f]/g, '')
+export const unicode =
+  extended + expand('‘•') + '‹›∙√∞'
