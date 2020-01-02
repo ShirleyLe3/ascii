@@ -1,6 +1,7 @@
 import { rgb } from 'wheels/esm/color/srgb'
 import { random } from 'wheels/esm/math'
-import { resize, Source } from '../canvas'
+import { resize } from '../canvas'
+import { Source } from '../types'
 import { str } from '../utils'
 import { Renderer } from './Renderer'
 

@@ -1,15 +1,9 @@
 import { context2d } from 'wheels/esm/dom'
 import { clz32, max } from 'wheels/esm/math'
+import { Source } from './types'
 
 // most significant bit (but msb(x) is always >=1)
 const msb = (n: number) => 1 << max(0, 31 - clz32(n))
-
-export type Source =
-  CanvasRenderingContext2D |
-  HTMLCanvasElement |
-  HTMLImageElement |
-  HTMLVideoElement |
-  ImageBitmap
 
 export const extract = (src: Source) =>
   src instanceof CanvasRenderingContext2D

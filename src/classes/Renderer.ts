@@ -1,6 +1,6 @@
 import { floor, max } from 'wheels/esm/math'
 import { overwrite } from 'wheels/esm/object'
-import { Source } from '../canvas'
+import { Source } from '../types'
 import { chr, monospaced } from '../utils'
 import { LUT } from './LUT'
 import { Settings } from './Settings'
