@@ -1,4 +1,4 @@
-import { Source, resize } from '../canvas'
+import { resize, Source } from '../canvas'
 import * as gle from '../gl/enums'
 import * as glu from '../gl/utils'
 import { render, str } from '../utils'
