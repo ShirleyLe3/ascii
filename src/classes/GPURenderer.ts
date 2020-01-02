@@ -34,7 +34,7 @@ export class GPURenderer extends Renderer {
   private readonly _txEven = glu.texture(this._gl)(filterNearest)
 
   private readonly _lut = LUT.combine(this._luts)
-  private _indices = new Float32Array()
+  private _charCodes = new Float32Array()
 
   constructor(settings?: Partial<Settings>) {
     super(settings)
@@ -63,8 +63,8 @@ export class GPURenderer extends Renderer {
     const uPass1 = glu.uniforms(_gl, _pass1)
     const uPass2 = glu.uniforms(_gl, _pass2)
 
-    if (this._indices.length !== width * height)
-      this._indices = new Float32Array(width * height)
+    if (this._charCodes.length !== width * height)
+      this._charCodes = new Float32Array(width * height)
 
     // enable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo)
@@ -109,12 +109,12 @@ export class GPURenderer extends Renderer {
     _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
     // read from framebuffer
-    _gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this._indices)
+    _gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this._charCodes)
 
     // disable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, null)
 
-    for (let i = 0; i < this._indices.length;)
-      yield str(...this._indices.subarray(i, i += width))
+    for (let i = 0; i < this._charCodes.length;)
+      yield str(...this._charCodes.subarray(i, i += width))
   }
 }
