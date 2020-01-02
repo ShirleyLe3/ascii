@@ -1,4 +1,5 @@
-extends: 'defaults'
+extends:
+  - 'defaults/ts'
 rules:
   '@typescript-eslint/member-naming':
     - error
