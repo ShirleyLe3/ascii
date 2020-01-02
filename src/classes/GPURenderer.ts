@@ -1,14 +1,11 @@
 import { resize, Source } from '../canvas'
 import * as gle from '../gl/enums'
 import * as glu from '../gl/utils'
+import { frag, vert } from '../shaders'
 import { render, str } from '../utils'
 import { LUT } from './LUT'
 import { Renderer } from './Renderer'
 import { Settings } from './Settings'
-
-import V_BASE  from 'glsl/base.vert'
-import F_PASS1 from 'glsl/pass1.frag'
-import F_PASS2 from 'glsl/pass2.frag'
 
 const enum Attribute { position }
 const enum Texture { dst, src, lut }
@@ -41,9 +38,9 @@ export class GPURenderer extends Renderer {
   constructor(settings?: Partial<Settings>) {
     super(settings)
 
-    const vBase  = glu.shader(this._gl, gle.VERTEX_SHADER, V_BASE)
-    const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, F_PASS1)
-    const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(F_PASS2, {
+    const vBase = glu.shader(this._gl, gle.VERTEX_SHADER, vert.base)
+    const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, frag.pass1)
+    const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(frag.pass2, {
       chars: this._charMap.length,
       width: this.settings.lutWidth,
       height: this.settings.lutHeight
