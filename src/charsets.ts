@@ -13,5 +13,5 @@ export const ascii =
 export const extended =
   ascii + expand('¡§') + expand('®±') + '©«¬´µ·»¿×÷'
 
-export const unicode =
+export const extra =
   extended + expand('‘•') + '‹›∙√∞'
