@@ -1,4 +1,4 @@
-import { Source } from '../canvas';
+import { Source } from '../types';
 import { LUT } from './LUT';
 import { Settings } from './Settings';
 export declare abstract class Renderer {

@@ -1,4 +1,4 @@
-import { Source } from '../canvas';
+import { Source } from '../types';
 import { Renderer } from './Renderer';
 import { Settings } from './Settings';
 export declare class GPURenderer extends Renderer {

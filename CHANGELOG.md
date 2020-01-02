@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.14.0](https://github.com/reinventing-wheels/ascii/compare/v0.13.0...v0.14.0) (2020-01-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename `unicode` charset to `extra`
+
+### Features
+
+* export types ([e33c582](https://github.com/reinventing-wheels/ascii/commit/e33c5824ceb2ec1d2174c7c2d5f6de5d6c4c0101))
+* rename `unicode` charset to `extra` ([68c93a6](https://github.com/reinventing-wheels/ascii/commit/68c93a68a525851d9ee6b435e283bb74acc0d72a))
+
 ## [0.13.0](https://github.com/reinventing-wheels/ascii/compare/v0.12.2...v0.13.0) (2020-01-01)
 
 

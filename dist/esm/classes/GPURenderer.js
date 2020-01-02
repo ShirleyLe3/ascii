@@ -1,12 +1,10 @@
 import { resize } from '../canvas';
 import * as gle from '../gl/enums';
 import * as glu from '../gl/utils';
+import { frag, vert } from '../shaders';
 import { render, str } from '../utils';
 import { LUT } from './LUT';
 import { Renderer } from './Renderer';
-const V_BASE = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
-const F_PASS1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
-const F_PASS2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
 const filterNearest = gl => {
     gl.texParameteri(gle.TEXTURE_2D, gle.TEXTURE_MIN_FILTER, gle.NEAREST);
     gl.texParameteri(gle.TEXTURE_2D, gle.TEXTURE_MAG_FILTER, gle.NEAREST);
@@ -27,9 +25,9 @@ export class GPURenderer extends Renderer {
         this._txEven = glu.texture(this._gl)(filterNearest);
         this._lut = LUT.combine(this._luts);
         this._indices = new Float32Array();
-        const vBase = glu.shader(this._gl, gle.VERTEX_SHADER, V_BASE);
-        const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, F_PASS1);
-        const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(F_PASS2, {
+        const vBase = glu.shader(this._gl, gle.VERTEX_SHADER, vert.base);
+        const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, frag.pass1);
+        const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(frag.pass2, {
             chars: this._charMap.length,
             width: this.settings.lutWidth,
             height: this.settings.lutHeight

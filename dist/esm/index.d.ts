@@ -5,4 +5,5 @@ export * from './classes/GPURenderer';
 export * from './classes/LUT';
 export * from './classes/Renderer';
 export * from './classes/Settings';
+export * from './types';
 //# sourceMappingURL=index.d.ts.map

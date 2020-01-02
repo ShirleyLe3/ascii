@@ -1,8 +1,3 @@
-function* range(start = 0, stop = Infinity, step = 1) {
-    for (let n = start; n < stop; n += step)
-        yield n;
-}
-
 const extend = Object.assign;
 const overwrite = extend;
 
@@ -18,23 +13,20 @@ const monospaced = (font) => {
     return (char) => api.measureText(char).width === ref.width;
 };
 
-const unicode = str(
-...range(0x20, 0x5f),
-...range(0x60, 0x7f),
-...range(0xa1, 0xa8),
-...range(0xae, 0xb2),
-0xa9, 0xab, 0xac, 0xb4, 0xb5, 0xb7, 0xbb, 0xbf, 0xd7, 0xf7,
-...range(0x2018, 0x2023),
-0x2039, 0x203a, 0x2219, 0x221a, 0x221e
-);
-const extended = unicode.replace(/[^\x00-\xff]/g, '');
-const ascii = unicode.replace(/[^\x00-\x7f]/g, '');
+const expand = (pair) => {
+    const [a, b] = [...pair].map(chr);
+    const codes = [...Array(b - a).keys()].map(n => a + n);
+    return str(...codes);
+};
+const ascii = expand(' ^') + expand('`~');
+const extended = ascii + expand('¡§') + expand('®±') + '©«¬´µ·»¿×÷';
+const extra = extended + expand('‘•') + '‹›∙√∞';
 
 const charsets = ({
     __proto__: null,
-    unicode: unicode,
+    ascii: ascii,
     extended: extended,
-    ascii: ascii
+    extra: extra
 });
 
 const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
@@ -257,9 +249,12 @@ const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name)
 const lineNumbers = (source, n = 1) => source.replace(/^/gm, () => `${n++}: `.padStart(5, '0'));
 const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
 
-const V_BASE = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
-const F_PASS1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
-const F_PASS2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
+const base = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
+const pass1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
+const pass2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
+const vert = { base };
+const frag = { pass1, pass2 };
+
 const filterNearest = gl => {
     gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST);
     gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST);
@@ -280,9 +275,9 @@ class GPURenderer extends Renderer {
         this._txEven = texture(this._gl)(filterNearest);
         this._lut = LUT.combine(this._luts);
         this._indices = new Float32Array();
-        const vBase = shader(this._gl, VERTEX_SHADER, V_BASE);
-        const fPass1 = shader(this._gl, FRAGMENT_SHADER, F_PASS1);
-        const fPass2 = shader(this._gl, FRAGMENT_SHADER, render(F_PASS2, {
+        const vBase = shader(this._gl, VERTEX_SHADER, vert.base);
+        const fPass1 = shader(this._gl, FRAGMENT_SHADER, frag.pass1);
+        const fPass2 = shader(this._gl, FRAGMENT_SHADER, render(frag.pass2, {
             chars: this._charMap.length,
             width: this.settings.lutWidth,
             height: this.settings.lutHeight
