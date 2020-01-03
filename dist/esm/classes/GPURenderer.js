@@ -24,7 +24,7 @@ export class GPURenderer extends Renderer {
         this._txOdd = glu.texture(this._gl)(filterNearest);
         this._txEven = glu.texture(this._gl)(filterNearest);
         this._lut = LUT.combine(this._luts);
-        this._indices = new Float32Array();
+        this._charCodes = new Float32Array();
         const vBase = glu.shader(this._gl, gle.VERTEX_SHADER, vert.base);
         const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, frag.pass1);
         const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(frag.pass2, {
@@ -43,8 +43,8 @@ export class GPURenderer extends Renderer {
         const srcʹ = resize(src, srcWidth, srcHeight);
         const uPass1 = glu.uniforms(_gl, _pass1);
         const uPass2 = glu.uniforms(_gl, _pass2);
-        if (this._indices.length !== width * height)
-            this._indices = new Float32Array(width * height);
+        if (this._charCodes.length !== width * height)
+            this._charCodes = new Float32Array(width * height);
         // enable framebuffer
         _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo);
         // 1st pass
@@ -80,11 +80,11 @@ export class GPURenderer extends Renderer {
         _gl.viewport(0, 0, width, height);
         _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4);
         // read from framebuffer
-        _gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this._indices);
+        _gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this._charCodes);
         // disable framebuffer
         _gl.bindFramebuffer(gle.FRAMEBUFFER, null);
-        for (let i = 0; i < this._indices.length;)
-            yield str(...this._indices.subarray(i, i += width));
+        for (let i = 0; i < this._charCodes.length;)
+            yield str(...this._charCodes.subarray(i, i += width));
     }
 }
 //# sourceMappingURL=GPURenderer.js.map

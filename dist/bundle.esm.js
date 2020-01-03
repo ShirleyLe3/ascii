@@ -16,10 +16,10 @@ const monospaced = (font) => {
 const expand = (pair) => {
     const [a, b] = [...pair].map(chr);
     const codes = [...Array(b - a).keys()].map(n => a + n);
-    return str(...codes);
+    return str(...codes, b);
 };
 const ascii = expand(' ^') + expand('`~');
-const extended = ascii + expand('¡§') + expand('®±') + '©«¬´µ·»¿×÷';
+const extended = ascii + expand('¡§') + '®°±©«¬´µ·»¿×÷';
 const extra = extended + expand('‘•') + '‹›∙√∞';
 
 const charsets = ({
@@ -274,7 +274,7 @@ class GPURenderer extends Renderer {
         this._txOdd = texture(this._gl)(filterNearest);
         this._txEven = texture(this._gl)(filterNearest);
         this._lut = LUT.combine(this._luts);
-        this._indices = new Float32Array();
+        this._charCodes = new Float32Array();
         const vBase = shader(this._gl, VERTEX_SHADER, vert.base);
         const fPass1 = shader(this._gl, FRAGMENT_SHADER, frag.pass1);
         const fPass2 = shader(this._gl, FRAGMENT_SHADER, render(frag.pass2, {
@@ -293,8 +293,8 @@ class GPURenderer extends Renderer {
         const srcʹ = resize(src, srcWidth, srcHeight);
         const uPass1 = uniforms(_gl, _pass1);
         const uPass2 = uniforms(_gl, _pass2);
-        if (this._indices.length !== width * height)
-            this._indices = new Float32Array(width * height);
+        if (this._charCodes.length !== width * height)
+            this._charCodes = new Float32Array(width * height);
         _gl.bindFramebuffer(FRAMEBUFFER, _fbo);
         _gl.activeTexture(TEXTURE0 + 2 );
         _gl.bindTexture(TEXTURE_2D, _txLUT);
@@ -326,10 +326,10 @@ class GPURenderer extends Renderer {
         _gl.uniform1iv(uPass2('uCharMap'), _charMap);
         _gl.viewport(0, 0, width, height);
         _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
-        _gl.readPixels(0, 0, width, height, RED, FLOAT, this._indices);
+        _gl.readPixels(0, 0, width, height, RED, FLOAT, this._charCodes);
         _gl.bindFramebuffer(FRAMEBUFFER, null);
-        for (let i = 0; i < this._indices.length;)
-            yield str(...this._indices.subarray(i, i += width));
+        for (let i = 0; i < this._charCodes.length;)
+            yield str(...this._charCodes.subarray(i, i += width));
     }
 }
 

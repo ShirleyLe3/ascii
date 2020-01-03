@@ -10,7 +10,7 @@ export declare class GPURenderer extends Renderer {
     private readonly _txOdd;
     private readonly _txEven;
     private readonly _lut;
-    private _indices;
+    private _charCodes;
     constructor(settings?: Partial<Settings>);
     lines(src: Source, width: number, height: number): Generator<string, void, unknown>;
 }

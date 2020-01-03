@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.1](https://github.com/reinventing-wheels/ascii/compare/v0.14.0...v0.14.1) (2020-01-03)
+
+
+### Features
+
+* remove `¯` character from charsets ([8427406](https://github.com/reinventing-wheels/ascii/commit/84274060c0c48b1c2df5d2d09ab1951d2801d990))
+
+
+### Bug Fixes
+
+* `[a, b)` -> `[a, b]` ([a27a231](https://github.com/reinventing-wheels/ascii/commit/a27a2311992beef2577669d6ca19e8dde944f385))
+
 ## [0.14.0](https://github.com/reinventing-wheels/ascii/compare/v0.13.0...v0.14.0) (2020-01-02)
 
 
