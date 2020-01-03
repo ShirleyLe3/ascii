@@ -11,7 +11,7 @@ export const ascii =
   expand(' ^') + expand('`~')
 
 export const extended =
-  ascii + expand('¡§') + expand('®±') + '©«¬´µ·»¿×÷'
+  ascii + expand('¡§') + '®°±©«¬´µ·»¿×÷'
 
 export const extra =
   extended + expand('‘•') + '‹›∙√∞'
