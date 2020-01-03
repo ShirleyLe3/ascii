@@ -1,6 +1,4 @@
-import base from '../glsl/base.vert'
-import pass1 from '../glsl/pass1.frag'
-import pass2 from '../glsl/pass2.frag'
+import fragment from '../glsl/shader.frag'
+import vertex from '../glsl/shader.vert'
 
-export const vert = { base }
-export const frag = { pass1, pass2 }
+export { fragment, vertex }
