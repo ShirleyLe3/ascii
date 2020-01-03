@@ -4,7 +4,7 @@ import { chr, str } from './utils'
 const expand = (pair: string) => {
   const [a, b] = [...pair].map(chr)
   const codes = [...Array(b - a).keys()].map(n => a + n)
-  return str(...codes)
+  return str(...codes, b)
 }
 
 export const ascii =
