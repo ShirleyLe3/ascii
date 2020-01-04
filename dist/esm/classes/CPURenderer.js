@@ -1,7 +1,8 @@
 import { rgb } from 'wheels/esm/color/srgb';
 import { random } from 'wheels/esm/math';
-import { resize } from '../canvas';
-import { str } from '../utils';
+import { resizeIfNeeded } from '../lib/canvas/advanced';
+import { convert } from '../lib/canvas/utils';
+import { str } from '../lib/utils';
 import { Renderer } from './Renderer';
 export class CPURenderer extends Renderer {
     *lines(src, width, height) {
@@ -9,7 +10,7 @@ export class CPURenderer extends Renderer {
         const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
         const srcWidth = lutWidth * width;
         const srcHeight = lutHeight * height;
-        const srcʹ = resize(src, srcWidth, srcHeight);
+        const srcʹ = convert(resizeIfNeeded(src, srcWidth, srcHeight));
         const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
         const buffer = new Float32Array(lutWidth * lutHeight);
         for (let y = 0; y < srcHeight; y += lutHeight) {

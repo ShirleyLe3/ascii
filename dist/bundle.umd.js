@@ -39,23 +39,44 @@
 
     const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
 
-    const msb = (n) => 1 << max(0, 31 - clz32(n));
     const extract = (src) => src instanceof CanvasRenderingContext2D
         ? src.canvas
         : src;
+    const convert = (src) => {
+        if (src instanceof CanvasRenderingContext2D)
+            return src;
+        const { width, height } = src;
+        const api = context2d({ width, height })();
+        api.drawImage(src, 0, 0);
+        return api;
+    };
+
+    const crop = (src, x, y, w, h) => {
+        const dst = context2d({ width: w, height: h })();
+        dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h);
+        return dst;
+    };
     const resize = (src, w, h) => {
+        const dst = context2d({ width: w, height: h })();
+        dst.drawImage(extract(src), 0, 0, w, h);
+        return dst;
+    };
+
+    const msb = (n) => 1 << max(0, 31 - clz32(n));
+    const resize$1 = (src, w, h) => {
         const srcʹ = extract(src);
         let wʹ = w * msb(srcʹ.width / w - 1);
         let hʹ = h * msb(srcʹ.height / h - 1);
-        const tmp = context2d({ width: wʹ, height: hʹ })();
-        tmp.drawImage(srcʹ, 0, 0, wʹ, hʹ);
+        const tmp = resize(src, wʹ, hʹ);
         if (w === wʹ && h === hʹ)
             return tmp;
         for (let x, y; x = w < wʹ, y = h < hʹ, x || y;)
             tmp.drawImage(tmp.canvas, 0, 0, wʹ, hʹ, 0, 0, wʹ >>= +x, hʹ >>= +y);
-        const dst = context2d({ width: w, height: h })();
-        dst.drawImage(tmp.canvas, 0, 0);
-        return dst;
+        return crop(tmp, 0, 0, w, h);
+    };
+    const resizeIfNeeded = (src, w, h) => {
+        const { width: wʹ, height: hʹ } = extract(src);
+        return w !== wʹ || h !== hʹ ? resize$1(src, w, h) : src;
     };
 
     class LUT extends Float32Array {
@@ -88,7 +109,7 @@
                 api.fillText(char, 0, 0);
             }
             const lut = new LUT(lutWidth, lutHeight);
-            const rgba = resize(api, lutWidthʹ, lutHeightʹ)
+            const rgba = resize$1(api, lutWidthʹ, lutHeightʹ)
                 .getImageData(lutPadding, lutPadding, lutWidth, lutHeight)
                 .data;
             for (let i = 0; i < lut.length; i++)
@@ -170,7 +191,7 @@
             const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
             const srcWidth = lutWidth * width;
             const srcHeight = lutHeight * height;
-            const srcʹ = resize(src, srcWidth, srcHeight);
+            const srcʹ = convert(resizeIfNeeded(src, srcWidth, srcHeight));
             const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
             const buffer = new Float32Array(lutWidth * lutHeight);
             for (let y = 0; y < srcHeight; y += lutHeight) {
@@ -296,7 +317,7 @@
             const { settings, _charMap, _lut, _gl, _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
             const srcWidth = settings.lutWidth * width;
             const srcHeight = settings.lutHeight * height;
-            const srcʹ = resize(src, srcWidth, srcHeight);
+            const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight));
             const uPass1 = uniforms(_gl, _pass1);
             const uPass2 = uniforms(_gl, _pass2);
             if (this._charCodes.length !== width * height)
@@ -307,7 +328,7 @@
             _gl.texImage2D(TEXTURE_2D, 0, R32F, _lut.width, _lut.height, 0, RED, FLOAT, _lut);
             _gl.activeTexture(TEXTURE0 + 1 );
             _gl.bindTexture(TEXTURE_2D, _txOdd);
-            _gl.texImage2D(TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, srcʹ.canvas);
+            _gl.texImage2D(TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, srcʹ);
             _gl.activeTexture(TEXTURE0 + 0 );
             _gl.bindTexture(TEXTURE_2D, _txEven);
             _gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);

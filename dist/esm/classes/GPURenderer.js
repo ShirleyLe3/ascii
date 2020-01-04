@@ -1,8 +1,9 @@
-import { resize } from '../canvas';
-import * as gle from '../gl/enums';
-import * as glu from '../gl/utils';
+import { resizeIfNeeded } from '../lib/canvas/advanced';
+import { extract } from '../lib/canvas/utils';
+import * as gle from '../lib/gl/enums';
+import * as glu from '../lib/gl/utils';
+import { render, str } from '../lib/utils';
 import { frag, vert } from '../shaders';
-import { render, str } from '../utils';
 import { LUT } from './LUT';
 import { Renderer } from './Renderer';
 const filterNearest = gl => {
@@ -40,7 +41,7 @@ export class GPURenderer extends Renderer {
         const { settings, _charMap, _lut, _gl, _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
         const srcWidth = settings.lutWidth * width;
         const srcHeight = settings.lutHeight * height;
-        const srcʹ = resize(src, srcWidth, srcHeight);
+        const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight));
         const uPass1 = glu.uniforms(_gl, _pass1);
         const uPass2 = glu.uniforms(_gl, _pass2);
         if (this._charCodes.length !== width * height)
@@ -53,7 +54,7 @@ export class GPURenderer extends Renderer {
         _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, _lut.width, _lut.height, 0, gle.RED, gle.FLOAT, _lut);
         _gl.activeTexture(gle.TEXTURE0 + 1 /* src */);
         _gl.bindTexture(gle.TEXTURE_2D, _txOdd);
-        _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ.canvas);
+        _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ);
         _gl.activeTexture(gle.TEXTURE0 + 0 /* dst */);
         _gl.bindTexture(gle.TEXTURE_2D, _txEven);
         _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null);
