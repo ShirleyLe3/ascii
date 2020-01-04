@@ -1,7 +1,7 @@
 Makes ASCII-art from any renderable input
 
-- [`CPURenderer` demo][demo-cpu]
-- [`GPURenderer` demo][demo-gpu]
+- `CPURenderer` demos: [static][demo-static]
+- `GPURenderer` demos: [dynamic][demo-dynamic], [knot][demo-knot]
 
 ## Installation
 
@@ -50,5 +50,6 @@ const result = renderer.render(source, width, height)
 [ts]: //www.typescriptlang.org
 [vsc]: //code.visualstudio.com
 [git-urls]: //docs.npmjs.com/files/package.json#git-urls-as-dependencies
-[demo-cpu]: //reinventing-wheels.github.io/ascii/demo/cpu.html
-[demo-gpu]: //reinventing-wheels.github.io/ascii/demo/gpu.html
+[demo-static]: //reinventing-wheels.github.io/ascii/demo/static.html
+[demo-dynamic]: //reinventing-wheels.github.io/ascii/demo/dynamic.html
+[demo-knot]: //reinventing-wheels.github.io/ascii/demo/knot.html
