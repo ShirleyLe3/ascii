@@ -1,6 +1,7 @@
 import { rgb } from 'wheels/esm/color/srgb'
 import { random } from 'wheels/esm/math'
-import { resize } from '../lib/canvas/basic'
+import { resizeIfNeeded } from '../lib/canvas/advanced'
+import { convert } from '../lib/canvas/utils'
 import { str } from '../lib/utils'
 import { Source } from '../types'
 import { Renderer } from './Renderer'
@@ -19,7 +20,7 @@ export class CPURenderer extends Renderer {
 
     const srcWidth  = lutWidth  * width
     const srcHeight = lutHeight * height
-    const srcʹ = resize(src, srcWidth, srcHeight)
+    const srcʹ = convert(resizeIfNeeded(src, srcWidth, srcHeight))
 
     const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data
     const buffer = new Float32Array(lutWidth * lutHeight)

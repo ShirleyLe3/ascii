@@ -1,4 +1,5 @@
-import { resize } from '../lib/canvas/basic'
+import { resizeIfNeeded } from '../lib/canvas/advanced'
+import { extract } from '../lib/canvas/utils'
 import * as gle from '../lib/gl/enums'
 import * as glu from '../lib/gl/utils'
 import { render, str } from '../lib/utils'
@@ -58,7 +59,7 @@ export class GPURenderer extends Renderer {
 
     const srcWidth  = settings.lutWidth  * width
     const srcHeight = settings.lutHeight * height
-    const srcʹ = resize(src, srcWidth, srcHeight)
+    const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight))
 
     const uPass1 = glu.uniforms(_gl, _pass1)
     const uPass2 = glu.uniforms(_gl, _pass2)
@@ -76,7 +77,7 @@ export class GPURenderer extends Renderer {
 
     _gl.activeTexture(gle.TEXTURE0 + Texture.src)
     _gl.bindTexture(gle.TEXTURE_2D, _txOdd)
-    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ.canvas)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ)
 
     _gl.activeTexture(gle.TEXTURE0 + Texture.dst)
     _gl.bindTexture(gle.TEXTURE_2D, _txEven)
