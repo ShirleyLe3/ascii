@@ -9,7 +9,7 @@
     "sourceMap": true,
     "strict": true,
     "plugins": [
-      { "transform": "./src/gl/transform.ts" }
+      { "transform": "./src/lib/gl/transform.ts" }
     ]
   },
   "include": [

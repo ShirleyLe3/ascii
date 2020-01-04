@@ -1,5 +1,5 @@
 /* eslint-disable prefer-template */
-import { chr, str } from './utils'
+import { chr, str } from './lib/utils'
 
 const expand = (pair: string) => {
   const [a, b] = [...pair].map(chr)

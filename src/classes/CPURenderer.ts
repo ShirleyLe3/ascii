@@ -1,8 +1,8 @@
 import { rgb } from 'wheels/esm/color/srgb'
 import { random } from 'wheels/esm/math'
-import { resize } from '../canvas'
+import { resize } from '../lib/canvas/basic'
+import { str } from '../lib/utils'
 import { Source } from '../types'
-import { str } from '../utils'
 import { Renderer } from './Renderer'
 
 // https://en.wikipedia.org/wiki/SRGB
