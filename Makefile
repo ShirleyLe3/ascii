@@ -11,14 +11,11 @@ test: node_modules
 clean:
 	rm -rf dist
 
-patch: node_modules
-	ts-patch i -s
-
-build: patch
+build: node_modules
 	tsc -m esnext --outDir dist/esm
 	rollup -c
 
-watch: patch
+watch: node_modules
 	tmux \
 		new tsc -w -m esnext --outDir dist/esm \; \
 		splitw -dbl 6 rollup -wc \; \
@@ -30,5 +27,6 @@ release: all
 
 node_modules: package.json
 	npm i && touch $@
+	ts-patch i -s
 
-.PHONY: all lint test clean patch build watch release
+.PHONY: all lint test clean build watch release
