@@ -2,12 +2,12 @@
 <meta name='viewport' content='width=device-width,user-scalable=no'>
 <link rel='stylesheet' href='./lib/components/Demo.css'>
 <script type='module'>
-  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.112/build/three.module.js'
-  import Stats from 'https://cdn.jsdelivr.net/npm/three@0.112/examples/jsm/libs/stats.module.js'
+  import * as THREE from '//cdn.jsdelivr.net/npm/three@0.112/build/three.module.js'
+  import Stats from '//cdn.jsdelivr.net/npm/three@0.112/examples/jsm/libs/stats.module.js'
 
   import { render, html } from './lib/dom.js'
   import { Demo } from './lib/components/Demo.js'
-  import { GPURenderer, charSets } from '../dist/bundle.esm.js'
+  import { GPURenderer } from '../dist/bundle.esm.js'
 
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('webgl2')

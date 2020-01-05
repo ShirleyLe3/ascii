@@ -13,12 +13,17 @@ npm install reinventing-wheels/ascii
 
 ## Importing
 
-> **Tip:** check out [this tool][jsdelivr] if you're looking for CDN links
+In NodeJS:
+
+> **Note:** assumes using something like webpack/rollup
 
 ```js
-// assumes using something like webpack/rollup
 import * as ASCII from 'ascii/dist/esm'
 ```
+
+In a browser:
+
+> **Tip:** check out [jsDelivr][jsdelivr] if you're looking for CDN links
 
 ```js
 import * as ASCII from 'path/to/bundle.esm.js'
