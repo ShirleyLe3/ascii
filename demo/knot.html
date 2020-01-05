@@ -2,12 +2,12 @@
 <meta name='viewport' content='width=device-width,user-scalable=no'>
 <link rel='stylesheet' href='./lib/components/Demo.css'>
 <script type='module'>
-  import * as THREE from '//cdn.jsdelivr.net/npm/three@0.112/build/three.module.js'
-  import Stats from '//cdn.jsdelivr.net/npm/three@0.112/examples/jsm/libs/stats.module.js'
+  import * as THREE from '//cdn.jsdelivr.net/npm/three@0.112/build/three.module.min.js'
+  import Stats from '//cdn.jsdelivr.net/npm/three@0.112/examples/jsm/libs/stats.module.min.js'
 
   import { render, html } from './lib/dom.js'
   import { Demo } from './lib/components/Demo.js'
-  import { GPURenderer } from '../dist/bundle.esm.js'
+  import { GPURenderer, charSets } from '../dist/bundle.esm.js'
 
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('webgl2')
@@ -29,7 +29,10 @@
   }
 
   const geometry = new THREE.TorusKnotGeometry(3, 1, 1<<7, 1<<4)
-  const wireframe = new THREE.MeshBasicMaterial({ wireframe: true })
+  const wireframe = new THREE.MeshBasicMaterial({
+    wireframe: true,
+    color: 0x000000
+  })
   const solid = new THREE.MeshPhongMaterial({
     flatShading: true,
     shininess: 1000,
@@ -46,19 +49,23 @@
 
   const renderer = refs => {
     const { fontFamily } = getComputedStyle(refs.root)
-    const ascii = new GPURenderer({ fontFamily, noise: 0.1 })
-    const { lutWidth: lw, lutHeight: lh } = ascii.settings
+    const ascii = new GPURenderer({
+      fontFamily,
+      charSet: charSets.extra,
+      noise: 0.1
+    })
 
     const stats = new Stats()
     document.body.append(stats.dom)
 
     return (w, h, r, t) => {
-      stats.update()
+      const { lutWidth: lw, lutHeight: lh } = ascii.settings
       mesh.rotation.set(t/3e3, t/5e3, t/7e3)
       camera.aspect = r
       camera.updateProjectionMatrix()
       three.setSize(lw * w, lh * h)
       three.render(scene, camera)
+      stats.update()
       return ascii.render(canvas, w, h)
     }
   }
