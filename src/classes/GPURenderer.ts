@@ -65,8 +65,8 @@ export class GPURenderer extends Renderer {
     const uPass1 = glu.uniforms(_gl, _pass1)
     const uPass2 = glu.uniforms(_gl, _pass2)
 
-    if (this._charCodes.length !== width * height)
-      this._charCodes = new Float32Array(width * height)
+    if (this._charCodes.length !== width * height << 2)
+      this._charCodes = new Float32Array(width * height << 2)
 
     // enable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo)
@@ -100,7 +100,7 @@ export class GPURenderer extends Renderer {
 
     _gl.activeTexture(gle.TEXTURE0 + Texture.dst)
     _gl.bindTexture(gle.TEXTURE_2D, _txOdd)
-    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA32F, srcWidth, srcHeight, 0, gle.RGBA, gle.FLOAT, null)
     _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txOdd, 0)
 
     _gl.useProgram(_pass2)
@@ -111,12 +111,16 @@ export class GPURenderer extends Renderer {
     _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
     // read from framebuffer
-    _gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this._charCodes)
+    _gl.readPixels(0, 0, width, height, gle.RGBA, gle.FLOAT, this._charCodes)
 
     // disable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, null)
 
-    for (let i = 0; i < this._charCodes.length;)
-      yield str(...this._charCodes.subarray(i, i += width))
+    for (let y = 0; y < height; y++) {
+      const codes = []
+      for (let x = 0; x < width; x++)
+        codes.push(this._charCodes[x + y*width << 2])
+      yield str(...codes)
+    }
   }
 }
