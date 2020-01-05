@@ -70,11 +70,11 @@ export class LUT extends Float32Array {
   }
 
   normalize(min: number, max: number) {
-    for (let i = 0; i < this.length; i++)
+    for (let i = this.length; i--;)
       this[i] = (this[i] - min) / (max - min)
   }
 
-  compare(other: ArrayLike<number>) {
+  compare(other: LUT) {
     let acc = 0
 
     for (let i = this.length; i--;)

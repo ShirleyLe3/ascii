@@ -4,6 +4,7 @@ import { resizeIfNeeded } from '../lib/canvas/advanced'
 import { convert } from '../lib/canvas/utils'
 import { str } from '../lib/utils'
 import { Source } from '../types'
+import { LUT } from './LUT'
 import { Renderer } from './Renderer'
 
 // https://en.wikipedia.org/wiki/SRGB
@@ -23,7 +24,7 @@ export class CPURenderer extends Renderer {
     const srcʹ = convert(resizeIfNeeded(src, srcWidth, srcHeight))
 
     const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data
-    const buffer = new Float32Array(lutWidth * lutHeight)
+    const buffer = new LUT(lutWidth, lutHeight)
 
     for (let y = 0; y < srcHeight; y += lutHeight) {
       const codes = []

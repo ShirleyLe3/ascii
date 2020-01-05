@@ -1,3 +1,4 @@
+import { random } from 'wheels/esm/math'
 import { resizeIfNeeded } from '../lib/canvas/advanced'
 import { extract } from '../lib/canvas/utils'
 import * as gle from '../lib/gl/enums'
@@ -89,7 +90,7 @@ export class GPURenderer extends Renderer {
     _gl.uniform1f(uPass1('uBrightness'), settings.brightness)
     _gl.uniform1f(uPass1('uGamma'), settings.gamma)
     _gl.uniform1f(uPass1('uNoise'), settings.noise)
-    _gl.uniform1f(uPass1('uRandom'), Math.random())
+    _gl.uniform1f(uPass1('uRandom'), random())
     _gl.viewport(0, 0, srcWidth, srcHeight)
     _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
