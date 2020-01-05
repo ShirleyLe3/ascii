@@ -1,3 +1,4 @@
+import { random } from 'wheels/esm/math';
 import { resizeIfNeeded } from '../lib/canvas/advanced';
 import { extract } from '../lib/canvas/utils';
 import * as gle from '../lib/gl/enums';
@@ -44,8 +45,8 @@ export class GPURenderer extends Renderer {
         const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight));
         const uPass1 = glu.uniforms(_gl, _pass1);
         const uPass2 = glu.uniforms(_gl, _pass2);
-        if (this._charCodes.length !== width * height)
-            this._charCodes = new Float32Array(width * height);
+        if (this._charCodes.length !== width * height << 2)
+            this._charCodes = new Float32Array(width * height << 2);
         // enable framebuffer
         _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo);
         // 1st pass
@@ -64,7 +65,7 @@ export class GPURenderer extends Renderer {
         _gl.uniform1f(uPass1('uBrightness'), settings.brightness);
         _gl.uniform1f(uPass1('uGamma'), settings.gamma);
         _gl.uniform1f(uPass1('uNoise'), settings.noise);
-        _gl.uniform1f(uPass1('uRandom'), Math.random());
+        _gl.uniform1f(uPass1('uRandom'), random());
         _gl.viewport(0, 0, srcWidth, srcHeight);
         _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4);
         // 2nd pass
@@ -72,7 +73,7 @@ export class GPURenderer extends Renderer {
         _gl.bindTexture(gle.TEXTURE_2D, _txEven);
         _gl.activeTexture(gle.TEXTURE0 + 0 /* dst */);
         _gl.bindTexture(gle.TEXTURE_2D, _txOdd);
-        _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null);
+        _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA32F, srcWidth, srcHeight, 0, gle.RGBA, gle.FLOAT, null);
         _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txOdd, 0);
         _gl.useProgram(_pass2);
         _gl.uniform1i(uPass2('uSrc'), 1 /* src */);
@@ -81,11 +82,15 @@ export class GPURenderer extends Renderer {
         _gl.viewport(0, 0, width, height);
         _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4);
         // read from framebuffer
-        _gl.readPixels(0, 0, width, height, gle.RED, gle.FLOAT, this._charCodes);
+        _gl.readPixels(0, 0, width, height, gle.RGBA, gle.FLOAT, this._charCodes);
         // disable framebuffer
         _gl.bindFramebuffer(gle.FRAMEBUFFER, null);
-        for (let i = 0; i < this._charCodes.length;)
-            yield str(...this._charCodes.subarray(i, i += width));
+        for (let y = 0; y < height; y++) {
+            const codes = [];
+            for (let x = 0; x < width; x++)
+                codes.push(this._charCodes[x + y * width << 2]);
+            yield str(...codes);
+        }
     }
 }
 //# sourceMappingURL=GPURenderer.js.map

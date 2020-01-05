@@ -6,6 +6,6 @@ export declare class LUT extends Float32Array {
     static fromCharCode(charCode: number, settings: Settings): LUT;
     static combine(luts: LUT[]): LUT;
     normalize(min: number, max: number): void;
-    compare(other: ArrayLike<number>): number;
+    compare(other: LUT): number;
 }
 //# sourceMappingURL=LUT.d.ts.map

@@ -22,12 +22,12 @@ const ascii = expand(' ^') + expand('`~');
 const extended = ascii + expand('¡§') + '®°±©«¬´µ·»¿×÷';
 const extra = extended + expand('‘•') + '‹›∙√∞';
 
-const charsets = ({
+const charsets = {
     __proto__: null,
     ascii: ascii,
     extended: extended,
     extra: extra
-});
+};
 
 const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
 
@@ -119,7 +119,7 @@ class LUT extends Float32Array {
         return lut;
     }
     normalize(min, max) {
-        for (let i = 0; i < this.length; i++)
+        for (let i = this.length; i--;)
             this[i] = (this[i] - min) / (max - min);
     }
     compare(other) {
@@ -187,7 +187,7 @@ class CPURenderer extends Renderer {
         const srcHeight = lutHeight * height;
         const srcʹ = convert(resizeIfNeeded(src, srcWidth, srcHeight));
         const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
-        const buffer = new Float32Array(lutWidth * lutHeight);
+        const buffer = new LUT(lutWidth, lutHeight);
         for (let y = 0; y < srcHeight; y += lutHeight) {
             const codes = [];
             for (let x = 0; x < srcWidth; x += lutWidth) {
@@ -223,7 +223,7 @@ TRIANGLE_STRIP = 0x0005, ARRAY_BUFFER = 0x8892, STATIC_DRAW = 0x88E4, UNSIGNED_B
 RGBA = 0x1908, FRAGMENT_SHADER = 0x8B30, VERTEX_SHADER = 0x8B31, LINK_STATUS = 0x8B82, NEAREST = 0x2600, TEXTURE_MAG_FILTER = 0x2800, TEXTURE_MIN_FILTER = 0x2801, TEXTURE_2D = 0x0DE1, TEXTURE0 = 0x84C0, COMPILE_STATUS = 0x8B81,
 FRAMEBUFFER = 0x8D40, COLOR_ATTACHMENT0 = 0x8CE0;
 
-const RED = 0x1903, R32F = 0x822E;
+const RED = 0x1903, RGBA32F = 0x8814, R32F = 0x822E;
 
 const api = (attributes, ...extensions) => {
     const canvas = element('canvas')();
@@ -314,8 +314,8 @@ class GPURenderer extends Renderer {
         const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight));
         const uPass1 = uniforms(_gl, _pass1);
         const uPass2 = uniforms(_gl, _pass2);
-        if (this._charCodes.length !== width * height)
-            this._charCodes = new Float32Array(width * height);
+        if (this._charCodes.length !== width * height << 2)
+            this._charCodes = new Float32Array(width * height << 2);
         _gl.bindFramebuffer(FRAMEBUFFER, _fbo);
         _gl.activeTexture(TEXTURE0 + 2 );
         _gl.bindTexture(TEXTURE_2D, _txLUT);
@@ -332,14 +332,14 @@ class GPURenderer extends Renderer {
         _gl.uniform1f(uPass1('uBrightness'), settings.brightness);
         _gl.uniform1f(uPass1('uGamma'), settings.gamma);
         _gl.uniform1f(uPass1('uNoise'), settings.noise);
-        _gl.uniform1f(uPass1('uRandom'), Math.random());
+        _gl.uniform1f(uPass1('uRandom'), random());
         _gl.viewport(0, 0, srcWidth, srcHeight);
         _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
         _gl.activeTexture(TEXTURE0 + 1 );
         _gl.bindTexture(TEXTURE_2D, _txEven);
         _gl.activeTexture(TEXTURE0 + 0 );
         _gl.bindTexture(TEXTURE_2D, _txOdd);
-        _gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
+        _gl.texImage2D(TEXTURE_2D, 0, RGBA32F, srcWidth, srcHeight, 0, RGBA, FLOAT, null);
         _gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, _txOdd, 0);
         _gl.useProgram(_pass2);
         _gl.uniform1i(uPass2('uSrc'), 1 );
@@ -347,10 +347,14 @@ class GPURenderer extends Renderer {
         _gl.uniform1iv(uPass2('uCharMap'), _charMap);
         _gl.viewport(0, 0, width, height);
         _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
-        _gl.readPixels(0, 0, width, height, RED, FLOAT, this._charCodes);
+        _gl.readPixels(0, 0, width, height, RGBA, FLOAT, this._charCodes);
         _gl.bindFramebuffer(FRAMEBUFFER, null);
-        for (let i = 0; i < this._charCodes.length;)
-            yield str(...this._charCodes.subarray(i, i += width));
+        for (let y = 0; y < height; y++) {
+            const codes = [];
+            for (let x = 0; x < width; x++)
+                codes.push(this._charCodes[x + y * width << 2]);
+            yield str(...codes);
+        }
     }
 }
 

@@ -3,6 +3,7 @@ import { random } from 'wheels/esm/math';
 import { resizeIfNeeded } from '../lib/canvas/advanced';
 import { convert } from '../lib/canvas/utils';
 import { str } from '../lib/utils';
+import { LUT } from './LUT';
 import { Renderer } from './Renderer';
 export class CPURenderer extends Renderer {
     *lines(src, width, height) {
@@ -12,7 +13,7 @@ export class CPURenderer extends Renderer {
         const srcHeight = lutHeight * height;
         const srcʹ = convert(resizeIfNeeded(src, srcWidth, srcHeight));
         const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
-        const buffer = new Float32Array(lutWidth * lutHeight);
+        const buffer = new LUT(lutWidth, lutHeight);
         for (let y = 0; y < srcHeight; y += lutHeight) {
             const codes = [];
             for (let x = 0; x < srcWidth; x += lutWidth) {

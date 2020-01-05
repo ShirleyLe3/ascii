@@ -49,7 +49,7 @@ export class LUT extends Float32Array {
         return lut;
     }
     normalize(min, max) {
-        for (let i = 0; i < this.length; i++)
+        for (let i = this.length; i--;)
             this[i] = (this[i] - min) / (max - min);
     }
     compare(other) {
