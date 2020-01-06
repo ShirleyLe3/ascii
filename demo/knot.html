@@ -47,8 +47,8 @@
   mesh.receiveShadow = true
   scene.add(mesh)
 
-  const renderer = refs => {
-    const { fontFamily } = getComputedStyle(refs.root)
+  const renderer = demo => {
+    const { fontFamily } = getComputedStyle(demo.root.current)
     const ascii = new GPURenderer({
       fontFamily,
       charSet: charSets.extra,

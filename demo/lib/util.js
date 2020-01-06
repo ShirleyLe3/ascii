@@ -1,5 +1,5 @@
 export const frame = () =>
-  new Promise(ok => requestAnimationFrame(ok))
+  new Promise(requestAnimationFrame)
 
 export const update = (target, src) =>
   Object.entries(src)

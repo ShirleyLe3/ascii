@@ -29,8 +29,8 @@
     }
   }
 
-  const renderer = async refs => {
-    const { fontFamily } = getComputedStyle(refs.root)
+  const renderer = async demo => {
+    const { fontFamily } = getComputedStyle(demo.root.current)
     const ascii = new GPURenderer({ fontFamily })
     const frame = await dynamicCrop('assets/image.jpg')
     return (w, h, r, t) => ascii.render(frame(r, t), w, h)
