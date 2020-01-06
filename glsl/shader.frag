@@ -1,7 +1,3 @@
-#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))
-#define RGB(x) mix(x/12.92, pow((x + .055)/1.055, 2.4), step(.04045, x))
-#define LUM(x) dot(x, vec3(.2126, .7152, .0722))
-
 #define U ${ width }
 #define V ${ height }
 #define X ${ width * height }
@@ -27,6 +23,18 @@ float hash13(vec3 p3) {
   return fract((p3.x + p3.y) * p3.z);
 }
 
+float lum(vec3 c) {
+  return dot(c, vec3(.2126, .7152, .0722));
+}
+
+float rgb(float c) {
+  return mix(c/12.92, pow((c + .055)/1.055, 2.4), step(.04045, c));
+}
+
+vec3 rgb(vec3 c) {
+  return vec3(rgb(c.r), rgb(c.g), rgb(c.b));
+}
+
 struct Result {
   int index;
   float value;
@@ -41,7 +49,7 @@ void main() {
     for (int u = 0; u < U; u++) {
       ivec2 xy = pos + ivec2(u, v);
       vec3 srgb = texelFetch(uSrc, xy, 0).rgb;
-      float signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);
+      float signal = uBrightness * pow(lum(rgb(srgb)), uGamma);
       float noise = uNoise * (hash13(vec3(vec2(xy), 1000.*uRandom)) - 0.5);
       src[u + v*U] = clamp(signal + noise, 0., 1.);
     }
