@@ -1,21 +1,43 @@
-import { Component, html } from '../dom.js'
+import { React, html, styled } from '../dom.js'
 import { frame } from '../util.js'
 
 const N = 1000
 
-export class Demo extends Component {
-  refs = {}
+const Root = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font: 9pt/1em 'Consolas', monospace;
+  & > * { white-space: pre; }
+`
+
+const Hidden = styled.div`
+  position: fixed;
+  bottom: 100%;
+  right: 100%;
+`
+
+const Visible = styled.div``
+
+export class Demo extends React.Component {
+  root = React.createRef()
+  hidden = React.createRef()
+  visible = React.createRef()
+
   state = {
     hidden: ' '.repeat(N) + '\n '.repeat(N - 1),
     visible: ''
   }
 
   async run() {
-    const render = await this.props.renderer(this.refs)
+    const render = await this.props.renderer(this)
 
     for (this.running = true; this.running; await frame()) {
-      const { width: rw, height: rh } = this.refs.root.getBoundingClientRect()
-      const { width: hw, height: hh } = this.refs.hidden.getBoundingClientRect()
+      const { width: rw, height: rh } = this.root.current.getBoundingClientRect()
+      const { width: hw, height: hh } = this.hidden.current.getBoundingClientRect()
 
       const w = Math.floor(N * rw/hw)
       const h = Math.floor(N * rh/hh)
@@ -34,10 +56,11 @@ export class Demo extends Component {
     this.running = false
   }
 
-  render({}, { hidden, visible }) {
-    return html`<div class=demo ref=${e => this.refs.root = e}>
-      <div class=hidden ref=${e => this.refs.hidden = e}>${hidden}</>
-      <div class=visible ref=${e => this.refs.visible = e}>${visible}</>
+  render() {
+    const { hidden, visible } = this.state
+    return html`<${Root} ref=${this.root}>
+      <${Hidden} ref=${this.hidden}>${hidden}</>
+      <${Visible} ref=${this.visible}>${visible}</>
     </>`
   }
 }

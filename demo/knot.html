@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <meta name='viewport' content='width=device-width,user-scalable=no'>
-<link rel='stylesheet' href='./lib/components/Demo.css'>
+<style>
+  html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+  body { background: black; color: white; }
+</style>
 <script type='module'>
-  import * as THREE from '//cdn.jsdelivr.net/npm/three@0.112/build/three.module.min.js'
-  import Stats from '//cdn.jsdelivr.net/npm/three@0.112/examples/jsm/libs/stats.module.min.js'
+  import THREE from '//dev.jspm.io/three'
+  import Stats from '//dev.jspm.io/stats.js@0.17'
 
-  import { render, html } from './lib/dom.js'
+  import { ReactDOM, html } from './lib/dom.js'
   import { Demo } from './lib/components/Demo.js'
   import { GPURenderer, charSets } from '../dist/bundle.esm.js'
 
@@ -47,8 +50,8 @@
   mesh.receiveShadow = true
   scene.add(mesh)
 
-  const renderer = refs => {
-    const { fontFamily } = getComputedStyle(refs.root)
+  const renderer = demo => {
+    const { fontFamily } = getComputedStyle(demo.root.current)
     const ascii = new GPURenderer({
       fontFamily,
       charSet: charSets.extra,
@@ -70,5 +73,5 @@
     }
   }
 
-  render(html`<${Demo} ...${{ renderer }} />`, document.body)
+  ReactDOM.render(html`<${Demo} ...${{ renderer }} />`, document.body)
 </script>
