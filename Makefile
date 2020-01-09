@@ -1,24 +1,33 @@
 PATH := node_modules/.bin:$(PATH)
 
-all: lint test clean build
+lint := eslint --ext .ts src
+build := tsc -m esnext --outDir dist/esm
+bundle := rollup -c
+clean := rm -rf dist
+
+all: lint test clean build bundle
 
 lint: node_modules
-	eslint --ext .ts src
+	$(lint)
+
+fix: node_modules
+	$(lint) --fix
 
 test: node_modules
 	# jest
 
 clean:
-	rm -rf dist
+	$(clean)
 
 build: node_modules
-	tsc -m esnext --outDir dist/esm
-	rollup -c
+	$(build)
+
+bundle: node_modules
+	$(bundle)
 
 watch: node_modules
-	tmux \
-		new tsc -w -m esnext --outDir dist/esm \; \
-		splitw -dbl 6 rollup -wc \; \
+	tmux new $(build) -w \; \
+		splitw -dbl 6 $(bundle) -w \; \
 		set-option destroy-unattached on
 
 release: all
@@ -28,5 +37,3 @@ release: all
 node_modules: package.json
 	npm i && touch $@
 	ts-patch i -s
-
-.PHONY: all lint test clean build watch release
