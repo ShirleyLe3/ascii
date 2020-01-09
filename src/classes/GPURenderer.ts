@@ -5,10 +5,9 @@ import * as gle from '../lib/gl/enums'
 import * as glu from '../lib/gl/utils'
 import { render, str } from '../lib/utils'
 import { frag, vert } from '../shaders'
-import { Source } from '../types'
+import { Settings, Source } from '../types'
 import { LUT } from './LUT'
 import { Renderer } from './Renderer'
-import { Settings } from './Settings'
 
 const enum Attribute { position }
 const enum Texture { dst, src, lut }

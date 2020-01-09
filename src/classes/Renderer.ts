@@ -1,19 +1,16 @@
 import { floor, max } from 'wheels/esm/math'
-import { overwrite } from 'wheels/esm/object'
 import { chr, monospaced } from '../lib/utils'
-import { Source } from '../types'
+import { defaults } from '../settings'
+import { Settings, Source } from '../types'
 import { LUT } from './LUT'
-import { Settings } from './Settings'
 
 export abstract class Renderer {
+  readonly settings: Settings
   protected readonly _charMap: Int32Array
   protected readonly _luts: LUT[]
 
-  readonly settings = new Settings()
-
   constructor(settings?: Partial<Settings>) {
-    overwrite(this.settings, settings!)
-
+    this.settings = { ...defaults, ...settings }
     this._charMap = this._makeCharMap()
     this._luts = this._makeLUTs()
   }

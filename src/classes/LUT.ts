@@ -3,7 +3,7 @@ import { context2d } from 'wheels/esm/dom'
 import { abs, round } from 'wheels/esm/math'
 import { resize } from '../lib/canvas/advanced'
 import { str } from '../lib/utils'
-import { Settings } from './Settings'
+import { Settings } from '../types'
 
 const enum Color {
   outline    = '#00f',
