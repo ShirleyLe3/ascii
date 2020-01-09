@@ -1,12 +1,10 @@
 import { floor, max } from 'wheels/esm/math';
-import { overwrite } from 'wheels/esm/object';
 import { chr, monospaced } from '../lib/utils';
+import { defaults } from '../settings';
 import { LUT } from './LUT';
-import { Settings } from './Settings';
 export class Renderer {
     constructor(settings) {
-        this.settings = new Settings();
-        overwrite(this.settings, settings);
+        this.settings = { ...defaults, ...settings };
         this._charMap = this._makeCharMap();
         this._luts = this._makeLUTs();
     }

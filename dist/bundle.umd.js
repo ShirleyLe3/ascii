@@ -136,31 +136,28 @@
         }
     }
 
-    class Settings {
-        constructor() {
-            this.charSet = ascii;
-            this.fontFamily = 'monospace';
-            this.fontBase = 0.25;
-            this.fontWidth = 40;
-            this.fontHeight = 70;
-            this.fontBlur = 9;
-            this.fontGamma = 1.0;
-            this.lutWidth = 5;
-            this.lutHeight = 7;
-            this.lutPadding = 1;
-            this.lutMin = 0.0;
-            this.lutMax = 1.0;
-            this.lutGamma = 1.0;
-            this.brightness = 1.0;
-            this.gamma = 1.0;
-            this.noise = 0.0;
-        }
-    }
+    const defaults = {
+        charSet: ascii,
+        fontFamily: 'monospace',
+        fontBase: 0.25,
+        fontWidth: 40,
+        fontHeight: 70,
+        fontBlur: 9,
+        fontGamma: 1.0,
+        lutWidth: 5,
+        lutHeight: 7,
+        lutPadding: 1,
+        lutMin: 0.0,
+        lutMax: 1.0,
+        lutGamma: 1.0,
+        brightness: 1.0,
+        gamma: 1.0,
+        noise: 0.0
+    };
 
     class Renderer {
         constructor(settings) {
-            this.settings = new Settings();
-            overwrite(this.settings, settings);
+            this.settings = { ...defaults, ...settings };
             this._charMap = this._makeCharMap();
             this._luts = this._makeLUTs();
         }
@@ -229,7 +226,7 @@
     RGBA = 0x1908, FRAGMENT_SHADER = 0x8B30, VERTEX_SHADER = 0x8B31, LINK_STATUS = 0x8B82, NEAREST = 0x2600, TEXTURE_MAG_FILTER = 0x2800, TEXTURE_MIN_FILTER = 0x2801, TEXTURE_2D = 0x0DE1, TEXTURE0 = 0x84C0, COMPILE_STATUS = 0x8B81,
     FRAMEBUFFER = 0x8D40, COLOR_ATTACHMENT0 = 0x8CE0;
 
-    const RED = 0x1903, RGBA32F = 0x8814, R32F = 0x822E;
+    const RED = 0x1903, R32F = 0x822E;
 
     const api = (attributes, ...extensions) => {
         const canvas = element('canvas')();
@@ -320,8 +317,10 @@
             const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight));
             const uPass1 = uniforms(_gl, _pass1);
             const uPass2 = uniforms(_gl, _pass2);
-            if (this._charCodes.length !== width * height << 2)
-                this._charCodes = new Float32Array(width * height << 2);
+            const area = width * height;
+            const size = area << 2;
+            if (this._charCodes.length !== size)
+                this._charCodes = new Float32Array(size);
             _gl.bindFramebuffer(FRAMEBUFFER, _fbo);
             _gl.activeTexture(TEXTURE0 + 2 );
             _gl.bindTexture(TEXTURE_2D, _txLUT);
@@ -345,7 +344,7 @@
             _gl.bindTexture(TEXTURE_2D, _txEven);
             _gl.activeTexture(TEXTURE0 + 0 );
             _gl.bindTexture(TEXTURE_2D, _txOdd);
-            _gl.texImage2D(TEXTURE_2D, 0, RGBA32F, srcWidth, srcHeight, 0, RGBA, FLOAT, null);
+            _gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
             _gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, _txOdd, 0);
             _gl.useProgram(_pass2);
             _gl.uniform1i(uPass2('uSrc'), 1 );
@@ -355,12 +354,10 @@
             _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
             _gl.readPixels(0, 0, width, height, RGBA, FLOAT, this._charCodes);
             _gl.bindFramebuffer(FRAMEBUFFER, null);
-            for (let y = 0; y < height; y++) {
-                const codes = [];
-                for (let x = 0; x < width; x++)
-                    codes.push(this._charCodes[x + y * width << 2]);
-                yield str(...codes);
-            }
+            for (let i = 0; i < area; i++)
+                this._charCodes[i] = this._charCodes[i << 2];
+            for (let i = 0; i < area;)
+                yield str(...this._charCodes.subarray(i, i += width));
         }
     }
 
@@ -368,8 +365,8 @@
     exports.GPURenderer = GPURenderer;
     exports.LUT = LUT;
     exports.Renderer = Renderer;
-    exports.Settings = Settings;
     exports.charSets = charsets;
+    exports.defaults = defaults;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

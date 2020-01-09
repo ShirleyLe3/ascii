@@ -3,7 +3,7 @@ export * from './classes/CPURenderer';
 export * from './classes/GPURenderer';
 export * from './classes/LUT';
 export * from './classes/Renderer';
-export * from './classes/Settings';
+export * from './settings';
 export * from './types';
 export { charSets };
 //# sourceMappingURL=index.d.ts.map

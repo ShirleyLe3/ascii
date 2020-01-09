@@ -1,4 +1,4 @@
-import { Settings } from './Settings';
+import { Settings } from '../types';
 export declare class LUT extends Float32Array {
     width: number;
     height: number;

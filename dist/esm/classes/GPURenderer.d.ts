@@ -1,6 +1,5 @@
-import { Source } from '../types';
+import { Settings, Source } from '../types';
 import { Renderer } from './Renderer';
-import { Settings } from './Settings';
 export declare class GPURenderer extends Renderer {
     private readonly _pass1;
     private readonly _pass2;

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.4](https://github.com/reinventing-wheels/ascii/compare/v0.14.3...v0.14.4) (2020-01-09)
+
+
+### Features
+
+* refactor settings ([ee77e40](https://github.com/reinventing-wheels/ascii/commit/ee77e4005e1671a0420754cc1b7bef48b6d07799))
+* subtle optimization ([eea30f6](https://github.com/reinventing-wheels/ascii/commit/eea30f6227f6abc2d1bd9a589fabdb641e9f0804))
+
 ### [0.14.3](https://github.com/reinventing-wheels/ascii/compare/v0.14.2...v0.14.3) (2020-01-05)
 
 

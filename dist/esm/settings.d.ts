@@ -1,4 +1,4 @@
-export declare class Settings {
+export declare const defaults: {
     charSet: string;
     fontFamily: string;
     fontBase: number;
@@ -15,5 +15,5 @@ export declare class Settings {
     brightness: number;
     gamma: number;
     noise: number;
-}
-//# sourceMappingURL=Settings.d.ts.map
+};
+//# sourceMappingURL=settings.d.ts.map
