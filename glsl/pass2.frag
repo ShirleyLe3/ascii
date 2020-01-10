@@ -3,7 +3,7 @@
 #define X ${ width * height }
 #define Y ${ chars }
 
-precision mediump float;
+precision highp float;
 
 uniform sampler2D uSrc;
 uniform sampler2D uLUT;

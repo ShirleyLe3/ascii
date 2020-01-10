@@ -2,7 +2,7 @@
 #define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))
 #define LUM(x) dot(x, vec3(.2126, .7152, .0722))
 
-precision mediump float;
+precision highp float;
 
 uniform sampler2D uSrc;
 uniform float uBrightness;
