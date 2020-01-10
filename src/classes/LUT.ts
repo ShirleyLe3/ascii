@@ -1,9 +1,12 @@
 import { rgb } from 'wheels/esm/color/srgb'
-import { context2d } from 'wheels/esm/dom'
 import { abs, round } from 'wheels/esm/math'
-import { resize } from '../lib/canvas/advanced'
+import { resizer } from '../lib/canvas/advanced'
+import { context2d } from '../lib/canvas/utils'
 import { str } from '../lib/utils'
 import { Settings } from '../types'
+
+const cached = context2d()
+const resize = resizer()
 
 const enum Color {
   outline    = '#00f',
@@ -26,7 +29,7 @@ export class LUT extends Float32Array {
     const fontWidthʹ  = round(lutWidthʹ  / lutWidth  * fontWidth)
     const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight)
 
-    const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })()
+    const api = cached({ width: fontWidthʹ, height: fontHeightʹ })
     const char = str(charCode)
 
     api.fillStyle = Color.outline

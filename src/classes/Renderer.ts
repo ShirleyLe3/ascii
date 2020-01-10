@@ -1,13 +1,22 @@
 import { floor, max } from 'wheels/esm/math'
-import { chr, monospaced } from '../lib/utils'
+import { lazyResizer } from '../lib/canvas/advanced'
+import { context2d } from '../lib/canvas/utils'
+import { chr } from '../lib/utils'
 import { defaults } from '../settings'
 import { Settings, Source } from '../types'
 import { LUT } from './LUT'
+
+export const monospaced = (font: string) => {
+  const api = context2d(api => api.font = `1em ${font}`)()
+  const ref = api.measureText(' ')
+  return (char: string) => api.measureText(char).width === ref.width
+}
 
 export abstract class Renderer {
   readonly settings: Settings
   protected readonly _charMap: Int32Array
   protected readonly _luts: LUT[]
+  protected readonly _resize = lazyResizer()
 
   constructor(settings?: Partial<Settings>) {
     this.settings = { ...defaults, ...settings }
