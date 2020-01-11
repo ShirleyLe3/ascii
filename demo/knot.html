@@ -9,64 +9,69 @@
   import { Demo } from './lib/components/Demo.js'
   import { GPURenderer, charSets } from '../dist/bundle.esm.js'
 
-  const canvas = document.createElement('canvas')
-  const context = canvas.getContext('webgl2')
-  const three = new THREE.WebGLRenderer({ canvas, context })
-  three.shadowMap.enabled = true
+  const scene = () => {
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('webgl2')
+    const three = new THREE.WebGLRenderer({ canvas, context })
+    three.shadowMap.enabled = true
 
-  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
-  camera.position.set(0, 0, 9)
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
+    camera.position.set(0, 0, 9)
 
-  const scene = new THREE.Scene()
-  scene.fog = new THREE.FogExp2(0, 0.1)
+    const scene = new THREE.Scene()
+    scene.fog = new THREE.FogExp2(0, 0.1)
 
-  for (let i = 0; i < 6; i++) {
-    const light = new THREE.DirectionalLight()
-    const rad = Math.PI * i/3
-    light.position.set(10*Math.cos(rad), 10*Math.sin(rad), -5)
-    light.castShadow = true
-    scene.add(light)
+    for (let i = 0; i < 6; i++) {
+      const light = new THREE.DirectionalLight()
+      const rad = Math.PI * i/3
+      light.position.set(10*Math.cos(rad), 10*Math.sin(rad), -5)
+      light.castShadow = true
+      scene.add(light)
+    }
+
+    const geometry = new THREE.TorusKnotGeometry(3, 1, 1<<7, 1<<4)
+    const wireframe = new THREE.MeshBasicMaterial({
+      wireframe: true,
+      color: 0x000000
+    })
+    const solid = new THREE.MeshPhongMaterial({
+      flatShading: true,
+      shininess: 1000,
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1
+    })
+
+    const mesh = new THREE.Mesh(geometry, solid)
+    mesh.add(new THREE.Mesh(geometry, wireframe))
+    mesh.castShadow = true
+    mesh.receiveShadow = true
+    scene.add(mesh)
+
+    return (w, h, r, t) => {
+      mesh.rotation.set(t/3e3, t/5e3, t/7e3)
+      camera.aspect = r
+      camera.updateProjectionMatrix()
+      three.setSize(w, h)
+      three.render(scene, camera)
+      return canvas
+    }
   }
-
-  const geometry = new THREE.TorusKnotGeometry(3, 1, 1<<7, 1<<4)
-  const wireframe = new THREE.MeshBasicMaterial({
-    wireframe: true,
-    color: 0x000000
-  })
-  const solid = new THREE.MeshPhongMaterial({
-    flatShading: true,
-    shininess: 1000,
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1
-  })
-
-  const mesh = new THREE.Mesh(geometry, solid)
-  mesh.add(new THREE.Mesh(geometry, wireframe))
-  mesh.castShadow = true
-  mesh.receiveShadow = true
-  scene.add(mesh)
 
   const renderer = demo => {
     const { fontFamily } = getComputedStyle(demo.root.current)
-    const ascii = new GPURenderer({
-      fontFamily,
-      charSet: charSets.extra,
-      noise: 0.1
-    })
+    const settings = { fontFamily, charSet: charSets.extra, noise: 0.1 }
+    const ascii = new GPURenderer(settings)
+
+    const frame = scene()
 
     const stats = new Stats()
     document.body.append(stats.dom)
 
     return (w, h, r, t) => {
-      const { lutWidth: lw, lutHeight: lh } = ascii.settings
-      mesh.rotation.set(t/3e3, t/5e3, t/7e3)
-      camera.aspect = r
-      camera.updateProjectionMatrix()
-      three.setSize(lw * w, lh * h)
-      three.render(scene, camera)
       stats.update()
-      return ascii.render(canvas, w, h)
+      const { lutWidth: lw, lutHeight: lh } = ascii.settings
+      return ascii.render(frame(lw*w, lh*h, r, t), w, h)
     }
   }
 

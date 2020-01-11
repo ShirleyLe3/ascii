@@ -2,16 +2,14 @@
 <meta name='viewport' content='width=device-width,user-scalable=no'>
 <link rel='stylesheet' href='./lib/components/Demo.css'>
 <script type='module'>
-  import { fetchImage, update } from './lib/util.js'
+  import { fetchImage, context2d } from './lib/util.js'
   import { render, html } from './lib/dom.js'
   import { Demo } from './lib/components/Demo.js'
   import { GPURenderer } from '../dist/bundle.esm.js'
 
-  const dynamicCrop = async url => {
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
+  const dynamicCrop = image => {
+    const cached = context2d()
 
-    const image = await fetchImage({ src: url })
     const { width: iw, height: ih } = image
     const p = Math.round(Math.min(iw, ih)/36) // padding
     const iwʹ = iw - 2*p // cropped image width
@@ -23,16 +21,18 @@
       const h = r > irʹ ? Math.round(iwʹ/r) : ihʹ
       const x = (w - iw)/2 + p*Math.cos(Math.PI*t/3e3)
       const y = (h - ih)/2 + p*Math.sin(Math.PI*t/5e3)
-      update(canvas, { width: w, height: h })
-      context.drawImage(image, x, y)
-      return canvas
+
+      const api = cached(w, h)
+      api.drawImage(image, x, y)
+      return api.canvas
     }
   }
 
   const renderer = async demo => {
     const { fontFamily } = getComputedStyle(demo.root.current)
     const ascii = new GPURenderer({ fontFamily })
-    const frame = await dynamicCrop('assets/image.jpg')
+    const image = await fetchImage({ src: 'assets/image.jpg' })
+    const frame = dynamicCrop(image)
     return (w, h, r, t) => ascii.render(frame(r, t), w, h)
   }
 
