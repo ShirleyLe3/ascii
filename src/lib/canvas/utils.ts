@@ -1,12 +1,11 @@
-import { element } from 'wheels/esm/dom'
 import { extend, overwrite } from 'wheels/esm/object'
-import { Source } from '../../types'
+import { Context, Source } from '../../types'
 
 const triplet = (w: number, h: number) =>
   extend([w, h, w/h], { width: w, height: h, ratio: w/h })
 
 export const extract = (src: Source) =>
-  src instanceof CanvasRenderingContext2D
+  src instanceof Context
     ? src.canvas
     : src
 
@@ -21,11 +20,11 @@ export const measure = (src: Source) => {
   return triplet(srcʹ.width, srcʹ.height)
 }
 
-export const context2d = (setup?: (api: CanvasRenderingContext2D) => void) => {
-  const canvas = element('canvas')()
+export const context2d = (setup?: (api: Context) => void) => {
+  const canvas = new OffscreenCanvas(0, 0)
   const context = canvas.getContext('2d')!
 
-  return (attributes?: Partial<HTMLCanvasElement>) => {
+  return (attributes?: Partial<OffscreenCanvas>) => {
     overwrite(canvas, attributes!)
     setup?.(context)
     return context
