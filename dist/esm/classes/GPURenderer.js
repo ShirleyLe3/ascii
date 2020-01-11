@@ -1,5 +1,4 @@
 import { random } from 'wheels/esm/math';
-import { resizeIfNeeded } from '../lib/canvas/advanced';
 import { extract } from '../lib/canvas/utils';
 import * as gle from '../lib/gl/enums';
 import * as glu from '../lib/gl/utils';
@@ -39,10 +38,11 @@ export class GPURenderer extends Renderer {
         glu.buffer(this._gl)(quadGeometry(0 /* position */));
     }
     *lines(src, width, height) {
-        const { settings, _charMap, _lut, _gl, _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
+        const { settings, _charMap, _lut, _gl, _resize } = this;
+        const { _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
         const srcWidth = settings.lutWidth * width;
         const srcHeight = settings.lutHeight * height;
-        const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight));
+        const srcʹ = extract(_resize(src, srcWidth, srcHeight));
         const uPass1 = glu.uniforms(_gl, _pass1);
         const uPass2 = glu.uniforms(_gl, _pass2);
         const area = width * height;

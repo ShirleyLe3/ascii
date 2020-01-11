@@ -1,8 +1,10 @@
 import { rgb } from 'wheels/esm/color/srgb';
-import { context2d } from 'wheels/esm/dom';
 import { abs, round } from 'wheels/esm/math';
-import { resize } from '../lib/canvas/advanced';
+import { resizer } from '../lib/canvas/advanced';
+import { context2d } from '../lib/canvas/utils';
 import { str } from '../lib/utils';
+const cached = context2d();
+const resize = resizer();
 export class LUT extends Float32Array {
     constructor(width, height) {
         super(width * height);
@@ -16,7 +18,7 @@ export class LUT extends Float32Array {
         const lutHeightʹ = lutPadding * 2 + lutHeight;
         const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
         const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
-        const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })();
+        const api = cached({ width: fontWidthʹ, height: fontHeightʹ });
         const char = str(charCode);
         api.fillStyle = "#00f" /* outline */;
         api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);

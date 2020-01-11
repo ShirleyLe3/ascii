@@ -31,8 +31,7 @@ const transformImport = (node, cwd) => {
 };
 export default () => ctx => sf => {
     const cwd = dirname(sf.fileName);
-    const visitor = node => transformImport(node, cwd) ??
-        ts.visitEachChild(node, visitor, ctx);
+    const visitor = node => { var _a; return _a = transformImport(node, cwd), (_a !== null && _a !== void 0 ? _a : ts.visitEachChild(node, visitor, ctx)); };
     return ts.visitNode(sf, visitor);
 };
 //# sourceMappingURL=transform.js.map

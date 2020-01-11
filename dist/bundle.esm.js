@@ -1,17 +1,6 @@
-const extend = Object.assign;
-const overwrite = extend;
-
-const context2d = (...attributes) => (...settings) => overwrite(element('canvas')(...attributes).getContext('2d'), ...settings);
-const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
-
 const str = String.fromCharCode;
 const chr = (str) => str.charCodeAt(0);
 const render = (str, ctx = {}, ref = '$') => new Function(`{${Object.keys(ctx)}}`, ref, `return \`${str}\``)(ctx, ctx);
-const monospaced = (font) => {
-    const api = context2d()({ font: `1em ${font}` });
-    const ref = api.measureText(' ');
-    return (char) => api.measureText(char).width === ref.width;
-};
 
 const expand = (pair) => {
     const [a, b] = [...pair].map(chr);
@@ -33,46 +22,81 @@ const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) 
 
 const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
 
-const extract = (src) => src instanceof CanvasRenderingContext2D
-    ? src.canvas
-    : src;
-const convert = (src) => {
-    if (src instanceof CanvasRenderingContext2D)
-        return src;
-    const { width, height } = src;
-    const api = context2d({ width, height })();
-    api.drawImage(src, 0, 0);
-    return api;
+const extend = Object.assign;
+const overwrite = extend;
+
+const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
+
+const triplet = (w, h) => extend([w, h, w / h], { width: w, height: h, ratio: w / h });
+const extract = (src) => src instanceof CanvasRenderingContext2D ? src.canvas : src;
+const convert = (src) => src instanceof CanvasRenderingContext2D ? src : clone(src);
+const clone = (src) => {
+    const dst = context2d()(measure(src));
+    dst.drawImage(extract(src), 0, 0);
+    return dst;
+};
+const measure = (src) => {
+    if (src instanceof HTMLVideoElement)
+        return triplet(src.videoWidth, src.videoHeight);
+    if (src instanceof HTMLImageElement)
+        return triplet(src.naturalWidth, src.naturalHeight);
+    const srcʹ = extract(src);
+    return triplet(srcʹ.width, srcʹ.height);
+};
+const context2d = (setup) => {
+    const canvas = element('canvas')();
+    const context = canvas.getContext('2d');
+    return (attributes) => {
+        var _a;
+        overwrite(canvas, attributes);
+        (_a = setup) === null || _a === void 0 ? void 0 : _a(context);
+        return context;
+    };
 };
 
-const crop = (src, x, y, w, h) => {
-    const dst = context2d({ width: w, height: h })();
-    dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h);
-    return dst;
+const cropper = () => {
+    const cached = context2d();
+    return (src, x, y, w, h) => {
+        const dst = cached({ width: w, height: h });
+        dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h);
+        return dst;
+    };
 };
-const resize = (src, w, h) => {
-    const dst = context2d({ width: w, height: h })();
-    dst.drawImage(extract(src), 0, 0, w, h);
-    return dst;
+const resizer = () => {
+    const cached = context2d();
+    return (src, w, h) => {
+        const dst = cached({ width: w, height: h });
+        dst.drawImage(extract(src), 0, 0, w, h);
+        return dst;
+    };
 };
 
 const msb = (n) => 1 << max(0, 31 - clz32(n));
-const resize$1 = (src, w, h) => {
-    const srcʹ = extract(src);
-    let wʹ = w * msb(srcʹ.width / w - 1);
-    let hʹ = h * msb(srcʹ.height / h - 1);
-    const tmp = resize(src, wʹ, hʹ);
-    if (w === wʹ && h === hʹ)
-        return tmp;
-    for (let x, y; x = w < wʹ, y = h < hʹ, x || y;)
-        tmp.drawImage(tmp.canvas, 0, 0, wʹ, hʹ, 0, 0, wʹ >>= +x, hʹ >>= +y);
-    return crop(tmp, 0, 0, w, h);
+const resizer$1 = () => {
+    const resize = resizer();
+    const crop = cropper();
+    return (src, w, h) => {
+        const [wʹ, hʹ] = measure(src);
+        let wʺ = w * msb(wʹ / w - 1);
+        let hʺ = h * msb(hʹ / h - 1);
+        const tmp = resize(src, wʺ, hʺ);
+        if (w === wʺ && h === hʺ)
+            return tmp;
+        for (let x, y; x = w < wʺ, y = h < hʺ, x || y;)
+            tmp.drawImage(tmp.canvas, 0, 0, wʺ, hʺ, 0, 0, wʺ >>= +x, hʺ >>= +y);
+        return crop(tmp, 0, 0, w, h);
+    };
 };
-const resizeIfNeeded = (src, w, h) => {
-    const { width: wʹ, height: hʹ } = extract(src);
-    return w !== wʹ || h !== hʹ ? resize$1(src, w, h) : src;
+const lazyResizer = () => {
+    const resize = resizer$1();
+    return (src, w, h) => {
+        const [wʹ, hʹ] = measure(src);
+        return w !== wʹ || h !== hʹ ? resize(src, w, h) : src;
+    };
 };
 
+const cached = context2d();
+const resize = resizer$1();
 class LUT extends Float32Array {
     constructor(width, height) {
         super(width * height);
@@ -86,7 +110,7 @@ class LUT extends Float32Array {
         const lutHeightʹ = lutPadding * 2 + lutHeight;
         const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
         const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
-        const api = context2d({ width: fontWidthʹ, height: fontHeightʹ })();
+        const api = cached({ width: fontWidthʹ, height: fontHeightʹ });
         const char = str(charCode);
         api.fillStyle = "#00f" ;
         api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);
@@ -103,7 +127,7 @@ class LUT extends Float32Array {
             api.fillText(char, 0, 0);
         }
         const lut = new LUT(lutWidth, lutHeight);
-        const rgba = resize$1(api, lutWidthʹ, lutHeightʹ)
+        const rgba = resize(api, lutWidthʹ, lutHeightʹ)
             .getImageData(lutPadding, lutPadding, lutWidth, lutHeight)
             .data;
         for (let i = 0; i < lut.length; i++)
@@ -149,8 +173,14 @@ const defaults = {
     noise: 0.0
 };
 
+const monospaced = (font) => {
+    const api = context2d(api => api.font = `1em ${font}`)();
+    const ref = api.measureText(' ');
+    return (char) => api.measureText(char).width === ref.width;
+};
 class Renderer {
     constructor(settings) {
+        this._resize = lazyResizer();
         this.settings = { ...defaults, ...settings };
         this._charMap = this._makeCharMap();
         this._luts = this._makeLUTs();
@@ -178,11 +208,11 @@ class Renderer {
 
 class CPURenderer extends Renderer {
     *lines(src, width, height) {
-        const { settings, _charMap, _luts } = this;
+        const { settings, _charMap, _luts, _resize } = this;
         const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
         const srcWidth = lutWidth * width;
         const srcHeight = lutHeight * height;
-        const srcʹ = convert(resizeIfNeeded(src, srcWidth, srcHeight));
+        const srcʹ = convert(_resize(src, srcWidth, srcHeight));
         const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
         const buffer = new LUT(lutWidth, lutHeight);
         for (let y = 0; y < srcHeight; y += lutHeight) {
@@ -268,8 +298,8 @@ const lineNumbers = (source, n = 1) => source.replace(/^/gm, () => `${n++}: `.pa
 const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
 
 const base = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
-const pass1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
-const pass2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\nprecision mediump float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
+const pass1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision highp float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
+const pass2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\nprecision highp float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
 const vert = { base };
 const frag = { pass1, pass2 };
 
@@ -305,10 +335,11 @@ class GPURenderer extends Renderer {
         buffer(this._gl)(quadGeometry(0 ));
     }
     *lines(src, width, height) {
-        const { settings, _charMap, _lut, _gl, _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
+        const { settings, _charMap, _lut, _gl, _resize } = this;
+        const { _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
         const srcWidth = settings.lutWidth * width;
         const srcHeight = settings.lutHeight * height;
-        const srcʹ = extract(resizeIfNeeded(src, srcWidth, srcHeight));
+        const srcʹ = extract(_resize(src, srcWidth, srcHeight));
         const uPass1 = uniforms(_gl, _pass1);
         const uPass2 = uniforms(_gl, _pass2);
         const area = width * height;
@@ -355,5 +386,5 @@ class GPURenderer extends Renderer {
     }
 }
 
-export { CPURenderer, GPURenderer, LUT, Renderer, charsets as charSets, defaults };
+export { CPURenderer, GPURenderer, LUT, Renderer, charsets as charSets, defaults, monospaced };
 //# sourceMappingURL=bundle.esm.js.map

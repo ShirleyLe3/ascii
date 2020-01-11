@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.5](https://github.com/reinventing-wheels/ascii/compare/v0.14.4...v0.14.5) (2020-01-11)
+
+
+### Features
+
+* avoid unnecessary canvas creations ([8dea840](https://github.com/reinventing-wheels/ascii/commit/8dea840a450abc9d43c47ca0912d9bb8f66a5d99))
+
+
+### Bug Fixes
+
+* could not render `video` elements ([7e9f73e](https://github.com/reinventing-wheels/ascii/commit/7e9f73e7f8a7fa2f9236ee15927d7cc3fe525692))
+* was buggy on android ([242db60](https://github.com/reinventing-wheels/ascii/commit/242db604d625929119af9d0476622d6004dfdfa9))
+
 ### [0.14.4](https://github.com/reinventing-wheels/ascii/compare/v0.14.3...v0.14.4) (2020-01-09)
 
 
