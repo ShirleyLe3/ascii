@@ -1,2 +1,2 @@
-export const Context = OffscreenCanvasRenderingContext2D;
+export const Context = CanvasRenderingContext2D;
 //# sourceMappingURL=types.js.map

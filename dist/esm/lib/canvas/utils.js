@@ -1,3 +1,4 @@
+import { element } from 'wheels/esm/dom';
 import { extend, overwrite } from 'wheels/esm/object';
 import { Context } from '../../types';
 const triplet = (w, h) => extend([w, h, w / h], { width: w, height: h, ratio: w / h });
@@ -13,7 +14,7 @@ export const measure = (src) => {
     return triplet(srcʹ.width, srcʹ.height);
 };
 export const context2d = (setup) => {
-    const canvas = new OffscreenCanvas(0, 0);
+    const canvas = element('canvas')();
     const context = canvas.getContext('2d');
     return (width, height) => {
         var _a;

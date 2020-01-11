@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.7](https://github.com/reinventing-wheels/ascii/compare/v0.14.6...v0.14.7) (2020-01-11)
+
+
+### Bug Fixes
+
+* oof, the technology isn't there yet ([b429e10](https://github.com/reinventing-wheels/ascii/commit/b429e107740d38ec86c6196f2aad0a4f8d665ac8))
+
 ### [0.14.6](https://github.com/reinventing-wheels/ascii/compare/v0.14.5...v0.14.6) (2020-01-11)
 
 

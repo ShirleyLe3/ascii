@@ -5,5 +5,5 @@ export declare const measure: (src: Source) => number[] & {
     height: number;
     ratio: number;
 };
-export declare const context2d: (setup?: ((api: OffscreenCanvasRenderingContext2D) => void) | undefined) => (width: number, height: number) => OffscreenCanvasRenderingContext2D;
+export declare const context2d: (setup?: ((api: CanvasRenderingContext2D) => void) | undefined) => (width: number, height: number) => CanvasRenderingContext2D;
 //# sourceMappingURL=utils.d.ts.map

@@ -31,7 +31,9 @@
     const extend = Object.assign;
     const overwrite = extend;
 
-    const Context = OffscreenCanvasRenderingContext2D;
+    const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
+
+    const Context = CanvasRenderingContext2D;
 
     const triplet = (w, h) => extend([w, h, w / h], { width: w, height: h, ratio: w / h });
     const extract = (src) => src instanceof Context
@@ -46,7 +48,7 @@
         return triplet(srcʹ.width, srcʹ.height);
     };
     const context2d = (setup) => {
-        const canvas = new OffscreenCanvas(0, 0);
+        const canvas = element('canvas')();
         const context = canvas.getContext('2d');
         return (width, height) => {
             var _a;
@@ -266,8 +268,6 @@
     FRAMEBUFFER = 0x8D40, COLOR_ATTACHMENT0 = 0x8CE0;
 
     const RED = 0x1903, R32F = 0x822E;
-
-    const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
 
     const api = (attributes, ...extensions) => {
         const canvas = element('canvas')();
