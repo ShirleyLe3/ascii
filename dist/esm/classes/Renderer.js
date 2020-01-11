@@ -5,7 +5,7 @@ import { chr } from '../lib/utils';
 import { defaults } from '../settings';
 import { LUT } from './LUT';
 export const monospaced = (font) => {
-    const api = context2d(api => api.font = `1em ${font}`)();
+    const api = context2d(api => api.font = `1em ${font}`)(0, 0);
     const ref = api.measureText(' ');
     return (char) => api.measureText(char).width === ref.width;
 };

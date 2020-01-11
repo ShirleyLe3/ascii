@@ -18,7 +18,7 @@ export class LUT extends Float32Array {
         const lutHeightʹ = lutPadding * 2 + lutHeight;
         const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
         const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
-        const api = cached({ width: fontWidthʹ, height: fontHeightʹ });
+        const api = cached(fontWidthʹ, fontHeightʹ);
         const char = str(charCode);
         api.fillStyle = "#00f" /* outline */;
         api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);

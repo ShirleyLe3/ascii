@@ -1,11 +1,9 @@
 import { Source } from '../../types';
-export declare const extract: (src: Source) => HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap;
-export declare const convert: (src: Source) => CanvasRenderingContext2D;
-export declare const clone: (src: Source) => CanvasRenderingContext2D;
+export declare const extract: (src: Source) => HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas | (SVGImageElement & ImageData);
 export declare const measure: (src: Source) => number[] & {
     width: number;
     height: number;
     ratio: number;
 };
-export declare const context2d: (setup?: ((api: CanvasRenderingContext2D) => void) | undefined) => (attributes?: Partial<HTMLCanvasElement> | undefined) => CanvasRenderingContext2D;
+export declare const context2d: (setup?: ((api: OffscreenCanvasRenderingContext2D) => void) | undefined) => (width: number, height: number) => OffscreenCanvasRenderingContext2D;
 //# sourceMappingURL=utils.d.ts.map

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.6](https://github.com/reinventing-wheels/ascii/compare/v0.14.5...v0.14.6) (2020-01-11)
+
+
+### Features
+
+* use `OffscreenCanvas` ([54701c7](https://github.com/reinventing-wheels/ascii/commit/54701c7a97bcb5331acbdb9ab33a96d5b62a1d8d))
+
 ### [0.14.5](https://github.com/reinventing-wheels/ascii/compare/v0.14.4...v0.14.5) (2020-01-11)
 
 

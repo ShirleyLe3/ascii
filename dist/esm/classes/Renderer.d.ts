@@ -5,7 +5,7 @@ export declare abstract class Renderer {
     readonly settings: Settings;
     protected readonly _charMap: Int32Array;
     protected readonly _luts: LUT[];
-    protected readonly _resize: (src: Source, w: number, h: number) => Source;
+    protected readonly _resize: (src: Source, w: number, h: number) => HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas | OffscreenCanvasRenderingContext2D | (SVGImageElement & ImageData);
     constructor(settings?: Partial<Settings>);
     private _makeCharMap;
     private _makeLUTs;

@@ -31,16 +31,12 @@
     const extend = Object.assign;
     const overwrite = extend;
 
-    const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
+    const Context = OffscreenCanvasRenderingContext2D;
 
     const triplet = (w, h) => extend([w, h, w / h], { width: w, height: h, ratio: w / h });
-    const extract = (src) => src instanceof CanvasRenderingContext2D ? src.canvas : src;
-    const convert = (src) => src instanceof CanvasRenderingContext2D ? src : clone(src);
-    const clone = (src) => {
-        const dst = context2d()(measure(src));
-        dst.drawImage(extract(src), 0, 0);
-        return dst;
-    };
+    const extract = (src) => src instanceof Context
+        ? src.canvas
+        : src;
     const measure = (src) => {
         if (src instanceof HTMLVideoElement)
             return triplet(src.videoWidth, src.videoHeight);
@@ -50,20 +46,29 @@
         return triplet(srcʹ.width, srcʹ.height);
     };
     const context2d = (setup) => {
-        const canvas = element('canvas')();
+        const canvas = new OffscreenCanvas(0, 0);
         const context = canvas.getContext('2d');
-        return (attributes) => {
+        return (width, height) => {
             var _a;
-            overwrite(canvas, attributes);
+            overwrite(canvas, { width, height });
             (_a = setup) === null || _a === void 0 ? void 0 : _a(context);
             return context;
         };
     };
 
+    const converter = () => {
+        const cached = context2d();
+        return (src) => {
+            const [w, h] = measure(src);
+            const dst = cached(w, h);
+            dst.drawImage(extract(src), 0, 0);
+            return dst;
+        };
+    };
     const cropper = () => {
         const cached = context2d();
         return (src, x, y, w, h) => {
-            const dst = cached({ width: w, height: h });
+            const dst = cached(w, h);
             dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h);
             return dst;
         };
@@ -71,7 +76,7 @@
     const resizer = () => {
         const cached = context2d();
         return (src, w, h) => {
-            const dst = cached({ width: w, height: h });
+            const dst = cached(w, h);
             dst.drawImage(extract(src), 0, 0, w, h);
             return dst;
         };
@@ -116,7 +121,7 @@
             const lutHeightʹ = lutPadding * 2 + lutHeight;
             const fontWidthʹ = round(lutWidthʹ / lutWidth * fontWidth);
             const fontHeightʹ = round(lutHeightʹ / lutHeight * fontHeight);
-            const api = cached({ width: fontWidthʹ, height: fontHeightʹ });
+            const api = cached(fontWidthʹ, fontHeightʹ);
             const char = str(charCode);
             api.fillStyle = "#00f" ;
             api.fillRect(0, 0, fontWidthʹ, fontHeightʹ);
@@ -180,7 +185,7 @@
     };
 
     const monospaced = (font) => {
-        const api = context2d(api => api.font = `1em ${font}`)();
+        const api = context2d(api => api.font = `1em ${font}`)(0, 0);
         const ref = api.measureText(' ');
         return (char) => api.measureText(char).width === ref.width;
     };
@@ -213,12 +218,16 @@
     }
 
     class CPURenderer extends Renderer {
+        constructor() {
+            super(...arguments);
+            this._convert = converter();
+        }
         *lines(src, width, height) {
-            const { settings, _charMap, _luts, _resize } = this;
+            const { settings, _charMap, _luts, _resize, _convert } = this;
             const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
             const srcWidth = lutWidth * width;
             const srcHeight = lutHeight * height;
-            const srcʹ = convert(_resize(src, srcWidth, srcHeight));
+            const srcʹ = _convert(_resize(src, srcWidth, srcHeight));
             const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
             const buffer = new LUT(lutWidth, lutHeight);
             for (let y = 0; y < srcHeight; y += lutHeight) {
@@ -257,6 +266,8 @@
     FRAMEBUFFER = 0x8D40, COLOR_ATTACHMENT0 = 0x8CE0;
 
     const RED = 0x1903, R32F = 0x822E;
+
+    const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
 
     const api = (attributes, ...extensions) => {
         const canvas = element('canvas')();
@@ -393,6 +404,7 @@
     }
 
     exports.CPURenderer = CPURenderer;
+    exports.Context = Context;
     exports.GPURenderer = GPURenderer;
     exports.LUT = LUT;
     exports.Renderer = Renderer;

@@ -1,16 +1,21 @@
 import { rgb } from 'wheels/esm/color/srgb';
 import { random } from 'wheels/esm/math';
-import { convert } from '../lib/canvas/utils';
+import { converter } from '../lib/canvas/basic';
 import { str } from '../lib/utils';
 import { LUT } from './LUT';
 import { Renderer } from './Renderer';
 export class CPURenderer extends Renderer {
+    constructor() {
+        super(...arguments);
+        // eslint-disable-next-line @typescript-eslint/semi
+        this._convert = converter();
+    }
     *lines(src, width, height) {
-        const { settings, _charMap, _luts, _resize } = this;
+        const { settings, _charMap, _luts, _resize, _convert } = this;
         const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
         const srcWidth = lutWidth * width;
         const srcHeight = lutHeight * height;
-        const srcʹ = convert(_resize(src, srcWidth, srcHeight));
+        const srcʹ = _convert(_resize(src, srcWidth, srcHeight));
         const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data;
         const buffer = new LUT(lutWidth, lutHeight);
         for (let y = 0; y < srcHeight; y += lutHeight) {
