@@ -32,7 +32,7 @@ export class Demo extends Component {
   }
 
   componentDidMount() {
-    this.run()
+    this.run().catch(e => alert(e && e.stack))
   }
 
   componentWillUnmount() {
