@@ -1,5 +1,15 @@
 import { Source } from '../../types'
-import { context2d, extract } from './utils'
+import { context2d, extract, measure } from './utils'
+
+export const converter = () => {
+  const cached = context2d()
+
+  return (src: Source) => {
+    const dst = cached(measure(src))
+    dst.drawImage(extract(src), 0, 0)
+    return dst
+  }
+}
 
 export const cropper = () => {
   const cached = context2d()

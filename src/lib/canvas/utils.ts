@@ -6,16 +6,9 @@ const triplet = (w: number, h: number) =>
   extend([w, h, w/h], { width: w, height: h, ratio: w/h })
 
 export const extract = (src: Source) =>
-  src instanceof CanvasRenderingContext2D ? src.canvas : src
-
-export const convert = (src: Source) =>
-  src instanceof CanvasRenderingContext2D ? src : clone(src)
-
-export const clone = (src: Source) => {
-  const dst = context2d()(measure(src))
-  dst.drawImage(extract(src), 0, 0)
-  return dst
-}
+  src instanceof CanvasRenderingContext2D
+    ? src.canvas
+    : src
 
 export const measure = (src: Source) => {
   if (src instanceof HTMLVideoElement)

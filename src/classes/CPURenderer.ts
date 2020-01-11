@@ -1,6 +1,6 @@
 import { rgb } from 'wheels/esm/color/srgb'
 import { random } from 'wheels/esm/math'
-import { convert } from '../lib/canvas/utils'
+import { converter } from '../lib/canvas/basic'
 import { str } from '../lib/utils'
 import { Source } from '../types'
 import { LUT } from './LUT'
@@ -14,13 +14,16 @@ const enum Y {
 }
 
 export class CPURenderer extends Renderer {
+  // eslint-disable-next-line @typescript-eslint/semi
+  private readonly _convert = converter();
+
   *lines(src: Source, width: number, height: number) {
-    const { settings, _charMap, _luts, _resize } = this
+    const { settings, _charMap, _luts, _resize, _convert } = this
     const { lutWidth, lutHeight, brightness, gamma, noise } = settings
 
     const srcWidth  = lutWidth  * width
     const srcHeight = lutHeight * height
-    const srcʹ = convert(_resize(src, srcWidth, srcHeight))
+    const srcʹ = _convert(_resize(src, srcWidth, srcHeight))
 
     const rgba = srcʹ.getImageData(0, 0, srcWidth, srcHeight).data
     const buffer = new LUT(lutWidth, lutHeight)
