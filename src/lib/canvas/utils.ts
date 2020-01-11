@@ -24,8 +24,8 @@ export const context2d = (setup?: (api: Context) => void) => {
   const canvas = new OffscreenCanvas(0, 0)
   const context = canvas.getContext('2d')!
 
-  return (attributes?: Partial<OffscreenCanvas>) => {
-    overwrite(canvas, attributes!)
+  return (width: number, height: number) => {
+    overwrite(canvas, { width, height })
     setup?.(context)
     return context
   }

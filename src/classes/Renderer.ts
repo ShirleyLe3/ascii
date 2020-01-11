@@ -7,7 +7,7 @@ import { Settings, Source } from '../types'
 import { LUT } from './LUT'
 
 export const monospaced = (font: string) => {
-  const api = context2d(api => api.font = `1em ${font}`)()
+  const api = context2d(api => api.font = `1em ${font}`)(0, 0)
   const ref = api.measureText(' ')
   return (char: string) => api.measureText(char).width === ref.width
 }
