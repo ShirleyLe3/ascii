@@ -1,3 +1,4 @@
+import { element } from 'wheels/esm/dom'
 import { extend, overwrite } from 'wheels/esm/object'
 import { Context, Source } from '../../types'
 
@@ -21,7 +22,7 @@ export const measure = (src: Source) => {
 }
 
 export const context2d = (setup?: (api: Context) => void) => {
-  const canvas = new OffscreenCanvas(0, 0)
+  const canvas = element('canvas')()
   const context = canvas.getContext('2d')!
 
   return (width: number, height: number) => {

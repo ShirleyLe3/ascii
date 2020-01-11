@@ -9,7 +9,7 @@ export const fetchImage = opts => new Promise((ok, err) => {
 })
 
 export const context2d = () => {
-  const canvas = new OffscreenCanvas(0, 0)
+  const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d')
   return (width, height) => {
     Object.assign(canvas, { width, height })
