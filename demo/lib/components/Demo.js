@@ -1,7 +1,8 @@
 import { Component, createRef, html } from '../dom.js'
 import { frame } from '../util.js'
 
-const N = 1000
+const W = 1000
+const H = 1000
 
 const bcr = ref =>
   ref.current.getBoundingClientRect()
@@ -10,8 +11,9 @@ export class Demo extends Component {
   root = createRef()
   hidden = createRef()
   visible = createRef()
+
   state = {
-    hidden: ' '.repeat(N) + '\n '.repeat(N - 1),
+    hidden: ' '.repeat(W) + '\n '.repeat(H - 1),
     visible: ''
   }
 
@@ -22,8 +24,8 @@ export class Demo extends Component {
       const { width: rw, height: rh } = bcr(this.root)
       const { width: hw, height: hh } = bcr(this.hidden)
 
-      const w = Math.floor(N * rw/hw)
-      const h = Math.floor(N * rh/hh)
+      const w = Math.floor(W * rw/hw)
+      const h = Math.floor(H * rh/hh)
       const r = rw / rh
       const t = performance.now()
 

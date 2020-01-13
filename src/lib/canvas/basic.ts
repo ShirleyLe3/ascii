@@ -12,22 +12,22 @@ export const converter = () => {
   }
 }
 
-export const cropper = () => {
-  const cached = context2d()
-
-  return (src: Source, x: number, y: number, w: number, h: number) => {
-    const dst = cached(w, h)
-    dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h)
-    return dst
-  }
-}
-
 export const resizer = () => {
   const cached = context2d()
 
   return (src: Source, w: number, h: number) => {
     const dst = cached(w, h)
     dst.drawImage(extract(src), 0, 0, w, h)
+    return dst
+  }
+}
+
+export const cropper = () => {
+  const cached = context2d()
+
+  return (src: Source, w: number, h: number, x = 0, y = 0) => {
+    const dst = cached(w, h)
+    dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h)
     return dst
   }
 }

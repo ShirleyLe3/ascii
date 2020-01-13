@@ -22,7 +22,7 @@ export const resizer = () => {
     for (let x, y; x = w < wʺ, y = h < hʺ, x || y;)
       tmp.drawImage(tmp.canvas, 0, 0, wʺ, hʺ, 0, 0, wʺ >>= +x, hʺ >>= +y)
 
-    return crop(tmp, 0, 0, w, h)
+    return crop(tmp, w, h)
   }
 }
 
