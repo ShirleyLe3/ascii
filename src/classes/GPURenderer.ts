@@ -65,9 +65,8 @@ export class GPURenderer extends Renderer {
     const uPass2 = glu.uniforms(_gl, _pass2)
 
     const area = width * height
-    const size = area << 2
-    if (this._charCodes.length !== size)
-      this._charCodes = new Int32Array(size)
+    if (this._charCodes.length !== area)
+      this._charCodes = new Int32Array(area)
 
     // enable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo)
@@ -112,14 +111,10 @@ export class GPURenderer extends Renderer {
     _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
     // read from framebuffer
-    _gl.readPixels(0, 0, width, height, gle.RGBA_INTEGER, gle.INT, this._charCodes)
+    _gl.readPixels(0, 0, width, height, gle.RED_INTEGER, gle.INT, this._charCodes)
 
     // disable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, null)
-
-    // rgbargbargba... -> rrr...
-    for (let i = 0; i < area; i++)
-      this._charCodes[i] = this._charCodes[i << 2]
 
     for (let i = 0; i < area;)
       yield str(...this._charCodes.subarray(i, i += width))
