@@ -88,8 +88,8 @@ export class GPURenderer extends Renderer {
 
     _gl.useProgram(_pass1)
     _gl.uniform1i(uPass1('uSrc'), Texture.src)
-    _gl.uniform1f(uPass1('uBrightness'), settings.brightness)
     _gl.uniform1f(uPass1('uGamma'), settings.gamma)
+    _gl.uniform1f(uPass1('uSignal'), settings.signal)
     _gl.uniform1f(uPass1('uNoise'), settings.noise)
     _gl.uniform1f(uPass1('uRandom'), random())
     _gl.viewport(0, 0, srcWidth, srcHeight)

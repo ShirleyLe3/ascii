@@ -17,7 +17,7 @@ export const defaults = {
   lutMax:     1.0,
   lutGamma:   1.0,
 
-  brightness: 1.0,
   gamma:      1.0,
+  signal:     1.0,
   noise:      0.0
 }

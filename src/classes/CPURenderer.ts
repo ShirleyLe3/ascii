@@ -19,7 +19,7 @@ export class CPURenderer extends Renderer {
 
   *lines(src: Source, width: number, height: number) {
     const { settings, _charMap, _luts, _resize, _convert } = this
-    const { lutWidth, lutHeight, brightness, gamma, noise } = settings
+    const { lutWidth, lutHeight, gamma, signal, noise } = settings
 
     const srcWidth  = lutWidth  * width
     const srcHeight = lutHeight * height
@@ -43,10 +43,10 @@ export class CPURenderer extends Renderer {
             const g = Y.g * rgb(rgba[i++] / 0xff)
             const b = Y.b * rgb(rgba[i++] / 0xff)
 
-            const s = brightness * (r + g + b)**gamma
-            const n = noise * (random() - 0.5)
+            const s = (r + g + b)**gamma
+            const n = random() - 0.5
 
-            buffer[index++] = s + n // signal + noise
+            buffer[index++] = signal*s + noise*n
           }
         }
 

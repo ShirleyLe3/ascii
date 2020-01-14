@@ -5,8 +5,8 @@
 precision highp float;
 
 uniform sampler2D uSrc;
-uniform float uBrightness;
 uniform float uGamma;
+uniform float uSignal;
 uniform float uNoise;
 uniform float uRandom;
 in vec2 vPosition;
@@ -22,7 +22,7 @@ float hash13(vec3 p3) {
 
 void main() {
   vec3 srgb = texture(uSrc, vPosition).rgb;
-  float signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);
-  float noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);
-  vFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);
+  float s = pow(LUM(MAP3(RGB, srgb)), uGamma);
+  float n = hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5;
+  vFragColor = vec4(vec3(clamp(uSignal*s + uNoise*n, 0., 1.)), 0.);
 }

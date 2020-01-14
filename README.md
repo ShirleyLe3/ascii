@@ -49,9 +49,9 @@ const renderer = new ASCII.GPURenderer({
   fontFamily: 'monospace',
 
   // rendering settings
-  brightness: 1.0,
-  gamma: 1.0,
-  noise: 0.0
+  gamma:  1.0,
+  signal: 1.0,
+  noise:  0.0
 })
 
 // slow, uses canvas 2d api
