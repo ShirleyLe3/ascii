@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.15.0](https://github.com/reinventing-wheels/ascii/compare/v0.14.7...v0.15.0) (2020-01-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename `brighness` to `signal`
+
+### Features
+
+* rename `brighness` to `signal` ([10e462e](https://github.com/reinventing-wheels/ascii/commit/10e462eabe672004ddcbfe8cc325bd9a41435ae0))
+* render to i32 ([5ab0750](https://github.com/reinventing-wheels/ascii/commit/5ab0750026a5a475fd105d6afe50b06e411a569a))
+
 ### [0.14.7](https://github.com/reinventing-wheels/ascii/compare/v0.14.6...v0.14.7) (2020-01-11)
 
 

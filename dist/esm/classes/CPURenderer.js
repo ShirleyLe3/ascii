@@ -12,7 +12,7 @@ export class CPURenderer extends Renderer {
     }
     *lines(src, width, height) {
         const { settings, _charMap, _luts, _resize, _convert } = this;
-        const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
+        const { lutWidth, lutHeight, gamma, signal, noise } = settings;
         const srcWidth = lutWidth * width;
         const srcHeight = lutHeight * height;
         const srcʹ = _convert(_resize(src, srcWidth, srcHeight));
@@ -29,9 +29,9 @@ export class CPURenderer extends Renderer {
                         const r = 0.2126 /* r */ * rgb(rgba[i++] / 0xff);
                         const g = 0.7152 /* g */ * rgb(rgba[i++] / 0xff);
                         const b = 0.0722 /* b */ * rgb(rgba[i++] / 0xff);
-                        const s = brightness * (r + g + b) ** gamma;
-                        const n = noise * (random() - 0.5);
-                        buffer[index++] = s + n; // signal + noise
+                        const s = (r + g + b) ** gamma;
+                        const n = random() - 0.5;
+                        buffer[index++] = signal * s + noise * n;
                     }
                 }
                 for (let i = _luts.length; i--;) {

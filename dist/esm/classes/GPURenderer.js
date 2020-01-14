@@ -25,7 +25,7 @@ export class GPURenderer extends Renderer {
         this._txOdd = glu.texture(this._gl)(filterNearest);
         this._txEven = glu.texture(this._gl)(filterNearest);
         this._lut = LUT.combine(this._luts);
-        this._charCodes = new Float32Array();
+        this._charCodes = new Int32Array();
         const vBase = glu.shader(this._gl, gle.VERTEX_SHADER, vert.base);
         const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, frag.pass1);
         const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(frag.pass2, {
@@ -46,9 +46,8 @@ export class GPURenderer extends Renderer {
         const uPass1 = glu.uniforms(_gl, _pass1);
         const uPass2 = glu.uniforms(_gl, _pass2);
         const area = width * height;
-        const size = area << 2;
-        if (this._charCodes.length !== size)
-            this._charCodes = new Float32Array(size);
+        if (this._charCodes.length !== area)
+            this._charCodes = new Int32Array(area);
         // enable framebuffer
         _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo);
         // 1st pass
@@ -64,8 +63,8 @@ export class GPURenderer extends Renderer {
         _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txEven, 0);
         _gl.useProgram(_pass1);
         _gl.uniform1i(uPass1('uSrc'), 1 /* src */);
-        _gl.uniform1f(uPass1('uBrightness'), settings.brightness);
         _gl.uniform1f(uPass1('uGamma'), settings.gamma);
+        _gl.uniform1f(uPass1('uSignal'), settings.signal);
         _gl.uniform1f(uPass1('uNoise'), settings.noise);
         _gl.uniform1f(uPass1('uRandom'), random());
         _gl.viewport(0, 0, srcWidth, srcHeight);
@@ -75,7 +74,7 @@ export class GPURenderer extends Renderer {
         _gl.bindTexture(gle.TEXTURE_2D, _txEven);
         _gl.activeTexture(gle.TEXTURE0 + 0 /* dst */);
         _gl.bindTexture(gle.TEXTURE_2D, _txOdd);
-        _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null);
+        _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32I, srcWidth, srcHeight, 0, gle.RED_INTEGER, gle.INT, null);
         _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txOdd, 0);
         _gl.useProgram(_pass2);
         _gl.uniform1i(uPass2('uSrc'), 1 /* src */);
@@ -84,12 +83,9 @@ export class GPURenderer extends Renderer {
         _gl.viewport(0, 0, width, height);
         _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4);
         // read from framebuffer
-        _gl.readPixels(0, 0, width, height, gle.RGBA, gle.FLOAT, this._charCodes);
+        _gl.readPixels(0, 0, width, height, gle.RED_INTEGER, gle.INT, this._charCodes);
         // disable framebuffer
         _gl.bindFramebuffer(gle.FRAMEBUFFER, null);
-        // rgbargbargba... -> rrr...
-        for (let i = 0; i < area; i++)
-            this._charCodes[i] = this._charCodes[i << 2];
         for (let i = 0; i < area;)
             yield str(...this._charCodes.subarray(i, i += width));
     }

@@ -12,8 +12,8 @@ export declare const defaults: {
     lutMin: number;
     lutMax: number;
     lutGamma: number;
-    brightness: number;
     gamma: number;
+    signal: number;
     noise: number;
 };
 //# sourceMappingURL=settings.d.ts.map

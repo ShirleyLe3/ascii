@@ -61,19 +61,19 @@ const converter = () => {
         return dst;
     };
 };
-const cropper = () => {
-    const cached = context2d();
-    return (src, x, y, w, h) => {
-        const dst = cached(w, h);
-        dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h);
-        return dst;
-    };
-};
 const resizer = () => {
     const cached = context2d();
     return (src, w, h) => {
         const dst = cached(w, h);
         dst.drawImage(extract(src), 0, 0, w, h);
+        return dst;
+    };
+};
+const cropper = () => {
+    const cached = context2d();
+    return (src, w, h, x = 0, y = 0) => {
+        const dst = cached(w, h);
+        dst.drawImage(extract(src), x, y, w, h, 0, 0, w, h);
         return dst;
     };
 };
@@ -91,7 +91,7 @@ const resizer$1 = () => {
             return tmp;
         for (let x, y; x = w < wʺ, y = h < hʺ, x || y;)
             tmp.drawImage(tmp.canvas, 0, 0, wʺ, hʺ, 0, 0, wʺ >>= +x, hʺ >>= +y);
-        return crop(tmp, 0, 0, w, h);
+        return crop(tmp, w, h);
     };
 };
 const lazyResizer = () => {
@@ -175,8 +175,8 @@ const defaults = {
     lutMin: 0.0,
     lutMax: 1.0,
     lutGamma: 1.0,
-    brightness: 1.0,
     gamma: 1.0,
+    signal: 1.0,
     noise: 0.0
 };
 
@@ -220,7 +220,7 @@ class CPURenderer extends Renderer {
     }
     *lines(src, width, height) {
         const { settings, _charMap, _luts, _resize, _convert } = this;
-        const { lutWidth, lutHeight, brightness, gamma, noise } = settings;
+        const { lutWidth, lutHeight, gamma, signal, noise } = settings;
         const srcWidth = lutWidth * width;
         const srcHeight = lutHeight * height;
         const srcʹ = _convert(_resize(src, srcWidth, srcHeight));
@@ -237,9 +237,9 @@ class CPURenderer extends Renderer {
                         const r = 0.2126  * rgb(rgba[i++] / 0xff);
                         const g = 0.7152  * rgb(rgba[i++] / 0xff);
                         const b = 0.0722  * rgb(rgba[i++] / 0xff);
-                        const s = brightness * (r + g + b) ** gamma;
-                        const n = noise * (random() - 0.5);
-                        buffer[index++] = s + n;
+                        const s = (r + g + b) ** gamma;
+                        const n = random() - 0.5;
+                        buffer[index++] = signal * s + noise * n;
                     }
                 }
                 for (let i = _luts.length; i--;) {
@@ -257,41 +257,14 @@ class CPURenderer extends Renderer {
 }
 
 const 
-TRIANGLE_STRIP = 0x0005, ARRAY_BUFFER = 0x8892, STATIC_DRAW = 0x88E4, UNSIGNED_BYTE = 0x1401, FLOAT = 0x1406,
+TRIANGLE_STRIP = 0x0005, ARRAY_BUFFER = 0x8892, STATIC_DRAW = 0x88E4, UNSIGNED_BYTE = 0x1401, INT = 0x1404, FLOAT = 0x1406,
 RGBA = 0x1908, FRAGMENT_SHADER = 0x8B30, VERTEX_SHADER = 0x8B31, LINK_STATUS = 0x8B82, NEAREST = 0x2600, TEXTURE_MAG_FILTER = 0x2800, TEXTURE_MIN_FILTER = 0x2801, TEXTURE_2D = 0x0DE1, TEXTURE0 = 0x84C0, COMPILE_STATUS = 0x8B81,
 FRAMEBUFFER = 0x8D40, COLOR_ATTACHMENT0 = 0x8CE0;
 
-const RED = 0x1903, R32F = 0x822E;
+const RED = 0x1903, RED_INTEGER = 0x8D94, R32F = 0x822E, R32I = 0x8235;
 
-const api = (attributes, ...extensions) => {
-    const canvas = element('canvas')();
-    const gl = canvas.getContext('webgl2', attributes);
-    if (!gl)
-        throw new Error('WebGL2 is not available');
-    for (const ext of extensions) {
-        if (!gl.getExtension(ext))
-            throw new Error(`"${ext}" extension is not available`);
-    }
-    return gl;
-};
-const shader = (gl, type, source) => {
-    const sourceʹ = `#version 300 es\n${source}`;
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, sourceʹ);
-    gl.compileShader(shader);
-    if (!gl.getShaderParameter(shader, COMPILE_STATUS))
-        throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${lineNumbers(sourceʹ)}\n`);
-    return shader;
-};
-const program = (gl, vert, frag) => {
-    const program = gl.createProgram();
-    gl.attachShader(program, vert);
-    gl.attachShader(program, frag);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, LINK_STATUS))
-        throw new Error(`Program error: ${gl.getProgramInfoLog(program)}`);
-    return program;
-};
+const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
+const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
 const buffer = (gl, target = ARRAY_BUFFER) => {
     const object = gl.createBuffer();
     return context(gl, object, object => gl.bindBuffer(target, object));
@@ -304,13 +277,45 @@ const framebuffer = (gl, target = FRAMEBUFFER) => {
     const object = gl.createFramebuffer();
     return context(gl, object, object => gl.bindFramebuffer(target, object));
 };
-const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
-const lineNumbers = (source, n = 1) => source.replace(/^/gm, () => `${n++}: `.padStart(5, '0'));
-const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
 
-const base = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = 0.5 + 0.5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
-const pass1 = "#define MAP3(f, v) vec3(f(v.x), f(v.y), f(v.z))\n#define RGB(x) mix(x/12.92, pow((x+.055)/1.055, 2.4), step(.04045, x))\n#define LUM(x) dot(x, vec3(.2126, .7152, .0722))\nprecision highp float;\nuniform sampler2D uSrc;\nuniform float uBrightness;\nuniform float uGamma;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout vec4 vFragColor;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 0.1031);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec3 srgb = texture(uSrc, vPosition).rgb;\nfloat signal = uBrightness * pow(LUM(MAP3(RGB, srgb)), uGamma);\nfloat noise = uNoise * (hash13(vec3(gl_FragCoord.xy, 1000.*uRandom)) - 0.5);\nvFragColor = vec4(vec3(clamp(signal + noise, 0., 1.)), 0.);\n}\n";
-const pass2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\nprecision highp float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout vec4 vFragColor;\nstruct Result {\nint index;\nfloat value;\n};\nvoid main() {\nResult res = Result(0, float(X));\nivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;\nfloat src[X];\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;\nfor (int y = 0; y < Y; y++) {\nfloat value = 0.;\nfor (int x = 0; x < X; x++)\nvalue += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (res.value > value)\nres = Result(y, value);\n}\nvFragColor = vec4(uCharMap[res.index], 0, 0, 0);\n}\n";
+const numbered = (src, n = 1) => src.replace(/^/gm, () => `${n++}: `.padStart(5, '0'));
+const api = (attributes, ...extensions) => {
+    const canvas = element('canvas')();
+    const gl = canvas.getContext('webgl2', attributes);
+    if (!gl)
+        throw new Error('WebGL2 is unavailable');
+    for (const ext of extensions) {
+        if (!gl.getExtension(ext))
+            throw new Error(`"${ext}" extension is unavailable`);
+    }
+    return gl;
+};
+const shader = (gl, type, source) => {
+    const sourceʹ = `#version 300 es\n${source}`;
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, sourceʹ);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, COMPILE_STATUS)) {
+        const info = gl.getShaderInfoLog(shader);
+        throw new Error(`Shader error:\n${info}\n${numbered(sourceʹ)}\n`);
+    }
+    return shader;
+};
+const program = (gl, vert, frag) => {
+    const program = gl.createProgram();
+    gl.attachShader(program, vert);
+    gl.attachShader(program, frag);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, LINK_STATUS)) {
+        const info = gl.getProgramInfoLog(program);
+        throw new Error(`Program error: ${info}`);
+    }
+    return program;
+};
+
+const base = "in vec2 aPosition;\nout vec2 vPosition;\nvoid main() {\nvPosition = .5 + .5*aPosition;\ngl_Position = vec4(aPosition, 0., 1.);\n}\n";
+const pass1 = "#define MAP3(fn, v3) vec3(fn(v3.x), fn(v3.y), fn(v3.z))\n#define RGB(v1) mix(v1/12.92, pow((v1+.055)/1.055, 2.4), step(.04045, v1))\n#define LUM(v3) dot(MAP3(RGB, v3), vec3(.2126, .7152, .0722))\nprecision highp float;\nuniform sampler2D uSrc;\nuniform float uGamma;\nuniform float uSignal;\nuniform float uNoise;\nuniform float uRandom;\nin vec2 vPosition;\nout float vOutput;\nfloat hash13(vec3 p3) {\np3 = fract(p3 * 1031.);\np3 += dot(p3, p3.yzx + 19.19);\nreturn fract((p3.x + p3.y) * p3.z);\n}\nvoid main() {\nvec4 t = texture(uSrc, vPosition);\nfloat s = pow(LUM(t), uGamma);\nfloat n = hash13(vec3(vPosition, uRandom)) - 0.5;\nvOutput = uSignal*s + uNoise*n;\n}\n";
+const pass2 = "#define U ${ width }\n#define V ${ height }\n#define X ${ width * height }\n#define Y ${ chars }\n#define Block float[X]\n#define CharCode int\nprecision highp float;\nuniform sampler2D uSrc;\nuniform sampler2D uLUT;\nuniform int uCharMap[Y];\nin vec2 vPosition;\nout int vOutput;\nBlock read() {\nvec2 center = vec2(textureSize(uSrc, 0))*vPosition;\nivec2 topLeft = ivec2(center) - ivec2(U, V)/2;\nBlock src;\nfor (int v = 0; v < V; v++)\nfor (int u = 0; u < U; u++)\nsrc[u + v*U] = texelFetch(uSrc, topLeft + ivec2(u, v), 0).r;\nreturn src;\n}\nCharCode closest(Block src) {\nstruct Pair { float diff; int idx; };\nPair closest = Pair(exp(1000.), 0);\nfor (int y = 0; y < Y; y++) {\nfloat diff = 0.;\nfor (int x = 0; x < X; x++)\ndiff += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);\nif (diff < closest.diff)\nclosest = Pair(diff, y);\n}\nreturn uCharMap[closest.idx];\n}\nvoid main() {\nvOutput = closest(read());\n}\n";
 const vert = { base };
 const frag = { pass1, pass2 };
 
@@ -333,7 +338,7 @@ class GPURenderer extends Renderer {
         this._txOdd = texture(this._gl)(filterNearest);
         this._txEven = texture(this._gl)(filterNearest);
         this._lut = LUT.combine(this._luts);
-        this._charCodes = new Float32Array();
+        this._charCodes = new Int32Array();
         const vBase = shader(this._gl, VERTEX_SHADER, vert.base);
         const fPass1 = shader(this._gl, FRAGMENT_SHADER, frag.pass1);
         const fPass2 = shader(this._gl, FRAGMENT_SHADER, render(frag.pass2, {
@@ -354,9 +359,8 @@ class GPURenderer extends Renderer {
         const uPass1 = uniforms(_gl, _pass1);
         const uPass2 = uniforms(_gl, _pass2);
         const area = width * height;
-        const size = area << 2;
-        if (this._charCodes.length !== size)
-            this._charCodes = new Float32Array(size);
+        if (this._charCodes.length !== area)
+            this._charCodes = new Int32Array(area);
         _gl.bindFramebuffer(FRAMEBUFFER, _fbo);
         _gl.activeTexture(TEXTURE0 + 2 );
         _gl.bindTexture(TEXTURE_2D, _txLUT);
@@ -370,8 +374,8 @@ class GPURenderer extends Renderer {
         _gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, _txEven, 0);
         _gl.useProgram(_pass1);
         _gl.uniform1i(uPass1('uSrc'), 1 );
-        _gl.uniform1f(uPass1('uBrightness'), settings.brightness);
         _gl.uniform1f(uPass1('uGamma'), settings.gamma);
+        _gl.uniform1f(uPass1('uSignal'), settings.signal);
         _gl.uniform1f(uPass1('uNoise'), settings.noise);
         _gl.uniform1f(uPass1('uRandom'), random());
         _gl.viewport(0, 0, srcWidth, srcHeight);
@@ -380,7 +384,7 @@ class GPURenderer extends Renderer {
         _gl.bindTexture(TEXTURE_2D, _txEven);
         _gl.activeTexture(TEXTURE0 + 0 );
         _gl.bindTexture(TEXTURE_2D, _txOdd);
-        _gl.texImage2D(TEXTURE_2D, 0, R32F, srcWidth, srcHeight, 0, RED, FLOAT, null);
+        _gl.texImage2D(TEXTURE_2D, 0, R32I, srcWidth, srcHeight, 0, RED_INTEGER, INT, null);
         _gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, _txOdd, 0);
         _gl.useProgram(_pass2);
         _gl.uniform1i(uPass2('uSrc'), 1 );
@@ -388,10 +392,8 @@ class GPURenderer extends Renderer {
         _gl.uniform1iv(uPass2('uCharMap'), _charMap);
         _gl.viewport(0, 0, width, height);
         _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
-        _gl.readPixels(0, 0, width, height, RGBA, FLOAT, this._charCodes);
+        _gl.readPixels(0, 0, width, height, RED_INTEGER, INT, this._charCodes);
         _gl.bindFramebuffer(FRAMEBUFFER, null);
-        for (let i = 0; i < area; i++)
-            this._charCodes[i] = this._charCodes[i << 2];
         for (let i = 0; i < area;)
             yield str(...this._charCodes.subarray(i, i += width));
     }
