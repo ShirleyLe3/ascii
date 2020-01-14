@@ -23,47 +23,56 @@ float hash13(vec3 p3) {
   return fract((p3.x + p3.y) * p3.z);
 }
 
-float lum(vec3 c) {
+float lum(in vec3 c) {
   return dot(c, vec3(.2126, .7152, .0722));
 }
 
-float rgb(float c) {
+float rgb(in float c) {
   return mix(c/12.92, pow((c + .055)/1.055, 2.4), step(.04045, c));
 }
 
-vec3 rgb(vec3 c) {
+vec3 rgb(in vec3 c) {
   return vec3(rgb(c.r), rgb(c.g), rgb(c.b));
 }
 
-struct Result {
-  int index;
-  float value;
-};
-
-void main() {
-  Result res = Result(0, float(X));
-  ivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;
-  float src[X];
+float[X] read() {
+  vec2 middle = vec2(textureSize(uSrc, 0))*vPosition;
+  ivec2 topLeft = ivec2(middle) - ivec2(U, V)/2;
+  float buf[X];
 
   for (int v = 0; v < V; v++) {
     for (int u = 0; u < U; u++) {
-      ivec2 xy = pos + ivec2(u, v);
-      vec3 srgb = texelFetch(uSrc, xy, 0).rgb;
-      float signal = uBrightness * pow(lum(rgb(srgb)), uGamma);
-      float noise = uNoise * (hash13(vec3(vec2(xy), 1000.*uRandom)) - 0.5);
-      src[u + v*U] = clamp(signal + noise, 0., 1.);
+      ivec2 xy = topLeft + ivec2(u, v);
+      float s = pow(lum(rgb(texelFetch(uSrc, xy, 0).rgb)), uGamma);
+      float n = hash13(vec3(vec2(xy), uRandom)) - .5;
+      buf[u + v*U] = uBrightness*s + uNoise*n;
     }
   }
 
+  return buf;
+}
+
+int closest(in float[X] buf) {
+  int closestIndex = 0;
+  float closestValue = float(X);
+
   for (int y = 0; y < Y; y++) {
-    float value = 0.;
+    float acc = 0.;
 
-    for (int x = 0; x < X; x++)
-      value += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);
+    for (int x = 0; x < X; x++) {
+      vec4 t = texelFetch(uLUT, ivec2(x, y), 0);
+      acc += abs(buf[x] - t.r);
+    }
 
-    if (res.value > value)
-      res = Result(y, value);
+    if (closestValue > acc) {
+      closestIndex = y;
+      closestValue = acc;
+    }
   }
 
-  vFragColor = vec4(uCharMap[res.index], 0, 0, 0);
+  return uCharMap[closestIndex];
+}
+
+void main() {
+  vFragColor = vec4(closest(read()), 0, 0, 0);
 }
