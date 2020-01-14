@@ -1,8 +1,17 @@
 extends:
   - 'defaults/ts'
-rules:
-  '@typescript-eslint/member-naming':
-    - error
-    - private: '^_'
-      protected: '^_'
-      public: '^[^_]'
+env:
+  node: true
+  browser: true
+parserOptions:
+  sourceType: 'module'
+overrides:
+  - files:
+      - '*.ts'
+      - '*.tsx'
+    rules:
+      '@typescript-eslint/member-naming':
+        - error
+        - private: '^_'
+          protected: '^_'
+          public: '^[^_]'
