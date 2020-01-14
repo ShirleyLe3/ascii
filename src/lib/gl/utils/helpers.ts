@@ -1,7 +1,7 @@
 import * as gle from '../enums'
 import { element } from 'wheels/esm/dom'
 
-const lineNumbers = (src: string, n = 1) =>
+const numbered = (src: string, n = 1) =>
   src.replace(/^/gm, () => `${n++}: `.padStart(5, '0'))
 
 export const api = (attributes?: WebGLContextAttributes, ...extensions: string[]) => {
@@ -9,11 +9,11 @@ export const api = (attributes?: WebGLContextAttributes, ...extensions: string[]
   const gl = canvas.getContext('webgl2', attributes)
 
   if (!gl)
-    throw new Error('WebGL2 is not available')
+    throw new Error('WebGL2 is unavailable')
 
   for (const ext of extensions) {
     if (!gl.getExtension(ext))
-      throw new Error(`"${ext}" extension is not available`)
+      throw new Error(`"${ext}" extension is unavailable`)
   }
 
   return gl
@@ -26,8 +26,10 @@ export const shader = (gl: WebGL2RenderingContext, type: GLenum, source: string)
   gl.shaderSource(shader, sourceʹ)
   gl.compileShader(shader)
 
-  if (!gl.getShaderParameter(shader, gle.COMPILE_STATUS))
-    throw new Error(`Shader error:\n${gl.getShaderInfoLog(shader)}\n${lineNumbers(sourceʹ)}\n`)
+  if (!gl.getShaderParameter(shader, gle.COMPILE_STATUS)) {
+    const info = gl.getShaderInfoLog(shader)
+    throw new Error(`Shader error:\n${info}\n${numbered(sourceʹ)}\n`)
+  }
 
   return shader
 }
@@ -39,8 +41,10 @@ export const program = (gl: WebGL2RenderingContext, vert: WebGLShader, frag: Web
   gl.attachShader(program, frag)
   gl.linkProgram(program)
 
-  if (!gl.getProgramParameter(program, gle.LINK_STATUS))
-    throw new Error(`Program error: ${gl.getProgramInfoLog(program)}`)
+  if (!gl.getProgramParameter(program, gle.LINK_STATUS)) {
+    const info = gl.getProgramInfoLog(program)
+    throw new Error(`Program error: ${info}`)
+  }
 
   return program
 }
