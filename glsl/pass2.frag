@@ -2,6 +2,8 @@
 #define V ${ height }
 #define X ${ width * height }
 #define Y ${ chars }
+#define Block float[X]
+#define CharCode int
 
 precision highp float;
 
@@ -9,31 +11,35 @@ uniform sampler2D uSrc;
 uniform sampler2D uLUT;
 uniform int uCharMap[Y];
 in vec2 vPosition;
-out vec4 vFragColor;
+out float vOutput;
 
-struct Result {
-  int index;
-  float value;
-};
-
-void main() {
-  Result res = Result(0, float(X));
-  ivec2 pos = ivec2(vec2(textureSize(uSrc, 0))*vPosition) - ivec2(U, V)/2;
-  float src[X];
+Block read() {
+  vec2 center = vec2(textureSize(uSrc, 0))*vPosition;
+  ivec2 topLeft = ivec2(center) - ivec2(U, V)/2;
+  Block src;
 
   for (int v = 0; v < V; v++)
     for (int u = 0; u < U; u++)
-      src[u + v*U] = texelFetch(uSrc, pos + ivec2(u, v), 0).r;
+      src[u + v*U] = texelFetch(uSrc, topLeft + ivec2(u, v), 0).r;
+
+  return src;
+}
+
+CharCode closest(Block src) {
+  struct Pair { float diff; int idx; };
+  Pair closest = Pair(exp(1000.), 0);
 
   for (int y = 0; y < Y; y++) {
-    float value = 0.;
-
+    float diff = 0.;
     for (int x = 0; x < X; x++)
-      value += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);
-
-    if (res.value > value)
-      res = Result(y, value);
+      diff += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);
+    if (diff < closest.diff)
+      closest = Pair(diff, y);
   }
 
-  vFragColor = vec4(uCharMap[res.index], 0, 0, 0);
+  return uCharMap[closest.idx];
+}
+
+void main() {
+  vOutput = float(closest(read()));
 }
