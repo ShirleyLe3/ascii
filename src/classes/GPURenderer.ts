@@ -34,7 +34,7 @@ export class GPURenderer extends Renderer {
   private readonly _txEven = glu.texture(this._gl)(filterNearest)
 
   private readonly _lut = LUT.combine(this._luts)
-  private _charCodes = new Float32Array()
+  private _charCodes = new Int32Array()
 
   constructor(settings?: Partial<Settings>) {
     super(settings)
@@ -67,7 +67,7 @@ export class GPURenderer extends Renderer {
     const area = width * height
     const size = area << 2
     if (this._charCodes.length !== size)
-      this._charCodes = new Float32Array(size)
+      this._charCodes = new Int32Array(size)
 
     // enable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo)
@@ -101,7 +101,7 @@ export class GPURenderer extends Renderer {
 
     _gl.activeTexture(gle.TEXTURE0 + Texture.dst)
     _gl.bindTexture(gle.TEXTURE_2D, _txOdd)
-    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, srcWidth, srcHeight, 0, gle.RED, gle.FLOAT, null)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32I, srcWidth, srcHeight, 0, gle.RED_INTEGER, gle.INT, null)
     _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txOdd, 0)
 
     _gl.useProgram(_pass2)
@@ -112,7 +112,7 @@ export class GPURenderer extends Renderer {
     _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
     // read from framebuffer
-    _gl.readPixels(0, 0, width, height, gle.RGBA, gle.FLOAT, this._charCodes)
+    _gl.readPixels(0, 0, width, height, gle.RGBA_INTEGER, gle.INT, this._charCodes)
 
     // disable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, null)

@@ -11,7 +11,7 @@ uniform sampler2D uSrc;
 uniform sampler2D uLUT;
 uniform int uCharMap[Y];
 in vec2 vPosition;
-out float vOutput;
+out int vOutput;
 
 Block read() {
   vec2 center = vec2(textureSize(uSrc, 0))*vPosition;
@@ -41,5 +41,5 @@ CharCode closest(Block src) {
 }
 
 void main() {
-  vOutput = float(closest(read()));
+  vOutput = closest(read());
 }
