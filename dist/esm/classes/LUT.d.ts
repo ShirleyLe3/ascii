@@ -1,7 +1,7 @@
 import { Settings } from '../types';
 export declare class LUT extends Float32Array {
-    width: number;
-    height: number;
+    readonly width: number;
+    readonly height: number;
     constructor(width: number, height: number);
     static fromCharCode(charCode: number, settings: Settings): LUT;
     static combine(luts: LUT[]): LUT;

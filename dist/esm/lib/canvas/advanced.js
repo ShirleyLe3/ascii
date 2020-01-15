@@ -1,4 +1,4 @@
-import { clz32, max } from 'wheels/esm/math';
+import { clz32, max } from '../math';
 import * as basic from './basic';
 import { measure } from './utils';
 // most significant bit (but msb(x) is always >=1)

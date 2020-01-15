@@ -1,7 +1,7 @@
-import { random } from 'wheels/esm/math';
 import { extract } from '../lib/canvas/utils';
 import * as gle from '../lib/gl/enums';
 import * as glu from '../lib/gl/utils';
+import { random } from '../lib/math';
 import { render, str } from '../lib/utils';
 import { frag, vert } from '../shaders';
 import { LUT } from './LUT';
@@ -37,7 +37,7 @@ export class GPURenderer extends Renderer {
         this._pass2 = glu.program(this._gl, vBase, fPass2);
         glu.buffer(this._gl)(quadGeometry(0 /* position */));
     }
-    *lines(src, width, height) {
+    *_lines(src, width, height) {
         const { settings, _charMap, _lut, _gl, _resize } = this;
         const { _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
         const srcWidth = settings.lutWidth * width;

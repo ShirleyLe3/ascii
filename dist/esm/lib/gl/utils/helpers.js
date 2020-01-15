@@ -1,9 +1,8 @@
+import { canvas } from '../../dom';
 import * as gle from '../enums';
-import { element } from 'wheels/esm/dom';
 const numbered = (src, n = 1) => src.replace(/^/gm, () => `${n++}: `.padStart(5, '0'));
 export const api = (attributes, ...extensions) => {
-    const canvas = element('canvas')();
-    const gl = canvas.getContext('webgl2', attributes);
+    const gl = canvas().getContext('webgl2', attributes);
     if (!gl)
         throw new Error('WebGL2 is unavailable');
     for (const ext of extensions) {

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.1](https://github.com/reinventing-wheels/ascii/compare/v0.15.0...v0.15.1) (2020-01-15)
+
+
+### Features
+
+* change access modifiers ([b2156c9](https://github.com/reinventing-wheels/ascii/commit/b2156c97d624baa69e958617dce1d7418b629009))
+* get rid of `wheels` ([086495d](https://github.com/reinventing-wheels/ascii/commit/086495d886e78916e85060fa7fbe279a06c78d4b))
+
 ## [0.15.0](https://github.com/reinventing-wheels/ascii/compare/v0.14.7...v0.15.0) (2020-01-14)
 
 

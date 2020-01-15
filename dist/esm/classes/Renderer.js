@@ -1,6 +1,6 @@
-import { floor, max } from 'wheels/esm/math';
 import { lazyResizer } from '../lib/canvas/advanced';
 import { context2d } from '../lib/canvas/utils';
+import { floor, max } from '../lib/math';
 import { chr } from '../lib/utils';
 import { defaults } from '../settings';
 import { LUT } from './LUT';
@@ -33,7 +33,7 @@ export class Renderer {
         return luts;
     }
     render(src, width, height) {
-        return [...this.lines(src, floor(width), floor(height))].join('\n');
+        return [...this._lines(src, floor(width), floor(height))].join('\n');
     }
 }
 //# sourceMappingURL=Renderer.js.map

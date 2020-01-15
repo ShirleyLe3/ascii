@@ -10,6 +10,6 @@ export declare abstract class Renderer {
     private _makeCharMap;
     private _makeLUTs;
     render(src: Source, width: number, height: number): string;
-    abstract lines(src: Source, width: number, height: number): Generator<string>;
+    protected abstract _lines(src: Source, width: number, height: number): Generator<string>;
 }
 //# sourceMappingURL=Renderer.d.ts.map

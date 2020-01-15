@@ -1,7 +1,7 @@
-import { rgb } from 'wheels/esm/color/srgb';
-import { abs, round } from 'wheels/esm/math';
 import { resizer } from '../lib/canvas/advanced';
 import { context2d } from '../lib/canvas/utils';
+import { abs, round } from '../lib/math';
+import { rgb } from '../lib/srgb';
 import { str } from '../lib/utils';
 const cached = context2d();
 const resize = resizer();

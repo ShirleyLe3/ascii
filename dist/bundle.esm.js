@@ -1,5 +1,7 @@
 const str = String.fromCharCode;
 const chr = (str) => str.charCodeAt(0);
+const extend = Object.assign;
+const overwrite = extend;
 const render = (str, ctx = {}, ref = '$') => new Function(`{${Object.keys(ctx)}}`, ref, `return \`${str}\``)(ctx, ctx);
 
 const expand = (pair) => {
@@ -18,16 +20,10 @@ const charsets = {
     extra: extra
 };
 
-const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
-
-const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
-
-const extend = Object.assign;
-const overwrite = extend;
+const Context = CanvasRenderingContext2D;
 
 const element = (name) => (...attributes) => overwrite(document.createElement(name), ...attributes);
-
-const Context = CanvasRenderingContext2D;
+const canvas = element('canvas');
 
 const triplet = (w, h) => extend([w, h, w / h], { width: w, height: h, ratio: w / h });
 const extract = (src) => src instanceof Context
@@ -42,11 +38,10 @@ const measure = (src) => {
     return triplet(srcʹ.width, srcʹ.height);
 };
 const context2d = (setup) => {
-    const canvas = element('canvas')();
-    const context = canvas.getContext('2d');
+    const context = canvas().getContext('2d');
     return (width, height) => {
         var _a;
-        overwrite(canvas, { width, height });
+        overwrite(context.canvas, { width, height });
         (_a = setup) === null || _a === void 0 ? void 0 : _a(context);
         return context;
     };
@@ -77,6 +72,11 @@ const cropper = () => {
         return dst;
     };
 };
+
+const { abs, acos, acosh, asin, asinh, atan, atan2, atanh, cbrt, ceil, clz32, cos, cosh, exp, expm1, floor, fround, hypot, imul, log, log10, log1p, log2, max, min, pow, random, round, sign, sin, sinh, sqrt, tan, tanh, trunc, E, LN10, LN2, LOG10E, LOG2E, PI, SQRT1_2, SQRT2 } = Math;
+
+const lum = (r, g, b) => 0.2126  * r + 0.7152  * g + 0.0722  * b;
+const rgb = (srgb) => srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
 
 const msb = (n) => 1 << max(0, 31 - clz32(n));
 const resizer$1 = () => {
@@ -209,7 +209,7 @@ class Renderer {
         return luts;
     }
     render(src, width, height) {
-        return [...this.lines(src, floor(width), floor(height))].join('\n');
+        return [...this._lines(src, floor(width), floor(height))].join('\n');
     }
 }
 
@@ -218,7 +218,7 @@ class CPURenderer extends Renderer {
         super(...arguments);
         this._convert = converter();
     }
-    *lines(src, width, height) {
+    *_lines(src, width, height) {
         const { settings, _charMap, _luts, _resize, _convert } = this;
         const { lutWidth, lutHeight, gamma, signal, noise } = settings;
         const srcWidth = lutWidth * width;
@@ -234,10 +234,10 @@ class CPURenderer extends Renderer {
                 for (let v = 0; v < lutHeight; v++) {
                     for (let u = 0; u < lutWidth; u++) {
                         let i = x + u + (y + v) * srcWidth << 2;
-                        const r = 0.2126  * rgb(rgba[i++] / 0xff);
-                        const g = 0.7152  * rgb(rgba[i++] / 0xff);
-                        const b = 0.0722  * rgb(rgba[i++] / 0xff);
-                        const s = (r + g + b) ** gamma;
+                        const r = rgb(rgba[i++] / 0xff);
+                        const g = rgb(rgba[i++] / 0xff);
+                        const b = rgb(rgba[i++] / 0xff);
+                        const s = lum(r, g, b) ** gamma;
                         const n = random() - 0.5;
                         buffer[index++] = signal * s + noise * n;
                     }
@@ -280,8 +280,7 @@ const framebuffer = (gl, target = FRAMEBUFFER) => {
 
 const numbered = (src, n = 1) => src.replace(/^/gm, () => `${n++}: `.padStart(5, '0'));
 const api = (attributes, ...extensions) => {
-    const canvas = element('canvas')();
-    const gl = canvas.getContext('webgl2', attributes);
+    const gl = canvas().getContext('webgl2', attributes);
     if (!gl)
         throw new Error('WebGL2 is unavailable');
     for (const ext of extensions) {
@@ -350,7 +349,7 @@ class GPURenderer extends Renderer {
         this._pass2 = program(this._gl, vBase, fPass2);
         buffer(this._gl)(quadGeometry(0 ));
     }
-    *lines(src, width, height) {
+    *_lines(src, width, height) {
         const { settings, _charMap, _lut, _gl, _resize } = this;
         const { _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
         const srcWidth = settings.lutWidth * width;
