@@ -15,7 +15,7 @@ const enum Color {
 }
 
 export class LUT extends Float32Array {
-  constructor(public width: number, public height: number) {
+  constructor(readonly width: number, readonly height: number) {
     super(width * height)
   }
 

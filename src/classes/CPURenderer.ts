@@ -10,7 +10,7 @@ export class CPURenderer extends Renderer {
   // eslint-disable-next-line @typescript-eslint/semi
   private readonly _convert = converter();
 
-  *lines(src: Source, width: number, height: number) {
+  protected *_lines(src: Source, width: number, height: number) {
     const { settings, _charMap, _luts, _resize, _convert } = this
     const { lutWidth, lutHeight, gamma, signal, noise } = settings
 

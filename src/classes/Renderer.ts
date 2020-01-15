@@ -48,8 +48,8 @@ export abstract class Renderer {
   }
 
   render(src: Source, width: number, height: number) {
-    return [...this.lines(src, floor(width), floor(height))].join('\n')
+    return [...this._lines(src, floor(width), floor(height))].join('\n')
   }
 
-  abstract lines(src: Source, width: number, height: number): Generator<string>
+  protected abstract _lines(src: Source, width: number, height: number): Generator<string>
 }

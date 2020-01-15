@@ -53,7 +53,7 @@ export class GPURenderer extends Renderer {
     glu.buffer(this._gl)(quadGeometry(Attribute.position))
   }
 
-  *lines(src: Source, width: number, height: number) {
+  protected *_lines(src: Source, width: number, height: number) {
     const { settings, _charMap, _lut, _gl, _resize } = this
     const { _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this
 
