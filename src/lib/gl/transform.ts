@@ -6,8 +6,11 @@ const isShaderSourceFile = /\.(?:glsl|vert|frag)$/i
 
 const minifyShaderSource = (shader: string) =>
   shader
-    .replace(/\/\*[^]*\*\/|\/\/.+/g, '') // remove comments
+    .replace(/\/\*[^]*\*\/|\/\/.*/g, '') // remove comments
     .replace(/\s+/g, m => m[0]) // compress whitespaces
+    .replace(/^#.*/mg, '$&\0') // terminate preprocessor directives with \0
+    .replace(/\s*([-+*/<>(){};,=])\s*/g, '$1') // remove whitespaces
+    .replace(/\0/g, '') // remove \0
 
 const extractNameIdentifier = (ic: ts.ImportClause) =>
   ic.namedBindings
