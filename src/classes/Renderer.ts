@@ -1,6 +1,6 @@
-import { floor, max } from 'wheels/esm/math'
 import { lazyResizer } from '../lib/canvas/advanced'
 import { context2d } from '../lib/canvas/utils'
+import { floor, max } from '../lib/math'
 import { chr } from '../lib/utils'
 import { defaults } from '../settings'
 import { Settings, Source } from '../types'

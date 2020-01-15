@@ -1,5 +1,5 @@
-import { clz32, max } from 'wheels/esm/math'
 import { Source } from '../../types'
+import { clz32, max } from '../math'
 import * as basic from './basic'
 import { measure } from './utils'
 

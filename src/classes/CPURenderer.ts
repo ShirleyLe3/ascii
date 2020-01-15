@@ -1,17 +1,10 @@
-import { rgb } from 'wheels/esm/color/srgb'
-import { random } from 'wheels/esm/math'
 import { converter } from '../lib/canvas/basic'
+import { random } from '../lib/math'
+import { lum, rgb } from '../lib/srgb'
 import { str } from '../lib/utils'
 import { Source } from '../types'
 import { LUT } from './LUT'
 import { Renderer } from './Renderer'
-
-// https://en.wikipedia.org/wiki/SRGB
-const enum Y {
-  r = 0.2126,
-  g = 0.7152,
-  b = 0.0722
-}
 
 export class CPURenderer extends Renderer {
   // eslint-disable-next-line @typescript-eslint/semi
@@ -39,11 +32,11 @@ export class CPURenderer extends Renderer {
           for (let u = 0; u < lutWidth; u++) {
             let i = x+u + (y+v)*srcWidth << 2
 
-            const r = Y.r * rgb(rgba[i++] / 0xff)
-            const g = Y.g * rgb(rgba[i++] / 0xff)
-            const b = Y.b * rgb(rgba[i++] / 0xff)
+            const r = rgb(rgba[i++] / 0xff)
+            const g = rgb(rgba[i++] / 0xff)
+            const b = rgb(rgba[i++] / 0xff)
 
-            const s = (r + g + b)**gamma
+            const s = lum(r, g, b)**gamma
             const n = random() - 0.5
 
             buffer[index++] = signal*s + noise*n

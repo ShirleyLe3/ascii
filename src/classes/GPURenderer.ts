@@ -1,7 +1,7 @@
-import { random } from 'wheels/esm/math'
 import { extract } from '../lib/canvas/utils'
 import * as gle from '../lib/gl/enums'
 import * as glu from '../lib/gl/utils'
+import { random } from '../lib/math'
 import { render, str } from '../lib/utils'
 import { frag, vert } from '../shaders'
 import { Settings, Source } from '../types'
