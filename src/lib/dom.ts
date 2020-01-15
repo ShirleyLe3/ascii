@@ -1,7 +1,11 @@
 import { overwrite } from './utils'
 
-export const element = <K extends keyof HTMLElementTagNameMap>(name: K) =>
-  (...attributes: Partial<HTMLElementTagNameMap[K]>[]) =>
-    overwrite(document.createElement(name), ...attributes)
+type ElMap = HTMLElementTagNameMap
+type ElNames = keyof HTMLElementTagNameMap
+type Factory<T> = (...attrs: Partial<T>[]) => T
+type Factoryʹ = <T extends ElNames>(name: T) => Factory<ElMap[T]>
+
+export const element: Factoryʹ = name => (...attrs) =>
+  overwrite(document.createElement(name), ...attrs)
 
 export const canvas = element('canvas')
