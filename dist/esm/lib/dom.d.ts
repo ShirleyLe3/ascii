@@ -1,3 +1,8 @@
-export declare const element: <K extends "object" | "link" | "small" | "sub" | "sup" | "track" | "progress" | "a" | "abbr" | "address" | "applet" | "area" | "article" | "aside" | "audio" | "b" | "base" | "basefont" | "bdi" | "bdo" | "blockquote" | "body" | "br" | "button" | "canvas" | "caption" | "cite" | "code" | "col" | "colgroup" | "data" | "datalist" | "dd" | "del" | "details" | "dfn" | "dialog" | "dir" | "div" | "dl" | "dt" | "em" | "embed" | "fieldset" | "figcaption" | "figure" | "font" | "footer" | "form" | "frame" | "frameset" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "head" | "header" | "hgroup" | "hr" | "html" | "i" | "iframe" | "img" | "input" | "ins" | "kbd" | "label" | "legend" | "li" | "main" | "map" | "mark" | "marquee" | "menu" | "meta" | "meter" | "nav" | "noscript" | "ol" | "optgroup" | "option" | "output" | "p" | "param" | "picture" | "pre" | "q" | "rp" | "rt" | "ruby" | "s" | "samp" | "script" | "section" | "select" | "slot" | "source" | "span" | "strong" | "style" | "summary" | "table" | "tbody" | "td" | "template" | "textarea" | "tfoot" | "th" | "thead" | "time" | "title" | "tr" | "u" | "ul" | "var" | "video" | "wbr">(name: K) => (...attributes: Partial<HTMLElementTagNameMap[K]>[]) => HTMLElementTagNameMap[K];
-export declare const canvas: (...attributes: Partial<HTMLCanvasElement>[]) => HTMLCanvasElement;
+declare type ElMap = HTMLElementTagNameMap;
+declare type ElNames = keyof HTMLElementTagNameMap;
+declare type Factory<T> = (...attrs: Partial<T>[]) => T;
+declare type Factoryʹ = <T extends ElNames>(name: T) => Factory<ElMap[T]>;
+export declare const element: Factoryʹ;
+export declare const canvas: Factory<HTMLCanvasElement>;
+export {};
 //# sourceMappingURL=dom.d.ts.map

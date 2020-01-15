@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.2](https://github.com/reinventing-wheels/ascii/compare/v0.15.1...v0.15.2) (2020-01-15)
+
+
+### Features
+
+* improve shader minification ([5ef1736](https://github.com/reinventing-wheels/ascii/commit/5ef1736c7ed482c7e172c94cac2969dc3dcd53dc))
+
 ### [0.15.1](https://github.com/reinventing-wheels/ascii/compare/v0.15.0...v0.15.1) (2020-01-15)
 
 

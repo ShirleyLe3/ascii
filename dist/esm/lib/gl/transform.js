@@ -3,8 +3,11 @@ import { readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 const isShaderSourceFile = /\.(?:glsl|vert|frag)$/i;
 const minifyShaderSource = (shader) => shader
-    .replace(/\/\*[^]*\*\/|\/\/.+/g, '') // remove comments
-    .replace(/\s+/g, m => m[0]); // compress whitespaces
+    .replace(/\/\*[^]*\*\/|\/\/.*/g, '') // remove comments
+    .replace(/\s+/g, m => m[0]) // compress whitespaces
+    .replace(/^#.*/mg, '$&\0') // terminate preprocessor directives with \0
+    .replace(/\s*([-+*/<>(){};,=])\s*/g, '$1') // remove whitespaces
+    .replace(/\0/g, ''); // remove \0
 const extractNameIdentifier = (ic) => ic.namedBindings
     ? ts.isNamedImports(ic.namedBindings)
         ? ic.namedBindings.elements[0].name
