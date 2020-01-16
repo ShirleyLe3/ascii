@@ -26,13 +26,11 @@ const quadGeometry = (index: number): glu.Callback => gl => {
 export class GPURenderer extends Renderer {
   private readonly _pass1: WebGLProgram
   private readonly _pass2: WebGLProgram
-
-  private readonly _gl     = glu.api({}, 'EXT_color_buffer_float')
-  private readonly _fbo    = glu.framebuffer(this._gl)()
-  private readonly _txLUT  = glu.texture(this._gl)(filterNearest)
-  private readonly _txOdd  = glu.texture(this._gl)(filterNearest)
+  private readonly _gl = glu.api({}, 'EXT_color_buffer_float')
+  private readonly _fbo = glu.framebuffer(this._gl)()
+  private readonly _txLUT = glu.texture(this._gl)(filterNearest)
+  private readonly _txOdd = glu.texture(this._gl)(filterNearest)
   private readonly _txEven = glu.texture(this._gl)(filterNearest)
-
   private readonly _lut = LUT.combine(this._luts)
   private _charCodes = new Int32Array()
 
