@@ -7,8 +7,7 @@ import { LUT } from './LUT'
 import { Renderer } from './Renderer'
 
 export class CPURenderer extends Renderer {
-  // eslint-disable-next-line @typescript-eslint/semi
-  private readonly _convert = converter();
+  private readonly _convert = converter()
 
   protected *_lines(src: Source, width: number, height: number) {
     const { settings, _charMap, _luts, _resize, _convert } = this
