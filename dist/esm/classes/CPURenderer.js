@@ -7,7 +7,6 @@ import { Renderer } from './Renderer';
 export class CPURenderer extends Renderer {
     constructor() {
         super(...arguments);
-        // eslint-disable-next-line @typescript-eslint/semi
         this._convert = converter();
     }
     *_lines(src, width, height) {

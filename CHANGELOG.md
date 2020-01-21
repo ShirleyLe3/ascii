@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.3](https://github.com/reinventing-wheels/ascii/compare/v0.15.2...v0.15.3) (2020-01-21)
+
+
+### Bug Fixes
+
+* shader math rounding issue ([9860f2b](https://github.com/reinventing-wheels/ascii/commit/9860f2b01449b0f4f3da96f7647a73ab857d420a))
+
 ### [0.15.2](https://github.com/reinventing-wheels/ascii/compare/v0.15.1...v0.15.2) (2020-01-15)
 
 
