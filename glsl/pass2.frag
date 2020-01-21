@@ -16,7 +16,7 @@ out int vOutput;
 
 Block read() {
   vec2 center = vec2(textureSize(uSrc, 0))*vPosition;
-  ivec2 topLeft = ivec2(center) - ivec2(U, V)/2;
+  ivec2 topLeft = ivec2(center + .25) - ivec2(U, V)/2;
   Block src;
 
   for (int v = 0; v < V; v++)
