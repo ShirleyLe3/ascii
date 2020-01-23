@@ -1,11 +1,11 @@
-import * as ts from 'typescript'
 import { readFileSync } from 'fs'
 import { dirname, resolve } from 'path'
+import * as ts from 'typescript'
 
 const isShaderSourceFile = /\.(?:glsl|vert|frag)$/i
 
-const minifyShaderSource = (shader: string) =>
-  shader
+const minifyShaderSource = (shaderSource: string) =>
+  shaderSource
     .replace(/\/\*[^]*\*\/|\/\/.*/g, '') // remove comments
     .replace(/\s+/g, m => m[0]) // compress whitespaces
     .replace(/^#.*/mg, '$&\0') // terminate preprocessor directives with \0
@@ -25,16 +25,15 @@ const createConstStatement = (name: string, value: string) => {
   return ts.createVariableStatement(undefined, list)
 }
 
-const transformImport = (node: ts.Node, cwd: string) => {
+const inlineShaderSource = (node: ts.Node, cwd: string) => {
   if (!ts.isImportDeclaration(node)) return
   if (!node.importClause) return node
 
-  const name = extractNameIdentifier(node.importClause)!.getText()
-  const path = node.moduleSpecifier.getText().slice(1, -1)
-  const resolved = resolve(path.startsWith('.') ? cwd : '.', path)
-
-  if (isShaderSourceFile.test(path)) {
-    const value = minifyShaderSource(readFileSync(resolved, 'utf8'))
+  const spec = node.moduleSpecifier.getText().slice(1, -1)
+  if (isShaderSourceFile.test(spec)) {
+    const name = extractNameIdentifier(node.importClause)!.getText()
+    const path = resolve(spec.startsWith('.') ? cwd : '.', spec)
+    const value = minifyShaderSource(readFileSync(path, 'utf8'))
     return createConstStatement(name, value)
   }
 
@@ -45,7 +44,7 @@ export default (): ts.TransformerFactory<ts.SourceFile> => ctx => sf => {
   const cwd = dirname(sf.fileName)
 
   const visitor: ts.Visitor = node =>
-    transformImport(node, cwd) ??
+    inlineShaderSource(node, cwd) ??
     ts.visitEachChild(node, visitor, ctx)
 
   return ts.visitNode(sf, visitor)

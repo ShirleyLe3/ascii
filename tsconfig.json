@@ -9,7 +9,8 @@
     "sourceMap": true,
     "strict": true,
     "plugins": [
-      { "transform": "./src/lib/gl/transform.ts" }
+      { "transform": "./src/transforms/glsl.ts" },
+      { "transform": "./src/transforms/esm.ts", "after": true }
     ]
   },
   "include": [
