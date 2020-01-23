@@ -10,7 +10,7 @@ uniform float uSignal;
 uniform float uNoise;
 uniform float uRandom;
 in vec2 vPosition;
-out float vOutput;
+out float Result;
 
 // Hash without Sine by Dave Hoskins
 // https://www.shadertoy.com/view/4djSRW
@@ -24,5 +24,5 @@ void main() {
   vec4 t = texture(uSrc, vPosition);
   float s = pow(LUM(t), uGamma);
   float n = hash13(vec3(vPosition, uRandom)) - 0.5;
-  vOutput = uSignal*s + uNoise*n;
+  Result = uSignal*s + uNoise*n;
 }

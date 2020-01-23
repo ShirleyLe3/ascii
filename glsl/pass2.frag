@@ -10,9 +10,9 @@ precision highp float;
 
 uniform sampler2D uSrc;
 uniform sampler2D uLUT;
-uniform uint uCharMap[Y];
+uniform CharCode uCharMap[Y];
 in vec2 vPosition;
-out uint vOutput;
+out CharCode Result;
 
 Block read() {
   vec2 center = vec2(textureSize(uSrc, 0))*vPosition;
@@ -21,7 +21,7 @@ Block read() {
 
   for (int v = 0; v < V; v++)
     for (int u = 0; u < U; u++)
-      src[u + v*U] = texelFetch(uSrc, topLeft + ivec2(u, v), 0).r;
+      src[U*v + u] = texelFetch(uSrc, topLeft + ivec2(u, v), 0).r;
 
   return src;
 }
@@ -42,5 +42,5 @@ CharCode closest(Block src) {
 }
 
 void main() {
-  vOutput = closest(read());
+  Result = closest(read());
 }
