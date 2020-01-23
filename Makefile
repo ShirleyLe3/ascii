@@ -1,7 +1,7 @@
 PATH := node_modules/.bin:$(PATH)
 
 lint := eslint --report-unused-disable-directives --ext .ts src
-build := tsc -m esnext --outDir dist/esm
+build := tsc --outDir dist/esm
 bundle := rollup -c
 clean := rm -rf dist
 
