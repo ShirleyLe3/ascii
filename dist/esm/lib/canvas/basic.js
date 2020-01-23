@@ -1,4 +1,4 @@
-import { context2d, extract, measure } from './utils';
+import { context2d, extract, measure } from "./utils.js";
 export const converter = () => {
     const cached = context2d();
     return (src) => {

@@ -1,6 +1,6 @@
-import { Context } from '../../types';
-import { canvas } from '../dom';
-import { extend, overwrite } from '../utils';
+import { Context } from "../../types.js";
+import { canvas } from "../dom.js";
+import { extend, overwrite } from "../utils.js";
 const triplet = (w, h) => extend([w, h, w / h], { width: w, height: h, ratio: w / h });
 export const extract = (src) => src instanceof Context
     ? src.canvas

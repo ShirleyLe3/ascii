@@ -1,8 +1,8 @@
-import { resizer } from '../lib/canvas/advanced';
-import { context2d } from '../lib/canvas/utils';
-import { abs, round } from '../lib/math';
-import { rgb } from '../lib/srgb';
-import { str } from '../lib/utils';
+import { resizer } from "../lib/canvas/advanced.js";
+import { context2d } from "../lib/canvas/utils.js";
+import { abs, round } from "../lib/math.js";
+import { rgb } from "../lib/srgb.js";
+import { str } from "../lib/utils.js";
 const cached = context2d();
 const resize = resizer();
 export class LUT extends Float32Array {

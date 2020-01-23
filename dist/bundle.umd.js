@@ -194,25 +194,16 @@
     class Renderer {
         constructor(settings) {
             this._resize = lazyResizer();
-            this.settings = { ...defaults, ...settings };
-            this._charMap = this._makeCharMap();
-            this._luts = this._makeLUTs();
-        }
-        _makeCharMap() {
-            const { charSet, fontFamily } = this.settings;
-            const charCodes = [...charSet]
-                .filter(monospaced(fontFamily))
-                .map(chr);
-            return Int32Array.from(charCodes);
-        }
-        _makeLUTs() {
-            const { _charMap, settings } = this;
-            const { lutMin, lutMax } = settings;
-            const luts = Array.from(_charMap, cc => LUT.fromCharCode(cc, settings));
+            const settingsʹ = { ...defaults, ...settings };
+            const { charSet, fontFamily, lutMin, lutMax } = settingsʹ;
+            const codes = [...charSet].filter(monospaced(fontFamily)).map(chr);
+            const luts = Array.from(codes, cc => LUT.fromCharCode(cc, settingsʹ));
             const maxʹ = luts.reduce((acc, lut) => max(acc, ...lut), 0);
             for (const lut of luts)
                 lut.normalize(lutMin * maxʹ, lutMax * maxʹ);
-            return luts;
+            this.settings = settingsʹ;
+            this._charMap = Uint32Array.from(codes);
+            this._luts = luts;
         }
         render(src, width, height) {
             return [...this._lines(src, floor(width), floor(height))].join('\n');
@@ -263,11 +254,11 @@
     }
 
     const 
-    TRIANGLE_STRIP = 0x0005, ARRAY_BUFFER = 0x8892, STATIC_DRAW = 0x88E4, UNSIGNED_BYTE = 0x1401, INT = 0x1404, FLOAT = 0x1406,
+    TRIANGLE_STRIP = 0x0005, ARRAY_BUFFER = 0x8892, STATIC_DRAW = 0x88E4, UNSIGNED_BYTE = 0x1401, UNSIGNED_INT = 0x1405, FLOAT = 0x1406,
     RGBA = 0x1908, FRAGMENT_SHADER = 0x8B30, VERTEX_SHADER = 0x8B31, LINK_STATUS = 0x8B82, NEAREST = 0x2600, TEXTURE_MAG_FILTER = 0x2800, TEXTURE_MIN_FILTER = 0x2801, TEXTURE_2D = 0x0DE1, TEXTURE0 = 0x84C0, COMPILE_STATUS = 0x8B81,
     FRAMEBUFFER = 0x8D40, COLOR_ATTACHMENT0 = 0x8CE0;
 
-    const RED = 0x1903, RED_INTEGER = 0x8D94, R32F = 0x822E, R32I = 0x8235;
+    const RED = 0x1903, RED_INTEGER = 0x8D94, R32F = 0x822E, R32UI = 0x8236;
 
     const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
     const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
@@ -319,8 +310,8 @@
     };
 
     const base = "in vec2 aPosition;out vec2 vPosition;void main(){vPosition=.5+.5*aPosition;gl_Position=vec4(aPosition,0.,1.);}";
-    const pass1 = "#define MAP3(fn,v3)vec3(fn(v3.x),fn(v3.y),fn(v3.z))\n#define RGB(v1)mix(v1/12.92,pow((v1+.055)/1.055,2.4),step(.04045,v1))\n#define LUM(v3)dot(MAP3(RGB,v3),vec3(.2126,.7152,.0722))\nprecision highp float;uniform sampler2D uSrc;uniform float uGamma;uniform float uSignal;uniform float uNoise;uniform float uRandom;in vec2 vPosition;out float vOutput;float hash13(vec3 p3){p3=fract(p3*1031.);p3+=dot(p3,p3.yzx+19.19);return fract((p3.x+p3.y)*p3.z);}void main(){vec4 t=texture(uSrc,vPosition);float s=pow(LUM(t),uGamma);float n=hash13(vec3(vPosition,uRandom))-0.5;vOutput=uSignal*s+uNoise*n;}";
-    const pass2 = "#define U ${width}\n#define V ${height}\n#define X ${width*height}\n#define Y ${chars}\n#define Inf exp(1000.)\n#define Block float[X]\n#define CharCode int\nprecision highp float;uniform sampler2D uSrc;uniform sampler2D uLUT;uniform int uCharMap[Y];in vec2 vPosition;out int vOutput;Block read(){vec2 center=vec2(textureSize(uSrc,0))*vPosition;ivec2 topLeft=ivec2(center+.25)-ivec2(U,V)/2;Block src;for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[u+v*U]=texelFetch(uSrc,topLeft+ivec2(u,v),0).r;return src;}CharCode closest(Block src){struct Pair{float diff;int idx;};Pair closest=Pair(Inf,0);for(int y=0;y<Y;y++){float diff=0.;for(int x=0;x<X;x++)diff+=abs(src[x]-texelFetch(uLUT,ivec2(x,y),0).r);if(closest.diff>diff)closest=Pair(diff,y);}return uCharMap[closest.idx];}void main(){vOutput=closest(read());}";
+    const pass1 = "#define MAP3(fn,v3)vec3(fn(v3.x),fn(v3.y),fn(v3.z))\n#define RGB(v1)mix(v1/12.92,pow((v1+.055)/1.055,2.4),step(.04045,v1))\n#define LUM(v3)dot(MAP3(RGB,v3),vec3(.2126,.7152,.0722))\nprecision highp float;uniform sampler2D uSrc;uniform float uGamma;uniform float uSignal;uniform float uNoise;uniform float uRandom;in vec2 vPosition;out float Result;float hash13(vec3 p3){p3=fract(p3*1031.);p3+=dot(p3,p3.yzx+19.19);return fract((p3.x+p3.y)*p3.z);}void main(){vec4 t=texture(uSrc,vPosition);float s=pow(LUM(t),uGamma);float n=hash13(vec3(vPosition,uRandom))-0.5;Result=uSignal*s+uNoise*n;}";
+    const pass2 = "#define U ${width}\n#define V ${height}\n#define X ${width*height}\n#define Y ${chars}\n#define Inf exp(1000.)\n#define Block float[X]\n#define CharCode uint\nprecision highp float;uniform sampler2D uSrc;uniform sampler2D uLUT;uniform CharCode uCharMap[Y];in vec2 vPosition;out CharCode Result;Block read(){vec2 center=vec2(textureSize(uSrc,0))*vPosition;ivec2 topLeft=ivec2(center+.25)-ivec2(U,V)/2;Block src;for(int v=0;v<V;v++)for(int u=0;u<U;u++)src[U*v+u]=texelFetch(uSrc,topLeft+ivec2(u,v),0).r;return src;}CharCode closest(Block src){struct Pair{float diff;int idx;};Pair closest=Pair(Inf,0);for(int y=0;y<Y;y++){float diff=0.;for(int x=0;x<X;x++)diff+=abs(src[x]-texelFetch(uLUT,ivec2(x,y),0).r);if(closest.diff>diff)closest=Pair(diff,y);}return uCharMap[closest.idx];}void main(){Result=closest(read());}";
     const vert = { base };
     const frag = { pass1, pass2 };
 
@@ -337,27 +328,31 @@
     class GPURenderer extends Renderer {
         constructor(settings) {
             super(settings);
-            this._gl = api({}, 'EXT_color_buffer_float');
-            this._fbo = framebuffer(this._gl)();
-            this._txLUT = texture(this._gl)(filterNearest);
-            this._txOdd = texture(this._gl)(filterNearest);
-            this._txEven = texture(this._gl)(filterNearest);
-            this._lut = LUT.combine(this._luts);
-            this._charCodes = new Int32Array();
-            const vBase = shader(this._gl, VERTEX_SHADER, vert.base);
-            const fPass1 = shader(this._gl, FRAGMENT_SHADER, frag.pass1);
-            const fPass2 = shader(this._gl, FRAGMENT_SHADER, render(frag.pass2, {
+            this._charCodes = new Uint32Array();
+            const gl = api({}, 'EXT_color_buffer_float');
+            const vsBase = shader(gl, VERTEX_SHADER, vert.base);
+            const fsPass1 = shader(gl, FRAGMENT_SHADER, frag.pass1);
+            const fsPass2 = shader(gl, FRAGMENT_SHADER, render(frag.pass2, {
                 chars: this._charMap.length,
                 width: this.settings.lutWidth,
                 height: this.settings.lutHeight
             }));
-            this._pass1 = program(this._gl, vBase, fPass1);
-            this._pass2 = program(this._gl, vBase, fPass2);
-            buffer(this._gl)(quadGeometry(0 ));
+            this._gl = gl;
+            this._fbo = framebuffer(gl)();
+            this._txLUT = texture(gl)(filterNearest);
+            this._txOdd = texture(gl)(filterNearest);
+            this._txEven = texture(gl)(filterNearest);
+            this._pass1 = program(gl, vsBase, fsPass1);
+            this._pass2 = program(gl, vsBase, fsPass2);
+            const lut = LUT.combine(this._luts);
+            gl.activeTexture(TEXTURE0 + 2 );
+            gl.bindTexture(TEXTURE_2D, this._txLUT);
+            gl.texImage2D(TEXTURE_2D, 0, R32F, lut.width, lut.height, 0, RED, FLOAT, lut);
+            buffer(gl)(quadGeometry(0 ));
         }
         *_lines(src, width, height) {
-            const { settings, _charMap, _lut, _gl, _resize } = this;
-            const { _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this;
+            const { settings, _charMap, _resize, _gl } = this;
+            const { _pass1, _pass2, _fbo, _txOdd, _txEven } = this;
             const srcWidth = settings.lutWidth * width;
             const srcHeight = settings.lutHeight * height;
             const srcʹ = extract(_resize(src, srcWidth, srcHeight));
@@ -365,11 +360,8 @@
             const uPass2 = uniforms(_gl, _pass2);
             const area = width * height;
             if (this._charCodes.length !== area)
-                this._charCodes = new Int32Array(area);
+                this._charCodes = new Uint32Array(area);
             _gl.bindFramebuffer(FRAMEBUFFER, _fbo);
-            _gl.activeTexture(TEXTURE0 + 2 );
-            _gl.bindTexture(TEXTURE_2D, _txLUT);
-            _gl.texImage2D(TEXTURE_2D, 0, R32F, _lut.width, _lut.height, 0, RED, FLOAT, _lut);
             _gl.activeTexture(TEXTURE0 + 1 );
             _gl.bindTexture(TEXTURE_2D, _txOdd);
             _gl.texImage2D(TEXTURE_2D, 0, RGBA, RGBA, UNSIGNED_BYTE, srcʹ);
@@ -389,15 +381,15 @@
             _gl.bindTexture(TEXTURE_2D, _txEven);
             _gl.activeTexture(TEXTURE0 + 0 );
             _gl.bindTexture(TEXTURE_2D, _txOdd);
-            _gl.texImage2D(TEXTURE_2D, 0, R32I, srcWidth, srcHeight, 0, RED_INTEGER, INT, null);
+            _gl.texImage2D(TEXTURE_2D, 0, R32UI, srcWidth, srcHeight, 0, RED_INTEGER, UNSIGNED_INT, null);
             _gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, _txOdd, 0);
             _gl.useProgram(_pass2);
             _gl.uniform1i(uPass2('uSrc'), 1 );
             _gl.uniform1i(uPass2('uLUT'), 2 );
-            _gl.uniform1iv(uPass2('uCharMap'), _charMap);
+            _gl.uniform1uiv(uPass2('uCharMap'), _charMap);
             _gl.viewport(0, 0, width, height);
             _gl.drawArrays(TRIANGLE_STRIP, 0, 4);
-            _gl.readPixels(0, 0, width, height, RED_INTEGER, INT, this._charCodes);
+            _gl.readPixels(0, 0, width, height, RED_INTEGER, UNSIGNED_INT, this._charCodes);
             _gl.bindFramebuffer(FRAMEBUFFER, null);
             for (let i = 0; i < area;)
                 yield str(...this._charCodes.subarray(i, i += width));

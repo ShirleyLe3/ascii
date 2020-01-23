@@ -1,4 +1,4 @@
-import { ascii } from './charsets';
+import { ascii } from "./charsets.js";
 export const defaults = {
     charSet: ascii,
     fontFamily: 'monospace',

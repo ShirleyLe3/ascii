@@ -1,5 +1,5 @@
-import { canvas } from '../../dom';
-import * as gle from '../enums';
+import { canvas } from "../../dom.js";
+import * as gle from "../enums/index.js";
 const numbered = (src, n = 1) => src.replace(/^/gm, () => `${n++}: `.padStart(5, '0'));
 export const api = (attributes, ...extensions) => {
     const gl = canvas().getContext('webgl2', attributes);

@@ -1,8 +1,8 @@
-import * as ts from 'typescript';
 import { readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
+import * as ts from 'typescript';
 const isShaderSourceFile = /\.(?:glsl|vert|frag)$/i;
-const minifyShaderSource = (shader) => shader
+const minifyShaderSource = (shaderSource) => shaderSource
     .replace(/\/\*[^]*\*\/|\/\/.*/g, '') // remove comments
     .replace(/\s+/g, m => m[0]) // compress whitespaces
     .replace(/^#.*/mg, '$&\0') // terminate preprocessor directives with \0
@@ -18,23 +18,23 @@ const createConstStatement = (name, value) => {
     const list = ts.createVariableDeclarationList([decl], ts.NodeFlags.Const);
     return ts.createVariableStatement(undefined, list);
 };
-const transformImport = (node, cwd) => {
+const inlineShaderSource = (node, cwd) => {
     if (!ts.isImportDeclaration(node))
         return;
     if (!node.importClause)
         return node;
-    const name = extractNameIdentifier(node.importClause).getText();
-    const path = node.moduleSpecifier.getText().slice(1, -1);
-    const resolved = resolve(path.startsWith('.') ? cwd : '.', path);
-    if (isShaderSourceFile.test(path)) {
-        const value = minifyShaderSource(readFileSync(resolved, 'utf8'));
+    const spec = node.moduleSpecifier.getText().slice(1, -1);
+    if (isShaderSourceFile.test(spec)) {
+        const name = extractNameIdentifier(node.importClause).getText();
+        const path = resolve(spec.startsWith('.') ? cwd : '.', spec);
+        const value = minifyShaderSource(readFileSync(path, 'utf8'));
         return createConstStatement(name, value);
     }
     return node;
 };
 export default () => ctx => sf => {
     const cwd = dirname(sf.fileName);
-    const visitor = node => { var _a; return _a = transformImport(node, cwd), (_a !== null && _a !== void 0 ? _a : ts.visitEachChild(node, visitor, ctx)); };
+    const visitor = node => { var _a; return _a = inlineShaderSource(node, cwd), (_a !== null && _a !== void 0 ? _a : ts.visitEachChild(node, visitor, ctx)); };
     return ts.visitNode(sf, visitor);
 };
-//# sourceMappingURL=transform.js.map
+//# sourceMappingURL=glsl.js.map

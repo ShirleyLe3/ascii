@@ -1,4 +1,4 @@
-import * as gle from '../enums';
+import * as gle from "../enums/index.js";
 const context = (gl, object, bind) => fn => (fn && (bind(object), fn(gl, object), bind(null)), object);
 export const uniforms = (gl, program) => (name) => gl.getUniformLocation(program, name);
 export const array = gl => {

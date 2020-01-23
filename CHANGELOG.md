@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.4](https://github.com/reinventing-wheels/ascii/compare/v0.15.3...v0.15.4) (2020-01-23)
+
+
+### Features
+
+* `dist/esm` is now spec-compliant ([87099de](https://github.com/reinventing-wheels/ascii/commit/87099de1aaf97a27c240dc0027109b1073a00c08))
+* use `uint` ([893c3e9](https://github.com/reinventing-wheels/ascii/commit/893c3e94cddbe3c63420bda4821e5ad0409db8eb))
+
 ### [0.15.3](https://github.com/reinventing-wheels/ascii/compare/v0.15.2...v0.15.3) (2020-01-21)
 
 

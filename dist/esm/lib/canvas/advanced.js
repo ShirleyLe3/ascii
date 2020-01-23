@@ -1,6 +1,6 @@
-import { clz32, max } from '../math';
-import * as basic from './basic';
-import { measure } from './utils';
+import { clz32, max } from "../math.js";
+import * as basic from "./basic.js";
+import { measure } from "./utils.js";
 // most significant bit (but msb(x) is always >=1)
 const msb = (n) => 1 << max(0, 31 - clz32(n));
 export const resizer = () => {

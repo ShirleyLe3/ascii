@@ -1,9 +1,9 @@
-import { converter } from '../lib/canvas/basic';
-import { random } from '../lib/math';
-import { lum, rgb } from '../lib/srgb';
-import { str } from '../lib/utils';
-import { LUT } from './LUT';
-import { Renderer } from './Renderer';
+import { converter } from "../lib/canvas/basic.js";
+import { random } from "../lib/math.js";
+import { lum, rgb } from "../lib/srgb.js";
+import { str } from "../lib/utils.js";
+import { LUT } from "./LUT.js";
+import { Renderer } from "./Renderer.js";
 export class CPURenderer extends Renderer {
     constructor() {
         super(...arguments);
