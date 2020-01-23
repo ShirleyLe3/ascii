@@ -24,36 +24,47 @@ const quadGeometry = (index: number): glu.Callback => gl => {
 }
 
 export class GPURenderer extends Renderer {
+  private readonly _gl: WebGL2RenderingContext
+  private readonly _fbo: WebGLFramebuffer
+  private readonly _txLUT: WebGLTexture
+  private readonly _txOdd: WebGLTexture
+  private readonly _txEven: WebGLTexture
   private readonly _pass1: WebGLProgram
   private readonly _pass2: WebGLProgram
-  private readonly _gl = glu.api({}, 'EXT_color_buffer_float')
-  private readonly _fbo = glu.framebuffer(this._gl)()
-  private readonly _txLUT = glu.texture(this._gl)(filterNearest)
-  private readonly _txOdd = glu.texture(this._gl)(filterNearest)
-  private readonly _txEven = glu.texture(this._gl)(filterNearest)
-  private readonly _lut = LUT.combine(this._luts)
   private _charCodes = new Int32Array()
 
   constructor(settings?: Partial<Settings>) {
     super(settings)
 
-    const vBase = glu.shader(this._gl, gle.VERTEX_SHADER, vert.base)
-    const fPass1 = glu.shader(this._gl, gle.FRAGMENT_SHADER, frag.pass1)
-    const fPass2 = glu.shader(this._gl, gle.FRAGMENT_SHADER, render(frag.pass2, {
+    const gl = glu.api({}, 'EXT_color_buffer_float')
+
+    const vsBase = glu.shader(gl, gle.VERTEX_SHADER, vert.base)
+    const fsPass1 = glu.shader(gl, gle.FRAGMENT_SHADER, frag.pass1)
+    const fsPass2 = glu.shader(gl, gle.FRAGMENT_SHADER, render(frag.pass2, {
       chars: this._charMap.length,
       width: this.settings.lutWidth,
       height: this.settings.lutHeight
     }))
 
-    this._pass1 = glu.program(this._gl, vBase, fPass1)
-    this._pass2 = glu.program(this._gl, vBase, fPass2)
+    this._gl = gl
+    this._fbo = glu.framebuffer(gl)()
+    this._txLUT = glu.texture(gl)(filterNearest)
+    this._txOdd = glu.texture(gl)(filterNearest)
+    this._txEven = glu.texture(gl)(filterNearest)
+    this._pass1 = glu.program(gl, vsBase, fsPass1)
+    this._pass2 = glu.program(gl, vsBase, fsPass2)
 
-    glu.buffer(this._gl)(quadGeometry(Attribute.position))
+    const lut = LUT.combine(this._luts)
+    gl.activeTexture(gle.TEXTURE0 + Texture.lut)
+    gl.bindTexture(gle.TEXTURE_2D, this._txLUT)
+    gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, lut.width, lut.height, 0, gle.RED, gle.FLOAT, lut)
+
+    glu.buffer(gl)(quadGeometry(Attribute.position))
   }
 
   protected *_lines(src: Source, width: number, height: number) {
-    const { settings, _charMap, _lut, _gl, _resize } = this
-    const { _pass1, _pass2, _fbo, _txLUT, _txOdd, _txEven } = this
+    const { settings, _charMap, _resize, _gl } = this
+    const { _pass1, _pass2, _fbo, _txOdd, _txEven } = this
 
     const srcWidth  = settings.lutWidth  * width
     const srcHeight = settings.lutHeight * height
@@ -70,10 +81,6 @@ export class GPURenderer extends Renderer {
     _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo)
 
     // 1st pass
-    _gl.activeTexture(gle.TEXTURE0 + Texture.lut)
-    _gl.bindTexture(gle.TEXTURE_2D, _txLUT)
-    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, _lut.width, _lut.height, 0, gle.RED, gle.FLOAT, _lut)
-
     _gl.activeTexture(gle.TEXTURE0 + Texture.src)
     _gl.bindTexture(gle.TEXTURE_2D, _txOdd)
     _gl.texImage2D(gle.TEXTURE_2D, 0, gle.RGBA, gle.RGBA, gle.UNSIGNED_BYTE, srcʹ)
