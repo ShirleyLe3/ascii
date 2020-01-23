@@ -14,7 +14,7 @@ export const monospaced = (font: string) => {
 
 export abstract class Renderer {
   readonly settings: Settings
-  protected readonly _charMap: Int32Array
+  protected readonly _charMap: Uint32Array
   protected readonly _luts: LUT[]
   protected readonly _resize = lazyResizer()
 
@@ -30,7 +30,7 @@ export abstract class Renderer {
       lut.normalize(lutMin * maxʹ, lutMax * maxʹ)
 
     this.settings = settingsʹ
-    this._charMap = Int32Array.from(codes)
+    this._charMap = Uint32Array.from(codes)
     this._luts = luts
   }
 

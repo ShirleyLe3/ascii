@@ -31,7 +31,7 @@ export class GPURenderer extends Renderer {
   private readonly _txEven: WebGLTexture
   private readonly _pass1: WebGLProgram
   private readonly _pass2: WebGLProgram
-  private _charCodes = new Int32Array()
+  private _charCodes = new Uint32Array()
 
   constructor(settings?: Partial<Settings>) {
     super(settings)
@@ -75,7 +75,7 @@ export class GPURenderer extends Renderer {
 
     const area = width * height
     if (this._charCodes.length !== area)
-      this._charCodes = new Int32Array(area)
+      this._charCodes = new Uint32Array(area)
 
     // enable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, _fbo)
@@ -105,18 +105,18 @@ export class GPURenderer extends Renderer {
 
     _gl.activeTexture(gle.TEXTURE0 + Texture.dst)
     _gl.bindTexture(gle.TEXTURE_2D, _txOdd)
-    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32I, srcWidth, srcHeight, 0, gle.RED_INTEGER, gle.INT, null)
+    _gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32UI, srcWidth, srcHeight, 0, gle.RED_INTEGER, gle.UNSIGNED_INT, null)
     _gl.framebufferTexture2D(gle.FRAMEBUFFER, gle.COLOR_ATTACHMENT0, gle.TEXTURE_2D, _txOdd, 0)
 
     _gl.useProgram(_pass2)
     _gl.uniform1i(uPass2('uSrc'), Texture.src)
     _gl.uniform1i(uPass2('uLUT'), Texture.lut)
-    _gl.uniform1iv(uPass2('uCharMap'), _charMap)
+    _gl.uniform1uiv(uPass2('uCharMap'), _charMap)
     _gl.viewport(0, 0, width, height)
     _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
 
     // read from framebuffer
-    _gl.readPixels(0, 0, width, height, gle.RED_INTEGER, gle.INT, this._charCodes)
+    _gl.readPixels(0, 0, width, height, gle.RED_INTEGER, gle.UNSIGNED_INT, this._charCodes)
 
     // disable framebuffer
     _gl.bindFramebuffer(gle.FRAMEBUFFER, null)

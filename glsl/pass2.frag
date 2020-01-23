@@ -4,15 +4,15 @@
 #define Y ${ chars }
 #define Inf exp(1000.)
 #define Block float[X]
-#define CharCode int
+#define CharCode uint
 
 precision highp float;
 
 uniform sampler2D uSrc;
 uniform sampler2D uLUT;
-uniform int uCharMap[Y];
+uniform uint uCharMap[Y];
 in vec2 vPosition;
-out int vOutput;
+out uint vOutput;
 
 Block read() {
   vec2 center = vec2(textureSize(uSrc, 0))*vPosition;
