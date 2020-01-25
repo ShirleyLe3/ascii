@@ -2,6 +2,7 @@
 #define V ${ height }
 #define X ${ width * height }
 #define Y ${ chars }
+
 #define Inf exp(1000.)
 #define Block float[X]
 #define CharCode uint
@@ -27,18 +28,20 @@ Block read() {
 }
 
 CharCode closest(Block src) {
-  struct Pair { float diff; int idx; };
-  Pair closest = Pair(Inf, 0);
+  struct Pair { int index; float diff; };
+  Pair closest = Pair(0, Inf);
 
   for (int y = 0; y < Y; y++) {
     float diff = 0.;
+
     for (int x = 0; x < X; x++)
       diff += abs(src[x] - texelFetch(uLUT, ivec2(x, y), 0).r);
+
     if (closest.diff > diff)
-      closest = Pair(diff, y);
+      closest = Pair(y, diff);
   }
 
-  return uCharMap[closest.idx];
+  return uCharMap[closest.index];
 }
 
 void main() {

@@ -4,6 +4,9 @@ import * as gle from '../enums'
 const numbered = (src: string, n = 1) =>
   src.replace(/^/gm, () => `${n++}: `.padStart(5, '0'))
 
+const render = (str: string, ctx = {}): string =>
+  new Function(`{${Object.keys(ctx)}}`, `return \`${str}\``)(ctx)
+
 export const api = (attributes?: WebGLContextAttributes, ...extensions: string[]) => {
   const gl = canvas().getContext('webgl2', attributes)
 
@@ -18,8 +21,8 @@ export const api = (attributes?: WebGLContextAttributes, ...extensions: string[]
   return gl
 }
 
-export const shader = (gl: WebGL2RenderingContext, type: GLenum, source: string) => {
-  const sourceʹ = `#version 300 es\n${source}`
+export const shader = (gl: WebGL2RenderingContext, type: GLenum, source: string, context = {}) => {
+  const sourceʹ = render(`#version 300 es\n${source}`, context)
   const shader = gl.createShader(type)!
 
   gl.shaderSource(shader, sourceʹ)
