@@ -16,9 +16,9 @@ const filterNearest: glu.Callback = gl => {
   gl.texParameteri(gle.TEXTURE_2D, gle.TEXTURE_MAG_FILTER, gle.NEAREST)
 }
 
-const quadGeometry = (index: number): glu.Callback => gl => {
-  const quad = Float32Array.of(1, 1, -1, 1, 1, -1, -1, -1)
-  gl.bufferData(gle.ARRAY_BUFFER, quad, gle.STATIC_DRAW)
+const triangleGeometry = (index: number): glu.Callback => gl => {
+  const vertices = Float32Array.of(-1, -1, 3, -1, -1, 3)
+  gl.bufferData(gle.ARRAY_BUFFER, vertices, gle.STATIC_DRAW)
   gl.vertexAttribPointer(index, 2, gle.FLOAT, false, 0, 0)
   gl.enableVertexAttribArray(index)
 }
@@ -59,7 +59,7 @@ export class GPURenderer extends Renderer {
     gl.bindTexture(gle.TEXTURE_2D, this._txLUT)
     gl.texImage2D(gle.TEXTURE_2D, 0, gle.R32F, lut.width, lut.height, 0, gle.RED, gle.FLOAT, lut)
 
-    glu.buffer(gl)(quadGeometry(Attribute.position))
+    glu.buffer(gl)(triangleGeometry(Attribute.position))
   }
 
   protected *_lines(src: Source, width: number, height: number) {
@@ -97,7 +97,7 @@ export class GPURenderer extends Renderer {
     _gl.uniform1f(uPass1('uNoise'), settings.noise)
     _gl.uniform1f(uPass1('uRandom'), random())
     _gl.viewport(0, 0, srcWidth, srcHeight)
-    _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
+    _gl.drawArrays(gle.TRIANGLES, 0, 3)
 
     // 2nd pass
     _gl.activeTexture(gle.TEXTURE0 + Texture.src)
@@ -113,7 +113,7 @@ export class GPURenderer extends Renderer {
     _gl.uniform1i(uPass2('uLUT'), Texture.lut)
     _gl.uniform1uiv(uPass2('uCharMap'), _charMap)
     _gl.viewport(0, 0, width, height)
-    _gl.drawArrays(gle.TRIANGLE_STRIP, 0, 4)
+    _gl.drawArrays(gle.TRIANGLES, 0, 3)
 
     // read from framebuffer
     _gl.readPixels(0, 0, width, height, gle.RED_INTEGER, gle.UNSIGNED_INT, this._charCodes)
