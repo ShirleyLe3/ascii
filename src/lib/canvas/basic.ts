@@ -1,8 +1,8 @@
 import { Source } from '../../types'
-import { context2d, extract, measure } from './utils'
+import { context2d, extract, measure, Setup } from './utils'
 
-export const converter = () => {
-  const cached = context2d()
+export const converter = (setup?: Setup) => {
+  const cached = context2d(setup)
 
   return (src: Source) => {
     const [w, h] = measure(src)
@@ -12,8 +12,8 @@ export const converter = () => {
   }
 }
 
-export const resizer = () => {
-  const cached = context2d()
+export const resizer = (setup?: Setup) => {
+  const cached = context2d(setup)
 
   return (src: Source, w: number, h: number) => {
     const dst = cached(w, h)
@@ -22,8 +22,8 @@ export const resizer = () => {
   }
 }
 
-export const cropper = () => {
-  const cached = context2d()
+export const cropper = (setup?: Setup) => {
+  const cached = context2d(setup)
 
   return (src: Source, w: number, h: number, x = 0, y = 0) => {
     const dst = cached(w, h)
