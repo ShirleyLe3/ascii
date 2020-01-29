@@ -85,4 +85,20 @@ export class LUT extends Float32Array {
 
     return acc
   }
+
+  closest(others: LUT[]) {
+    let ref = Infinity
+    let closest = 0
+
+    for (let i = others.length; i--;) {
+      const diff = this.compare(others[i])
+
+      if (ref > diff) {
+        ref = diff
+        closest = i
+      }
+    }
+
+    return closest
+  }
 }

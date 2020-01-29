@@ -24,8 +24,7 @@ export class CPURenderer extends Renderer {
       const codes = []
 
       for (let x = 0; x < srcWidth; x += lutWidth) {
-        let index = 0
-        let value = Infinity
+        let cursor = 0
 
         for (let v = 0; v < lutHeight; v++) {
           for (let u = 0; u < lutWidth; u++) {
@@ -38,20 +37,11 @@ export class CPURenderer extends Renderer {
             const s = lum(r, g, b)**gamma
             const n = random() - 0.5
 
-            buffer[index++] = signal*s + noise*n
+            buffer[cursor++] = signal*s + noise*n
           }
         }
 
-        for (let i = _luts.length; i--;) {
-          const delta = _luts[i].compare(buffer)
-
-          if (delta < value) {
-            value = delta
-            index = i
-          }
-        }
-
-        codes.push(_charMap[index])
+        codes.push(_charMap[buffer.closest(_luts)])
       }
 
       yield str(...codes)
