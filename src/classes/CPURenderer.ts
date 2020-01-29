@@ -29,7 +29,7 @@ export class CPURenderer extends Renderer {
 
         for (let v = 0; v < lutHeight; v++) {
           for (let u = 0; u < lutWidth; u++) {
-            let i = x+u + (y+v)*srcWidth << 2
+            let i = (x + u) + (y + v)*srcWidth << 2
 
             const r = rgb(rgba[i++] / 0xff)
             const g = rgb(rgba[i++] / 0xff)

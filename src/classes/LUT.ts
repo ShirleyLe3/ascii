@@ -55,7 +55,7 @@ export class LUT extends Float32Array {
       .getImageData(lutPadding, lutPadding, lutWidth, lutHeight)
       .data
 
-    for (let i = 0; i < lut.length; i++)
+    for (let i = lut.length; i--;)
       lut[i] = rgb(rgba[i << 2] / 0xff)**lutGamma
 
     return lut
@@ -66,8 +66,8 @@ export class LUT extends Float32Array {
     const height = luts.length
     const lut = new LUT(width, height)
 
-    for (let i = 0; i < height; i++)
-      lut.set(luts[i], i*width)
+    for (let i = height; i--;)
+      lut.set(luts[i], i * width)
 
     return lut
   }
